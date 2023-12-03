@@ -1,6 +1,7 @@
 import pandas as pd
 import glob
 import os
+import numpy as np
 
 
 def one_hot_encode_column(df, column):
@@ -43,7 +44,7 @@ def process_excel_files(folder_path):
     """ Process all Excel files in the specified folder. """
     data_frames = {}
     for file in glob.glob(os.path.join(folder_path, '*.xlsx')):
-        if "chemie" not in file.lower():
+        if "chemie" not in file.lower() and "oes_ostbahnhof_rohdaten" not in file.lower():
             xls = pd.ExcelFile(file)
             for sheet_name in xls.sheet_names:
                 df = preprocess_sheet(xls.parse(sheet_name))
@@ -51,6 +52,10 @@ def process_excel_files(folder_path):
                 df = remove_suffix(df)
                 key = f"{os.path.basename(file)}_{sheet_name}"
                 data_frames[key] = df
+    customDf = handleCustom()
+    customDf = preprocess_sheet(customDf)
+    customDf = remove_suffix(customDf)
+    data_frames['data/OES/OES_Ostbahnhof_Rohdaten_Final_211021.xlsx']=customDf
     return data_frames
 
 
@@ -77,22 +82,29 @@ def drop_zero_burn_rows(df):
     return df[df['Burn'] != 0]
 
 
+
+# handle OES_Ostbahnhof_Rohdaten_Final
+def handleCustom():
+    file = 'data/OES/OES_Ostbahnhof_Rohdaten_Final_211021.xlsx'
+    df = pd.read_excel(file, skiprows=[0,1,2,3,4,5,6,7])
+    return df
+
 # Pfad zum Ordner setzen
 folder_path = 'data/OES/'
 processed_data = process_excel_files(folder_path)
 combined_df = merge_data_frames(processed_data)
 combined_df = combined_df.drop_duplicates()
 
-# TODO: umgang mit nicht trivialen dublikaten
+# TODO: umgang mit nicht trivialen duplikaten
 # Liste der Spalten, auf denen die Duplikatsuche basieren soll
 columns_to_check = ['Fe', 'C', 'Si', 'Mn', 'P', 'S', 'Cr', 'Mo', 'Ni', 'Al', 'Co',
-                    'Cu', 'Nb', 'Ti', 'V', 'W', 'Pb', 'Sn', 'B', 'Ca', 'Zr', 'As', 'Bi']
+ 'Cu', 'Nb', 'Ti', 'V', 'W', 'Pb', 'Sn', 'B', 'Ca', 'Zr', 'As', 'Bi']
 
 # Finde Duplikate im DataFrame
 duplicate_rows = combined_df[combined_df.duplicated(subset=columns_to_check, keep='first')]
 
 # Anzeigen der gefundenen Duplikate
-print(duplicate_rows)
+print(duplicate_rows.columns)
 
 # speichern des DataFrames als csv
 combined_df.to_csv('data/cleaned data/combined_OESdata.csv', index=False)
