@@ -99,3 +99,12 @@ combined_df.to_csv('data/cleaned data/combined_OESdata.csv', index=False)
 
 # TODO: decision how to handle column 'Grade' with 3 types of values (0, typ of steel, grade location?); POSSIBLE SOLUTION. merge with column ID1
 # TODO: decision how to handle columns ID1,2,3; unnamed; columns with greater/lesser but few values (eg Ni_lesser, Ni_greater)
+
+
+
+
+### update 
+### OES_Ostbahnhof_Rohdaten_Final Datei sollte anderes behandelt werden, da sie der Grund für Unnamed Spalten ist
+### we have no more unnamed columns (we had to skip the critical rows in the file and also no ID 1,2,3 only ID1)
+
+
