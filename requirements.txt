@@ -5,3 +5,6 @@ scikit-learn
 passlib
 pydantic
 jinja2
+requests
+pandas
+matplotlib
