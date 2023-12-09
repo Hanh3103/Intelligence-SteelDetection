@@ -1,5 +1,6 @@
-import uvicorn
 import threading
+import uvicorn
+
 from gui import App
 from fastAPI import fast_app
 

@@ -3,7 +3,7 @@ from fastapi import FastAPI
 from io import StringIO
 import functions
 
-fast_app = FastAPI(openapi_prefix="")
+fast_app = FastAPI()
 
 
 @fast_app.get("/")
@@ -21,8 +21,10 @@ async def process_data(dataframe_input: dict):
 
     # Jetzt können Sie df_buffer in ein DataFrame konvertieren
     df = pd.read_json(df_buffer, orient='split')
-    print(df)
-    functions.linreg(df)
+
+    # 1.) To be implemented: ML Algorithm on Dataframe
+
+    # 2.) To be implemented: return result form Algorithm
 
 
 @fast_app.post("/predict_unsupervised")
@@ -33,5 +35,7 @@ async def process_data(dataframe_input: dict):
     df_buffer = StringIO(df_json)
 
     df = pd.read_json(df_buffer, orient='split')
-    print(df)
-    functions.linreg(df)
+
+    # 1.) To be implemented: ML Algorithm on Dataframe
+
+    # 2.) To be implemented: return result form Algorithm
