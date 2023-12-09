@@ -1,10 +1,9 @@
 import tkinter as tk
 from io import BytesIO
 from tkinter import filedialog
-
-import matplotlib.pyplot as plt
 import pandas as pd
 import requests
+from matplotlib import pyplot as plt
 from sklearn.linear_model import LinearRegression
 from sklearn.model_selection import train_test_split
 
@@ -29,17 +28,15 @@ def predict_data_from_file_unsupervised():
     if df is None:
         return  # Exit function if file upload fails
 
-    df_json = df.to_json()  # Corrected: Call to_json() method
-    # Include the DataFrame in the request payload
-    headers = {'Content-Type': 'application/json'}
+    df_json = df.to_json(orient='split')
 
-    # Corrected: Pass df_json directly as json parameter
-    response = requests.post("http://127.0.0.1:8000/predict_unsupervised", json=df_json, headers=headers)
+    files = {"dataframe_input": {"data": df_json}}
+    response = requests.post("http://127.0.0.1:8000/predict_unsupervised", json=files)
     prediction_result = response.json()
+    print(prediction_result)
 
     img = tk.PhotoImage(data=prediction_result['plot'])
     return img
-
 
 
 def predict_data_from_file_supervised():
@@ -55,6 +52,7 @@ def predict_data_from_file_supervised():
     # img = tk.PhotoImage(data=prediction_result['plot'])
     # return img
 
+
 """
 def open_sql_dialog():
     sql_string = simpledialog.askstring("Input SQL Statement", "Enter your SQL statement:")
@@ -66,34 +64,42 @@ def predict_data_from_database(sql_string):
     print(f"Processing SQL statement: {sql_string}")
 """
 
-
+"""
 def linreg(df):
-    # Simple Linear Regression model
-    # x = df[['index']]  # Assuming 'index' is the feature column in your DataFrame
-    # y = df['value']  # Assuming 'value' is the target column in your DataFrame
 
-    # # Split the data into training and testing sets
-    # x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.2, random_state=42)
+    # Choose the features and target variable
+    features = ['Fe']  # You need to replace 'index' with the actual column name you want to use as a feature
+    target = 'Fe'  # You need to replace 'value' with the actual column name you want to predict
 
-    # # Train the model
-    # model = LinearRegression()
-    # model.fit(x_train, y_train)
+    # Split the data into features (X) and target variable (y)
+    X = df[features]
+    y = df[target]
 
-    # # Make predictions
-    # df['prediction'] = model.predict(x)
+    # Split the data into training and testing sets
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
-    # # Plot the data and save the plot to a BytesIO object
-    # plt.plot(df['index'], df['value'], label='Original Data')
-    # plt.plot(df['index'], df['prediction'], label='Model Prediction')
-    # plt.legend()
-    # plt.xlabel('Index')
-    # plt.ylabel('Value')
-    # plt.title('Model Prediction vs Original Data')
+    # Train the model
+    model = LinearRegression()
+    model.fit(X_train, y_train)
 
-    # plot_img = BytesIO()
-    # plt.savefig(plot_img, format='png')
-    # plt.close()
+    # Make predictions
+    df['prediction'] = model.predict(X)
 
-    # # Return the plot as a downloadable file
-    # plot_img.seek(0)
-    return {"message": "Processing complete", "plot": "img"}
+    # Plot the data
+    plt.plot(df['index'], df['value'], label='Original Data')
+    plt.plot(df['index'], df['prediction'], label='Model Prediction')
+    plt.legend()
+    plt.xlabel('Index')
+    plt.ylabel('Value')
+    plt.title('Model Prediction vs Original Data')
+
+    # Save the plot to a BytesIO object
+    plot_img = BytesIO()
+    plt.savefig(plot_img, format='png')
+    plt.close()
+
+    # Return the plot as a downloadable file
+    plot_img.seek(0)
+    return {"message": "Processing complete", "plot": plot_img}
+    
+    """
