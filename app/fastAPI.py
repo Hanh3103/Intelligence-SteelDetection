@@ -1,7 +1,7 @@
 from io import BytesIO
 import pandas as pd
 from fastapi import FastAPI, UploadFile, File
-
+from io import StringIO
 import functions
 from pydantic import BaseModel
 
@@ -87,9 +87,16 @@ async def root():
 
 @fast_app.post("/predict_supervised")
 async def process_data(dataframe_input: dict):
-    df_json = dataframe_input.get("data")
-    df = pd.read_json(df_json, orient='split')
 
+    data_input = dataframe_input.get("dataframe_input")
+    df_json = data_input.get("data")
+
+    # Verwende StringIO, um die JSON-Zeichenfolge zu einem Datei-ähnlichen Puffer zu machen
+    df_buffer = StringIO(df_json)
+
+    # Jetzt können Sie df_buffer in ein DataFrame konvertieren
+    df = pd.read_json(df_buffer, orient='split')
+    print(df)
     functions.linreg(df)
 
 
@@ -97,5 +104,4 @@ async def process_data(dataframe_input: dict):
 async def process_data(dataframe_input: DataModel):
     df_json_data = dataframe_input.data
     df = pd.DataFrame(df_json_data, columns=dataframe_input.columns)
-
     functions.linreg(df)

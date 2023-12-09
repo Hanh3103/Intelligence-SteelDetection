@@ -41,7 +41,7 @@ def predict_data_from_file_unsupervised():
     return img
 
 
-"""
+
 def predict_data_from_file_supervised():
     df = upload_file()
 
@@ -51,11 +51,11 @@ def predict_data_from_file_supervised():
     files = {"dataframe_input": {"data": df_json}}
     response = requests.post("http://127.0.0.1:8000/predict_supervised", json=files)
     prediction_result = response.json()
+    print(prediction_result)
+    # img = tk.PhotoImage(data=prediction_result['plot'])
+    # return img
 
-    img = tk.PhotoImage(data=prediction_result['plot'])
-    return img
-
-
+"""
 def open_sql_dialog():
     sql_string = simpledialog.askstring("Input SQL Statement", "Enter your SQL statement:")
     if sql_string is not None:
@@ -69,31 +69,31 @@ def predict_data_from_database(sql_string):
 
 def linreg(df):
     # Simple Linear Regression model
-    x = df[['index']]  # Assuming 'index' is the feature column in your DataFrame
-    y = df['value']  # Assuming 'value' is the target column in your DataFrame
+    # x = df[['index']]  # Assuming 'index' is the feature column in your DataFrame
+    # y = df['value']  # Assuming 'value' is the target column in your DataFrame
 
-    # Split the data into training and testing sets
-    x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.2, random_state=42)
+    # # Split the data into training and testing sets
+    # x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.2, random_state=42)
 
-    # Train the model
-    model = LinearRegression()
-    model.fit(x_train, y_train)
+    # # Train the model
+    # model = LinearRegression()
+    # model.fit(x_train, y_train)
 
-    # Make predictions
-    df['prediction'] = model.predict(x)
+    # # Make predictions
+    # df['prediction'] = model.predict(x)
 
-    # Plot the data and save the plot to a BytesIO object
-    plt.plot(df['index'], df['value'], label='Original Data')
-    plt.plot(df['index'], df['prediction'], label='Model Prediction')
-    plt.legend()
-    plt.xlabel('Index')
-    plt.ylabel('Value')
-    plt.title('Model Prediction vs Original Data')
+    # # Plot the data and save the plot to a BytesIO object
+    # plt.plot(df['index'], df['value'], label='Original Data')
+    # plt.plot(df['index'], df['prediction'], label='Model Prediction')
+    # plt.legend()
+    # plt.xlabel('Index')
+    # plt.ylabel('Value')
+    # plt.title('Model Prediction vs Original Data')
 
-    plot_img = BytesIO()
-    plt.savefig(plot_img, format='png')
-    plt.close()
+    # plot_img = BytesIO()
+    # plt.savefig(plot_img, format='png')
+    # plt.close()
 
-    # Return the plot as a downloadable file
-    plot_img.seek(0)
-    return {"message": "Processing complete", "plot": plot_img}
+    # # Return the plot as a downloadable file
+    # plot_img.seek(0)
+    return {"message": "Processing complete", "plot": "img"}
