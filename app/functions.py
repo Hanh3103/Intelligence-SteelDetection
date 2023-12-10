@@ -1,13 +1,7 @@
-import tkinter as tk
-from io import BytesIO
 from tkinter import filedialog
+
 import pandas as pd
 import requests
-from matplotlib import pyplot as plt
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
-from scipy.optimize import root
-from sklearn.linear_model import LinearRegression
-from sklearn.model_selection import train_test_split
 
 
 def upload_file():
@@ -38,9 +32,6 @@ def predict_data_from_file_unsupervised():
     # To be implemented: plot the response data to gui
 
 
-
-
-
 def predict_data_from_file_supervised():
     df = upload_file()
 
@@ -51,7 +42,6 @@ def predict_data_from_file_supervised():
     response = requests.post("http://127.0.0.1:8000/predict_supervised", json=files)
 
     # To be implemented: plot the response data to gui
-
 
 
 """
