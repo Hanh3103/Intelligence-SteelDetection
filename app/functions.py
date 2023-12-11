@@ -44,9 +44,9 @@ def predict_data_from_file_supervised():
     files = {"dataframe_input": {"data": df_json}}
     response = requests.post("http://127.0.0.1:8000/predict_supervised", json=files)
 
-    dict = json.loads(response.json())
-
-    df = pd.DataFrame.from_dict(dict)
+    data = response.json()
+    df2 = pd.DataFrame.from_dict(data)
+    print(df2)
 
     # Plot the data using Matplotlib
     plot_frame = Tk()
