@@ -1,16 +1,15 @@
 from io import StringIO
 import pandas as pd
 from fastapi.responses import JSONResponse
-from fastapi import FastAPI, UploadFile, File, Depends, HTTPException, status
+from fastapi import FastAPI, File, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from datetime import datetime, timedelta
 from jose import jwt, JWTError
 from passlib.context import CryptContext
 from models import User, UserInDB, Token, TokenData, UserTable
-import db
+import db as dataBase
 from sqlalchemy.engine import URL
-from sqlalchemy import Column, String, Boolean, create_engine, Integer
-from sqlalchemy.orm import declarative_base, sessionmaker, Session
+from sqlalchemy.orm import Session
 fast_app = FastAPI()
 
 
@@ -31,7 +30,7 @@ async def process_data(dataframe_input: dict):
     df = pd.read_json(df_buffer, orient='split')
 
     # save the dataframe into the database
-    db.save_dataframe_to_database(df, "OESdata")
+    dataBase.save_dataframe_to_database(df, "OESdata")
 
     df_json = df.to_json(orient='split')
 
@@ -75,7 +74,7 @@ ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60
 
 def get_db():
-    db = SessionLocal()
+    db = dataBase.SessionLocal()
     try:
         yield db
     finally:
@@ -198,11 +197,3 @@ async def read_users_me(current_user: User = Depends(get_current_active_user)):
 @fast_app.get("/users/me/items", response_model=User)
 async def read_own_items(current_user: User = Depends(get_current_active_user)):
     return current_user
-
-
-url = URL.create("postgresql", "postgres", "", "localhost", "5432", "Stahl")
-
-engine = create_engine(url)
-engine.connect()
-
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
