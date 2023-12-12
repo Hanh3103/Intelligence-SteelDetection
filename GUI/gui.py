@@ -3,7 +3,7 @@ import customtkinter as ctk
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
-import functions
+import utils
 
 ctk.set_appearance_mode("System")
 ctk.set_default_color_theme("blue")
@@ -125,15 +125,15 @@ def change_darkmode(choice):
 
 
 def upload_file():
-    functions.upload_file()
+    utils.upload_file()
 
 
 def supervised():
-    functions.predict_data_from_file_supervised()
+    utils.predict_data_from_file_supervised()
 
 
 def unsupervised():
-    functions.predict_data_from_file_unsupervised()
+    utils.predict_data_from_file_unsupervised()
 
 
 def on_hover(event, scatter, text_label):
@@ -143,3 +143,5 @@ def on_hover(event, scatter, text_label):
         # Größe im Textlabel anzeigen
         size_of_hovered_point = scatter.get_sizes()[ind]
         text_label.set(f"Größe des  Punktes: {round(size_of_hovered_point, 2)}")
+
+
