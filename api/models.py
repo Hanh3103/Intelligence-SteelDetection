@@ -1,8 +1,9 @@
 from pydantic import BaseModel
-from sqlalchemy import Column, String, Boolean, Integer
-from sqlalchemy.orm import declarative_base
+from sqlalchemy import Column, String, Boolean, Integer, ForeignKey
+from sqlalchemy.orm import declarative_base, relationship
 
 Base = declarative_base()
+
 
 class Token(BaseModel):
     access_token: str
@@ -21,13 +22,42 @@ class User(BaseModel):
 
 
 class UserInDB(User):
-    hashed_password: str
+    password: str
+
+
+class UploadedItem(BaseModel):
+    id: int
+    owner_id: int
+    filename: str
+    filesize: int
+    filepath: str
+
 
 class UserTable(Base):
-    __tablename__ = 'users'
+    __tablename__ = 'users_table'
+
     id = Column(Integer, primary_key=True, autoincrement=True)
     username = Column(String)
     fullname = Column(String)
     email = Column(String, unique=True)
     password = Column(String)
     disabled = Column(Boolean)
+
+    items = relationship("UploadedItemTable",
+                         back_populates="owner",
+                         cascade="all, delete",
+                         uselist=True)
+
+
+class UploadedItemTable(Base):
+    __tablename__ = 'uploaded_items'
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    owner_id = Column(Integer, ForeignKey('users_table.id'), nullable=False)
+    filename = Column(String)
+    #filetype = Column(String)
+    filesize = Column(Integer)
+    filepath = Column(String)
+    owner = relationship("UserTable", back_populates="items")
+
+

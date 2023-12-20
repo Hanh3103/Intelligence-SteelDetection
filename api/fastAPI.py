@@ -6,11 +6,29 @@ from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from datetime import datetime, timedelta
 from jose import jwt, JWTError
 from passlib.context import CryptContext
-from models import User, UserInDB, Token, TokenData, UserTable
+from models import User, UserInDB, Token, TokenData, UserTable, UploadedItem, UploadedItemTable
 import db as dataBase
-from sqlalchemy.engine import URL
 from sqlalchemy.orm import Session
+from api.readConfig import readConfigValue
+from typing_extensions import Annotated
+
 fast_app = FastAPI()
+
+
+def get_db():
+    db = dataBase.SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
+
+
+SECRET_KEY = readConfigValue('TOKEN', 'SECRET_KEY')
+ALGORITHM = readConfigValue('TOKEN', 'ALGORITHM')
+ACCESS_TOKEN_EXPIRE_MINUTES = int(readConfigValue('TOKEN', 'ACCESS_TOKEN_EXPIRE_MINUTES'))
+
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+oauth_2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 
 @fast_app.get("/")
@@ -69,23 +87,9 @@ async def process_data(dataframe_input: dict):
     # 2.) To be implemented: return result form Algorithm
 
 
-SECRET_KEY = "21dca9fc3d57116f9914aabd3930c325e15be16da134db65ec2d1e9cf6e591ba"
-ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 60
-
-def get_db():
-    db = dataBase.SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
-
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-oauth_2_scheme = OAuth2PasswordBearer(tokenUrl="token")
-
-
 def verify_password(plain_password, hashed_password):
     return pwd_context.verify(plain_password, hashed_password)
+
 
 def get_password_hash(password):
     return pwd_context.hash(password)
@@ -98,7 +102,7 @@ def get_user(username: str, db: Session = Depends(get_db)):
             username=user.username,
             full_name=user.fullname,
             email=user.email,
-            hashed_password=user.password,
+            password=user.password,
             disabled=user.disabled
         )
     return None
@@ -108,12 +112,12 @@ def authenticate_user(username: str, password: str, db: Session = Depends(get_db
     user = get_user(username, db)
     if not user:
         return False
-    if not verify_password(password, user.hashed_password):
+    if not verify_password(password, user.password):
         return False
     return user
 
+
 def create_access_token(data: dict, expires_delta: timedelta or None = None):
-    
     to_encode = data.copy()
     if expires_delta:
         expire = datetime.utcnow() + expires_delta
@@ -121,12 +125,12 @@ def create_access_token(data: dict, expires_delta: timedelta or None = None):
     else:
         expire = datetime.utcnow + timedelta(minutes=15)
 
-    
     to_encode.update({"exp": expire})
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, ALGORITHM)
     return encoded_jwt
 
-async def get_current_user(token: str = Depends(oauth_2_scheme), db: Session = Depends(get_db)):
+
+async def get_current_user(token: Annotated[str, Depends(oauth_2_scheme)], db: Session = Depends(get_db)):
     credentialException = HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
                                         detail="Could not validate credentials",
                                         headers={"WWW-Authenticate": "Bearer"})
@@ -139,61 +143,114 @@ async def get_current_user(token: str = Depends(oauth_2_scheme), db: Session = D
         token_data = TokenData(username=username)
     except JWTError:
         raise credentialException
-    
+
     user = get_user(token_data.username, db)
     if user is None:
         raise credentialException
     return user
 
 
-async def get_current_active_user(current_user: UserInDB = Depends(get_current_user)): 
+async def get_current_active_user(current_user: UserInDB = Depends(get_current_user)):
     if current_user.disabled:
         raise HTTPException(status_code=400, detail="Inactive user")
     return current_user
 
-def checkIfUserNameUnique(username: str, db: Session = Depends(get_db)):
+
+def check_if_user_name_unique(username: str, db: Session = Depends(get_db)):  # TODO: Douple code with get_user
     user = db.query(UserTable).filter(UserTable.username == username).first()
     if not user:
         return True
     else:
         return False
-    
+
+
 @fast_app.post("/token", response_model=Token)
 async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
     user = authenticate_user(form_data.username.lower(), form_data.password, db)
     if not user:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
                             detail="Incorrect username or password",
-                            headers={"WWW-Authenticate": "Bearer"},)
+                            headers={"WWW-Authenticate": "Bearer"}, )
     access_token_expires = timedelta(ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = create_access_token(data={"sub": user.username}, expires_delta=access_token_expires)
     return {"access_token": access_token, "token_type": "bearer"}
 
+
 @fast_app.post("/registrate")
 async def create_user(newUser: UserInDB, db: Session = Depends(get_db)):
-
-    isUnique = checkIfUserNameUnique(newUser.username, db)
+    isUnique = check_if_user_name_unique(newUser.username, db)
 
     if isUnique:
         new_user = UserTable(
             username=newUser.username.lower(),
             fullname=newUser.full_name,
             email=newUser.email,
-            password=get_password_hash(newUser.hashed_password),
+            password=get_password_hash(newUser.password),
             disabled=newUser.disabled
         )
 
         db.add(new_user)
         db.commit()
+        return {"message": "User created successfully"}
     else:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
                             detail="Username already exists",
-                            headers={"WWW-Authenticate": "Bearer"},)
-    
+                            headers={"WWW-Authenticate": "Bearer"}, )
+
+
 @fast_app.get("/users/me", response_model=User)
 async def read_users_me(current_user: User = Depends(get_current_active_user)):
     return current_user
 
-@fast_app.get("/users/me/items", response_model=User)
-async def read_own_items(current_user: User = Depends(get_current_active_user)):
-    return current_user
+
+@fast_app.get("/users/me/items")
+async def read_own_items(db: Session = Depends(get_db),
+                         current_user: UserInDB = Depends(get_current_active_user),
+                         skip: int = 0,
+                         limit: int = 10) -> list:
+    current_user_db = db.query(UserTable).filter(UserTable.username == current_user.username).first()
+    items = db.query(UploadedItemTable).filter(UploadedItemTable.owner_id == current_user_db.id).offset(skip).limit(limit).all()
+
+    #create a list of dictionaries from the items
+    items = [item.__dict__ for item in items]
+    items = [{key: value for key, value in item.items() if key != "_sa_instance_state"} for item in items]
+
+    # get the file from item.filepath and add it to the dictionary
+    for item in items:
+        with open(item["filepath"], "r") as file:
+            item["data"] = file.read()
+
+    return items
+
+
+@fast_app.post("/users/me/item")
+async def upload_own_item(db: Session = Depends(get_db),
+                          current_user: UserInDB = Depends(get_current_active_user),
+                          data_frame: dict = None):
+    current_user_db = db.query(UserTable).filter(UserTable.username == current_user.username).first()
+    data_input = data_frame.get("dataframe_input")
+    df_json = data_input.get("data")
+    file_name = data_input.get("filename")
+    file_size = data_input.get("filesize")
+
+    # save the df_json locally, each user has its own folder, then save the path of the file to the database
+    import os
+    import json
+    from api.readConfig import readConfigValue
+    user_directory = readConfigValue("UPLOAD", "UPLOAD_FOLDER") + "/" + current_user_db.username
+    os.makedirs(user_directory, exist_ok=True)
+
+    file_path = user_directory + "/" + file_name
+    with open(file_path, "w") as file:
+        json.dump(df_json, file)
+
+    new_item = UploadedItemTable(
+        owner_id=current_user_db.id,
+        filename=file_name,
+        filesize=file_size,
+        filepath=file_path
+    )
+
+    db.add(new_item)
+    db.commit()
+    return {"message": "Item uploaded successfully"}

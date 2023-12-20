@@ -9,6 +9,9 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 def upload_file():
     file_path = filedialog.askopenfilename()
 
+    filename = file_path.split('/')[-1]
+    filesize = file_path.split('/')[-2]
+
     if file_path.endswith('.csv'):
         df = pd.read_csv(file_path)
     elif file_path.endswith(('.xls', '.xlsx')):
@@ -17,16 +20,16 @@ def upload_file():
         print("Unsupported file type. Please provide a CSV or Excel file.")
         return None
 
-    return df
+    return df, filesize, filename
 
 
 def predict_data_from_file_unsupervised():
-    df = upload_file()
+    df, filesize, filename = upload_file()
 
     df_json = df.to_json(orient='split')
 
     # Include the DataFrame in the request payload
-    files = {"dataframe_input": {"data": df_json}}
+    files = {"dataframe_input": {"data": df_json, "filesize": filesize, "filename": filename}}
     response = requests.post("http://127.0.0.1:8000/predict_supervised", json=files)
 
     data = response.json()
