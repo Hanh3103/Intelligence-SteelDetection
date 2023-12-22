@@ -145,3 +145,5 @@ def on_hover(event, scatter, text_label):
         text_label.set(f"Größe des  Punktes: {round(size_of_hovered_point, 2)}")
 
 
+
+
