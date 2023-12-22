@@ -1,4 +1,3 @@
-# Import necessary modules and classes
 from datetime import timedelta
 from io import StringIO
 
@@ -9,18 +8,15 @@ from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from passlib.context import CryptContext
 from sqlalchemy.orm import Session
 
-# Local imports
 from db import db as dataBase
 from db.db import authenticate_user, create_access_token, check_if_user_name_unique, get_password_hash, \
     get_current_active_user
 from db.dbModels import User, UserInDB, Token, UserTable, UploadedItemTable
 from utils.readConfig import read_config_value
 
-# Create a FastAPI app instance
 fast_app = FastAPI()
 
 
-# Dependency function to get the database session
 def get_db():
     db = dataBase.SessionLocal()
     try:
@@ -29,58 +25,55 @@ def get_db():
         db.close()
 
 
-# Read configuration values
 SECRET_KEY = read_config_value('TOKEN', 'SECRET_KEY')
 ALGORITHM = read_config_value('TOKEN', 'ALGORITHM')
 ACCESS_TOKEN_EXPIRE_MINUTES = int(read_config_value('TOKEN', 'ACCESS_TOKEN_EXPIRE_MINUTES'))
 
-# Create a password context for hashing and verification
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-
-# Create an OAuth2PasswordBearer for token authentication
 oauth_2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 
-# Root endpoint
 @fast_app.get("/")
 async def root():
     return {"message": "Hello World"}
 
 
-# Endpoint for supervised prediction
 @fast_app.post("/predict_supervised")
 async def process_data(dataframe_input: dict):
     data_input = dataframe_input.get("dataframe_input")
     df_json = data_input.get("data")
 
-    # Use StringIO to create a file-like buffer from the JSON string
+    # Verwende StringIO, um die JSON-Zeichenfolge zu einem Datei-ähnlichen Puffer zu machen
     df_buffer = StringIO(df_json)
 
-    # Convert df_buffer to a DataFrame
+    # Jetzt können Sie df_buffer in ein DataFrame konvertieren
     df = pd.read_json(df_buffer, orient='split')
 
-    # Save the DataFrame into the database
+    # save the dataframe into the database
     dataBase.save_dataframe_to_database(df, "OESdata")
 
-    # Convert the DataFrame to JSON
     df_json = df.to_json(orient='split')
 
-    # Prepare and return response data
     response_data = {
         "input_value": dataframe_input,
         "statistics": df_json
     }
     return JSONResponse(content=response_data)
 
+    # 1.) To be implemented: ML Algorithm on Dataframe
 
-# Endpoint for unsupervised prediction (similar structure to the supervised endpoint)
+    # 2.) To be implemented: return result form Algorithm
+
+
 @fast_app.post("/predict_unsupervised")
 async def process_data(dataframe_input: dict):
     data_input = dataframe_input.get("dataframe_input")
     df_json = data_input.get("data")
 
+    # Verwende StringIO, um die JSON-Zeichenfolge zu einem Datei-ähnlichen Puffer zu machen
     df_buffer = StringIO(df_json)
 
+    # Jetzt können Sie df_buffer in ein DataFrame konvertieren
     df = pd.read_json(df_buffer, orient='split')
 
     df_json = df.to_json(orient='split')
@@ -91,8 +84,11 @@ async def process_data(dataframe_input: dict):
     }
     return JSONResponse(content=response_data)
 
+    # 1.) To be implemented: ML Algorithm on Dataframe
 
-# Token endpoint for user authentication
+    # 2.) To be implemented: return result form Algorithm
+
+
 @fast_app.post("/token", response_model=Token)
 async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
     user = authenticate_user(form_data.username.lower(), form_data.password, db)
@@ -105,7 +101,6 @@ async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(
     return {"access_token": access_token, "token_type": "bearer"}
 
 
-# Registration endpoint for creating a new user
 @fast_app.post("/registrate")
 async def create_user(newUser: UserInDB, db: Session = Depends(get_db)):
     isUnique = check_if_user_name_unique(newUser.username, db)
@@ -128,13 +123,11 @@ async def create_user(newUser: UserInDB, db: Session = Depends(get_db)):
                             headers={"WWW-Authenticate": "Bearer"}, )
 
 
-# Endpoint to get information about the current user
 @fast_app.get("/users/me", response_model=User)
 async def read_users_me(current_user: User = Depends(get_current_active_user)):
     return current_user
 
 
-# Endpoint to get items owned by the current user
 @fast_app.get("/users/me/items")
 async def read_own_items(db: Session = Depends(get_db),
                          current_user: UserInDB = Depends(get_current_active_user),
@@ -144,11 +137,11 @@ async def read_own_items(db: Session = Depends(get_db),
     items = db.query(UploadedItemTable).filter(UploadedItemTable.owner_id == current_user_db.id).offset(skip).limit(
         limit).all()
 
-    # Create a list of dictionaries from the items
+    # create a list of dictionaries from the items
     items = [item.__dict__ for item in items]
     items = [{key: value for key, value in item.items() if key != "_sa_instance_state"} for item in items]
 
-    # Get the file from item.filepath and add it to the dictionary
+    # get the file from item.filepath and add it to the dictionary
     for item in items:
         with open(item["filepath"], "r") as file:
             item["data"] = file.read()
@@ -156,7 +149,6 @@ async def read_own_items(db: Session = Depends(get_db),
     return items
 
 
-# Endpoint to upload an item for the current user
 @fast_app.post("/users/me/item")
 async def upload_own_item(db: Session = Depends(get_db),
                           current_user: UserInDB = Depends(get_current_active_user),
@@ -167,7 +159,7 @@ async def upload_own_item(db: Session = Depends(get_db),
     file_name = data_input.get("filename")
     file_size = data_input.get("filesize")
 
-    # Save the df_json locally, each user has its own folder, then save the path of the file to the database
+    # save the df_json locally, each user has its own folder, then save the path of the file to the database
     import os
     import json
     from utils.readConfig import read_config_value
