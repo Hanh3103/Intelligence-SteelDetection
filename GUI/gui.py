@@ -5,12 +5,10 @@ import numpy as np
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import utils.utils
 
-# Set appearance mode and default color theme
 ctk.set_appearance_mode("System")
 ctk.set_default_color_theme("blue")
 
 
-# Main Application class
 class App(ctk.CTk):
     def __init__(self):
         super().__init__()
@@ -33,7 +31,6 @@ class App(ctk.CTk):
                                        font=ctk.CTkFont(size=20, weight="bold"))
         self.logo_label.grid(row=0, column=0, padx=20, pady=(15, 10))
 
-        # Sidebar buttons for different actions
         self.sidebar_button_1 = ctk.CTkButton(self.sidebar_frame, corner_radius=8, text='Plot me!',
                                               command=self.update_window)
         self.sidebar_button_1.grid(row=1, column=0, padx=20, pady=10, columnspan=2, sticky='nsew')
@@ -46,7 +43,6 @@ class App(ctk.CTk):
                                                          command=unsupervised)
         self.sidebar_button_unsupervised.grid(row=3, column=0, padx=20, pady=10, columnspan=2, sticky='nsew')
 
-        # Sliders for variables in the sidebar
         self.sidebar_slider_frame = ctk.CTkFrame(self.sidebar_frame, width=140)
         self.sidebar_slider_frame.grid(row=4, column=0, padx=20, pady=10, sticky='n')
 
@@ -88,18 +84,15 @@ class App(ctk.CTk):
 
         # Top right
 
-        # Label for displaying the size of the hovered point
         self.hover_label_var = ctk.StringVar()
         self.hover_label_var.set('Größe des  Punktes:')
         self.hover_label = ctk.CTkLabel(self.main_frame, textvariable=self.hover_label_var)
         self.hover_label.grid(row=0, column=0, padx=10, pady=15, sticky='w')
-
-        # Button to upload a file
         self.import_button = ctk.CTkButton(self.main_frame, corner_radius=8, command=upload_file,
                                            text='Datei Import')
         self.import_button.grid(row=0, column=0, sticky="ne", padx=10, pady=15)
 
-        # Dropdown menu for choosing dark mode
+        # Dropdown-Menü erstellen
         darkmode_options = ['System', 'Dark', 'Light']
         self.selected_option = tk.StringVar()
         self.selected_option.set(darkmode_options[0])
@@ -110,7 +103,6 @@ class App(ctk.CTk):
         self.update_window()
 
     def update_window(self):
-        # Function to update the main window content
         plotpoints = 100
         fig, ax = plt.subplots()
         fig.set_size_inches(11, 5.3)
@@ -118,7 +110,6 @@ class App(ctk.CTk):
         x, y, s, c = np.random.rand(4, plotpoints)
         scatter = ax.scatter(x, y, s * 400, c, linewidth=1, edgecolor='black', cmap='viridis')
 
-        # Connect the hover event to update the label
         fig.canvas.mpl_connect('motion_notify_event', lambda event: on_hover(event, scatter, self.hover_label_var))
 
         ax.axis("off")
@@ -129,36 +120,28 @@ class App(ctk.CTk):
         self.update()
 
 
-# Function to change the appearance mode (dark mode, light mode, etc.)
 def change_darkmode(choice):
     ctk.set_appearance_mode(choice)
 
 
-# Function to upload a file
 def upload_file():
     utils.utils.upload_file()
 
 
-# Function for supervised prediction
 def supervised():
     utils.utils.predict_data_from_file_supervised()
 
 
-# Function for unsupervised prediction
 def unsupervised():
     utils.utils.predict_data_from_file_unsupervised()
 
 
-# Function to handle hover events and update the label
 def on_hover(event, scatter, text_label):
     if scatter.contains(event)[0]:
         ind = scatter.contains(event)[1]["ind"][0]
 
-        # Display the size in the text label
+        # Größe im Textlabel anzeigen
         size_of_hovered_point = scatter.get_sizes()[ind]
         text_label.set(f"Größe des  Punktes: {round(size_of_hovered_point, 2)}")
 
 
-if __name__ == "__main__":
-    app = App()
-    app.mainloop()
