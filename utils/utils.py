@@ -1,17 +1,19 @@
 from tkinter import filedialog, Tk
-
-import pandas as pd
-import requests
 from matplotlib import pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+import pandas as pd
+import requests
 
 
 def upload_file():
+    # Function to upload a file using tkinter file dialog
     file_path = filedialog.askopenfilename()
 
+    # Extract filename and filesize
     filename = file_path.split('/')[-1]
     filesize = file_path.split('/')[-2]
 
+    # Read the file based on its type (CSV or Excel)
     if file_path.endswith('.csv'):
         df = pd.read_csv(file_path)
     elif file_path.endswith(('.xls', '.xlsx')):
@@ -24,14 +26,17 @@ def upload_file():
 
 
 def predict_data_from_file_unsupervised():
+    # Function to predict data from an uploaded file in unsupervised mode
     df, filesize, filename = upload_file()
 
+    # Convert DataFrame to JSON
     df_json = df.to_json(orient='split')
 
     # Include the DataFrame in the request payload
     files = {"dataframe_input": {"data": df_json, "filesize": filesize, "filename": filename}}
     response = requests.post("http://127.0.0.1:8000/predict_supervised", json=files)
 
+    # Process the response data
     data = response.json()
     df2 = pd.DataFrame.from_dict(data)
     print(df2)
@@ -60,18 +65,21 @@ def predict_data_from_file_unsupervised():
     # Display the Tkinter window
     plot_frame.mainloop()
 
-    # To be implemented: plot the response data to gui
+    # To be implemented: plot the response data to the gui
 
 
 def predict_data_from_file_supervised():
+    # Function to predict data from an uploaded file in supervised mode
     df = upload_file()
 
+    # Convert DataFrame to JSON
     df_json = df.to_json(orient='split')
 
     # Include the DataFrame in the request payload
     files = {"dataframe_input": {"data": df_json}}
     response = requests.post("http://127.0.0.1:8000/predict_supervised", json=files)
 
+    # Process the response data
     data = response.json()
     df2 = pd.DataFrame.from_dict(data)
     print(df2)
@@ -100,16 +108,18 @@ def predict_data_from_file_supervised():
     # Display the Tkinter window
     plot_frame.mainloop()
 
-    # To be implemented: plot the response data to gui
+    # To be implemented: plot the response data to the gui
 
 
+# The commented-out section can be uncommented and implemented as needed.
 """
 def open_sql_dialog():
+    # Function to open a dialog for entering an SQL statement
     sql_string = simpledialog.askstring("Input SQL Statement", "Enter your SQL statement:")
     if sql_string is not None:
         predict_data_from_database(sql_string)
 
-
 def predict_data_from_database(sql_string):
+    # Function to predict data from a database using an SQL statement
     print(f"Processing SQL statement: {sql_string}")
 """
