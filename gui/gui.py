@@ -157,8 +157,3 @@ def on_hover(event, scatter, text_label):
         # Display the size in the text label
         size_of_hovered_point = scatter.get_sizes()[ind]
         text_label.set(f"Größe des  Punktes: {round(size_of_hovered_point, 2)}")
-
-
-if __name__ == "__main__":
-    app = App()
-    app.mainloop()
