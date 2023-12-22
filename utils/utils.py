@@ -65,7 +65,7 @@ def predict_data_from_file_unsupervised():
     # Display the Tkinter window
     plot_frame.mainloop()
 
-    # To be implemented: plot the response data to the GUI
+    # To be implemented: plot the response data to the gui
 
 
 def predict_data_from_file_supervised():
@@ -108,7 +108,7 @@ def predict_data_from_file_supervised():
     # Display the Tkinter window
     plot_frame.mainloop()
 
-    # To be implemented: plot the response data to the GUI
+    # To be implemented: plot the response data to the gui
 
 
 # The commented-out section can be uncommented and implemented as needed.

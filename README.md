@@ -17,6 +17,6 @@ When you use Pycharm als your IDE
 
 After the images are build and the container is set up. The api is listening at `http://127.0.0.1:8000 `
 ````bash
-$ cd GUI
+$ cd gui
 $ python test.py
 ````

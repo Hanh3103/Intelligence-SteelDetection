@@ -11,7 +11,7 @@ def run_fastapi_server():
 
 
 def run_tkinter_app():
-    # Function to run the Tkinter GUI
+    # Function to run the Tkinter gui
     app = App()
     app.mainloop()
 
