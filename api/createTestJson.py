@@ -1,3 +1,5 @@
+import json
+
 import pandas as pd
 
 # Create a simple DataFrame
@@ -24,3 +26,4 @@ data_frame = {
 
 # Print the 'data_frame' dictionary
 print(data_frame)
+

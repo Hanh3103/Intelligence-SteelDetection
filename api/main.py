@@ -1,8 +1,8 @@
 import threading
 import uvicorn
 
-from api.fastAPI import fast_app
-from gui.gui import App
+from fastAPI import fast_app
+from gui import App
 
 
 def run_fastapi_server():
@@ -20,7 +20,6 @@ def main():
     fastapi_thread.start()
 
     run_tkinter_app()
-
 
 if __name__ == "__main__":
     main()
