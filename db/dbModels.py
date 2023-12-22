@@ -55,9 +55,7 @@ class UploadedItemTable(Base):
     id = Column(Integer, primary_key=True, autoincrement=True)
     owner_id = Column(Integer, ForeignKey('users_table.id'), nullable=False)
     filename = Column(String)
-    #filetype = Column(String)
+    # filetype = Column(String)
     filesize = Column(Integer)
     filepath = Column(String)
     owner = relationship("UserTable", back_populates="items")
-
-
