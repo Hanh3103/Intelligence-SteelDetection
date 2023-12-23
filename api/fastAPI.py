@@ -141,7 +141,7 @@ async def upload_own_item(
     file_name = data_input.get("filename")
     file_size = data_input.get("filesize")
 
-    user_directory = read_config_value("UPLOAD", "UPLOAD_FOLDER") + "/" + current_user_db.username
+    user_directory = readConfig.read_config_value("UPLOAD", "UPLOAD_FOLDER") + "/" + current_user_db.username
     os.makedirs(user_directory, exist_ok=True)
 
     file_path = user_directory + "/" + file_name
