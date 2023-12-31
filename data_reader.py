@@ -95,7 +95,7 @@ duplicate_rows = combined_df[combined_df.duplicated(subset=columns_to_check, kee
 print(duplicate_rows)
 
 # speichern des DataFrames als csv
-combined_df.to_csv('data/cleaned data/combined_OESdata.csv', index=False)
+combined_df.to_csv('data/cleaned data/combined_OES_data.csv', index=False)
 
 # TODO: decision how to handle column 'Grade' with 3 types of values (0, typ of steel, grade location?); POSSIBLE SOLUTION. merge with column ID1
 # TODO: decision how to handle columns ID1,2,3; unnamed; columns with greater/lesser but few values (eg Ni_lesser, Ni_greater)
