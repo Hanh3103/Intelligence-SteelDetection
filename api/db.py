@@ -5,7 +5,7 @@ from sqlalchemy.orm import declarative_base, sessionmaker, Session
 from api import readConfig
 from api.models import Base
 
-url = readConfig.readConfigValue("DATABASE", "DB_URL")
+url = readConfig.read_config_value("DATABASE", "DB_URL")
 engine = create_engine(url)
 engine.connect()
 

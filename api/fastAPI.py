@@ -9,7 +9,7 @@ from passlib.context import CryptContext
 from models import User, UserInDB, Token, TokenData, UserTable, UploadedItem, UploadedItemTable
 import db as dataBase
 from sqlalchemy.orm import Session
-from api.readConfig import readConfigValue
+from api.readConfig import read_config_value
 from typing_extensions import Annotated
 
 fast_app = FastAPI()
@@ -23,9 +23,9 @@ def get_db():
         db.close()
 
 
-SECRET_KEY = readConfigValue('TOKEN', 'SECRET_KEY')
-ALGORITHM = readConfigValue('TOKEN', 'ALGORITHM')
-ACCESS_TOKEN_EXPIRE_MINUTES = int(readConfigValue('TOKEN', 'ACCESS_TOKEN_EXPIRE_MINUTES'))
+SECRET_KEY = read_config_value('TOKEN', 'SECRET_KEY')
+ALGORITHM = read_config_value('TOKEN', 'ALGORITHM')
+ACCESS_TOKEN_EXPIRE_MINUTES = int(read_config_value('TOKEN', 'ACCESS_TOKEN_EXPIRE_MINUTES'))
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 oauth_2_scheme = OAuth2PasswordBearer(tokenUrl="token")
@@ -236,8 +236,8 @@ async def upload_own_item(db: Session = Depends(get_db),
     # save the df_json locally, each user has its own folder, then save the path of the file to the database
     import os
     import json
-    from api.readConfig import readConfigValue
-    user_directory = readConfigValue("UPLOAD", "UPLOAD_FOLDER") + "/" + current_user_db.username
+    from api.readConfig import read_config_value
+    user_directory = read_config_value("UPLOAD", "UPLOAD_FOLDER") + "/" + current_user_db.username
     os.makedirs(user_directory, exist_ok=True)
 
     file_path = user_directory + "/" + file_name

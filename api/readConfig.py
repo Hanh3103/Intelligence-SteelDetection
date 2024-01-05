@@ -1,18 +1,18 @@
 import configparser
 
 
-def readConfig():
+def read_config():
     config = configparser.ConfigParser()
     config.read('config.ini')
     return config
 
 
-def readConfigSection(section):
-    config = readConfig()
+def read_config_section(section):
+    config = read_config()
     return config[section]
 
 
-def readConfigValue(section, key):
-    config = readConfig()
+def read_config_value(section, key):
+    config = read_config()
     return config[section][key]
 
