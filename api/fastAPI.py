@@ -13,6 +13,8 @@ from db.db import authenticate_user, create_access_token, check_if_user_name_uni
     get_current_active_user, get_db
 from db.dbModels import User, UserInDB, Token, UserTable, UploadedItemTable
 from utils import readConfig  # Importing a utility function for reading configuration
+from MLModels.supervised import steel_classifier
+import numpy as np
 
 # Create a FastAPI app instance
 fast_app = FastAPI()
@@ -37,18 +39,46 @@ async def process_data(dataframe_input: dict):
     df_buffer = StringIO(df_json)
     df = pd.read_json(df_buffer, orient='split')
 
-    df_json = df.to_json(orient='split')
+    # Call supervised model
+    # TODO: mode train model or prediction!
+    supervised_classifier = steel_classifier.SteelClassifier("../MLModels/supervised/test.h5",
+                                                             "../MLModels/supervised/le.pkl",
+                                                             "MLModels.supervised.supervised_test", "dlst",
+                                                             True)
+
+    response_predict = []
+    for index, row in df.iterrows():
+        instance = row.values
+        instance = np.char.mod('%s', instance)
+        instance = np.char.replace(instance, ',', '.')
+        instance = [float(i) for i in instance]
+        instance = np.array(instance).reshape(1, -1)
+        prediction = supervised_classifier.predict(instance)
+        response_predict.append(prediction[0][0])
+
+    # print(response_predict)
+
+    # df_json = df.to_json(orient='split')
 
     response_data = {
-        "input_value": dataframe_input,
-        "statistics": df_json
+        "prediction": response_predict
     }
-    return JSONResponse(content=response_data)
+    return response_data
 
 
 # Endpoint for supervised prediction
-@fast_app.post("/predict_supervised")
-async def predict_supervised(dataframe_input: dict):
+@fast_app.post("/predict/supervised")
+async def predict_supervised(dataframe_input: dict = None):
+    #TODO: save the file in the database before make the prediction
+
+    # file_name, file_path, file_size, df_data = await save_file(current_user, dataframe_input)
+    # do = await save_item_to_database(current_user, db, file_name, file_path, file_size)
+    # if do:
+    #     # convert json to dataframe
+    #     df_buffer = StringIO(df_data)
+    #     df = pd.read_json(df_buffer, orient='split')
+    #
+    #     # Call supervised model
     return await process_data(dataframe_input)
 
 
@@ -135,26 +165,45 @@ async def upload_own_item(
         current_user: UserInDB = Depends(get_current_active_user),
         data_frame: dict = None
 ):
-    current_user_db = db.query(UserTable).filter(UserTable.username == current_user.username).first()
+    file_name, file_path, file_size, df_data = await save_file(current_user, data_frame)
+    do = await save_item_to_database(current_user, db, file_name, file_path, file_size)
+    if do:
+        return {"message": "Item uploaded successfully"}
+    else:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Item could not be uploaded",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
+
+async def save_item_to_database(current_user, db, file_name, file_path, file_size):
+    try:
+        current_user_db = db.query(UserTable).filter(UserTable.username == current_user.username).first()
+        new_item = UploadedItemTable(
+            owner_id=current_user_db.id,
+            filename=file_name,
+            filesize=file_size,
+            filepath=file_path
+        )
+        db.add(new_item)
+        db.commit()
+        return True
+    except Exception as e:
+        print(e)
+        db.rollback()
+        os.remove(file_path)
+        return False
+
+
+async def save_file(current_user_db, data_frame):
     data_input = data_frame.get("dataframe_input")
     df_json = data_input.get("data")
     file_name = data_input.get("filename")
     file_size = data_input.get("filesize")
-
     user_directory = readConfig.read_config_value("UPLOAD", "UPLOAD_FOLDER") + "/" + current_user_db.username
     os.makedirs(user_directory, exist_ok=True)
-
     file_path = user_directory + "/" + file_name
     with open(file_path, "w") as file:
         json.dump(df_json, file)
-
-    new_item = UploadedItemTable(
-        owner_id=current_user_db.id,
-        filename=file_name,
-        filesize=file_size,
-        filepath=file_path
-    )
-
-    db.add(new_item)
-    db.commit()
-    return {"message": "Item uploaded successfully"}
+    return file_name, file_path, file_size, df_json

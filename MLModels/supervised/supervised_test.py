@@ -9,7 +9,7 @@ import numpy as np
 from tensorflow.keras.models import load_model
 import joblib
 
-from steel_model_interface import SteelModelInterface
+from MLModels.supervised.steel_model_interface import SteelModelInterface
 
 class dlst(SteelModelInterface):
 

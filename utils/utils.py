@@ -1,3 +1,4 @@
+import json
 from tkinter import filedialog, Tk
 from matplotlib import pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
@@ -70,43 +71,53 @@ def predict_data_from_file_unsupervised():
 
 def predict_data_from_file_supervised():
     # Function to predict data from an uploaded file in supervised mode
-    df = upload_file()
+    df, filesize, filename = upload_file()
+
+    # TODO only take the first 10 rows from the dataframe > only temporary
+    df = df.head(10)
+
+    # TODO remove the last column from the dataframe > only temporary
+    df = df.iloc[:, :-1]
 
     # Convert DataFrame to JSON
     df_json = df.to_json(orient='split')
 
     # Include the DataFrame in the request payload
-    files = {"dataframe_input": {"data": df_json}}
-    response = requests.post("http://127.0.0.1:8000/predict_supervised", json=files)
+    files = {"dataframe_input": {"data": df_json, "filesize": filesize, "filename": filename}}
+    # write files to a json file
+    with open('files.json', 'w') as outfile:
+        json.dump(files, outfile)
+
+    response = requests.post("http://127.0.0.1:8000/predict/supervised", json=files)
 
     # Process the response data
     data = response.json()
-    df2 = pd.DataFrame.from_dict(data)
-    print(df2)
+    prediction = data.get("prediction")
+    print(prediction)
 
-    # Plot the data using Matplotlib
-    plot_frame = Tk()
-    plot_frame.title("Matplotlib Plot in Tkinter")
-
-    # Assuming 'Date' is a column in your DataFrame
-    x_values = df['Date']
-    # Assuming 'Fe' is another column in your DataFrame
-    y_values = df['Fe']
-
-    # Create a Matplotlib figure
-    fig, ax = plt.subplots()
-    ax.plot(x_values, y_values, label='Fe over Date')
-    ax.set_xlabel('Date')
-    ax.set_ylabel('Fe')
-    ax.set_title('Matplotlib Plot')
-
-    # Embed the Matplotlib figure in the Tkinter window
-    canvas = FigureCanvasTkAgg(fig, master=plot_frame)
-    canvas.draw()
-    canvas.get_tk_widget().pack()
-
-    # Display the Tkinter window
-    plot_frame.mainloop()
+    # # Plot the data using Matplotlib
+    # plot_frame = Tk()
+    # plot_frame.title("Matplotlib Plot in Tkinter")
+    #
+    # # Assuming 'Date' is a column in your DataFrame
+    # x_values = df['Date']
+    # # Assuming 'Fe' is another column in your DataFrame
+    # y_values = df['Fe']
+    #
+    # # Create a Matplotlib figure
+    # fig, ax = plt.subplots()
+    # ax.plot(x_values, y_values, label='Fe over Date')
+    # ax.set_xlabel('Date')
+    # ax.set_ylabel('Fe')
+    # ax.set_title('Matplotlib Plot')
+    #
+    # # Embed the Matplotlib figure in the Tkinter window
+    # canvas = FigureCanvasTkAgg(fig, master=plot_frame)
+    # canvas.draw()
+    # canvas.get_tk_widget().pack()
+    #
+    # # Display the Tkinter window
+    # plot_frame.mainloop()
 
     # To be implemented: plot the response data to the gui
 
