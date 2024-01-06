@@ -142,7 +142,7 @@ async def read_users_me(current_user: User = Depends(get_current_active_user)):
 @fast_app.get("/users/me/items")
 async def read_own_items(
         db: Session = Depends(get_db),
-        current_user: User = Depends(get_current_active_user),
+        current_user: UserInDB = Depends(get_current_active_user),
         skip: int = 0,
         limit: int = 10
 ) -> JSONResponse:
@@ -171,11 +171,11 @@ async def read_own_items(
 @fast_app.post("/users/me/item")
 async def upload_own_item(
         db: Session = Depends(get_db),
-        current_user: User = Depends(get_current_active_user),
+        current_user: UserInDB = Depends(get_current_active_user),
         data_frame: dict = None
 ):
-    file_name, namedb, file_size, df_data = save_file(current_user, data_frame)
-    do = save_item_to_database(current_user, db, file_name, namedb, file_size)
+    file_name, namedb, file_size, df_data = await save_file(current_user, data_frame)
+    do = await save_item_to_database(current_user, db, file_name, namedb, file_size)
     if do:
         df = await convert_json_to_df(df_data)
         save_dataframe_to_database(df, namedb)
@@ -207,10 +207,10 @@ async def save_item_to_database(current_user, db, file_name, name_db, file_size)
 
 
 async def save_file(current_user_db, data_frame):
-    # data_input = data_frame.get("dataframe_input")
-    df_json = data_frame.get("data")
-    file_name = data_frame.get("filename")
-    file_size = data_frame.get("filesize")
+    data_input = data_frame.get("data_frame")
+    df_json = data_input.get("data")
+    file_name = data_input.get("filename")
+    file_size = data_input.get("filesize")
 
     # create a unique table name to save the data to the database to the current user
     namedb = current_user_db.username + "_" + file_name

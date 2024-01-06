@@ -8,7 +8,7 @@ from sqlalchemy import create_engine, MetaData, Table
 from sqlalchemy.orm import sessionmaker
 
 from api.fastAPI import *  # Importing FastAPI related components
-from db.dbModels import Base, User, UserTable, TokenData
+from db.dbModels import Base, UserInDB, UserTable, TokenData
 from utils import readConfig  # Importing a utility function for reading configuration
 
 # Read database URL from configuration
@@ -114,7 +114,7 @@ async def get_current_user(token: str = Depends(oauth2_scheme), db_session=Depen
 
 
 # Function to get the current active user
-async def get_current_active_user(current_user: User = Depends(get_current_user)):
+async def get_current_active_user(current_user: UserInDB = Depends(get_current_user)):
     if current_user.disabled:
         raise HTTPException(status_code=400, detail="Inactive user")
     return current_user

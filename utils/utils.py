@@ -31,17 +31,14 @@ def only_upload_file():
     df_json = df.to_json(orient='split')
 
     # Include the DataFrame in the request payload
-    files = {"filename": filename, "filesize": filesize, "data": df_json}
+    data = {"data_frame": {"filename": filename, "filesize": filesize, "data": df_json}}
     try:
         header = {"Authorization": f"Bearer {token_save}"}
         print(header)
-        response = requests.post(
-            "http://127.0.0.1:8000/users/me/item",
-            files={"file": (filename, df_json, "application/json")},
-            headers=header
-        )
+        response = requests.get("http://127.0.0.1:8000/users/me", headers=header)
         response.raise_for_status()
         print(response.status_code)
+        print(response.json())
     except requests.exceptions.HTTPError as err:
         raise SystemExit(err)
 
