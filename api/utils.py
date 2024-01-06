@@ -1,3 +1,4 @@
+import os
 from tkinter import filedialog, Tk
 
 import pandas as pd
@@ -10,7 +11,7 @@ def upload_file():
     file_path = filedialog.askopenfilename()
 
     filename = file_path.split('/')[-1]
-    filesize = file_path.split('/')[-2]
+    filesize = os.path.getsize(file_path)
 
     if file_path.endswith('.csv'):
         df = pd.read_csv(file_path)
@@ -22,8 +23,29 @@ def upload_file():
 
     return df, filesize, filename
 
+
+def login_user():
+    username = "hanh3"
+    password = "123456"
+
+    try:
+        response = requests.post("http://127.0.0.1:8000/token", data={"username": username, "password": password})
+        response.raise_for_status()
+
+        response_json = response.json()
+        token = response_json["access_token"]
+        token_t = response_json["token_type"]
+        global token_save
+        global token_type
+        token_save = token
+        token_type = token_t
+    except requests.exceptions.HTTPError as err:
+        raise SystemExit(err)
+
+
 def only_upload_file():
     df, filesize, filename = upload_file()
+    print(filename, filesize)
     # Convert DataFrame to JSON
     df_json = df.to_json(orient='split')
 
@@ -32,7 +54,7 @@ def only_upload_file():
     try:
         header = {"Authorization": f"Bearer {token_save}"}
         print(header)
-        response = requests.get("http://127.0.0.1:8000/users/me", headers=header)
+        response = requests.post("http://127.0.0.1:8000/users/me/item", json= data, headers=header)
         response.raise_for_status()
         print(response.status_code)
         print(response.json())

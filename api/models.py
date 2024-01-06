@@ -30,7 +30,7 @@ class UploadedItem(BaseModel):
     owner_id: int
     filename: str
     filesize: int
-    filepath: str
+    namedb: str
 
 
 class UserTable(Base):
@@ -57,7 +57,7 @@ class UploadedItemTable(Base):
     filename = Column(String)
     #filetype = Column(String)
     filesize = Column(Integer)
-    filepath = Column(String)
+    namedb = Column(String)
     owner = relationship("UserTable", back_populates="items")
 
 
