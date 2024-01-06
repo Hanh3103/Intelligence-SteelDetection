@@ -46,9 +46,17 @@ class App(ctk.CTk):
                                                          command=unsupervised)
         self.sidebar_button_unsupervised.grid(row=3, column=0, padx=20, pady=10, columnspan=2, sticky='nsew')
 
+        self.sidebar_button_unsupervised = ctk.CTkButton(self.sidebar_frame, corner_radius=8, text='registration',
+                                                         command=registration)
+        self.sidebar_button_unsupervised.grid(row=4, column=0, padx=20, pady=10, columnspan=2, sticky='nsew')
+
+        self.sidebar_button_unsupervised = ctk.CTkButton(self.sidebar_frame, corner_radius=8, text='login',
+                                                         command=login)
+        self.sidebar_button_unsupervised.grid(row=5, column=0, padx=20, pady=10, columnspan=2, sticky='nsew')
+
         # Sliders for variables in the sidebar
         self.sidebar_slider_frame = ctk.CTkFrame(self.sidebar_frame, width=140)
-        self.sidebar_slider_frame.grid(row=4, column=0, padx=20, pady=10, sticky='n')
+        self.sidebar_slider_frame.grid(row=6, column=0, padx=20, pady=10, sticky='n')
 
         self.label_var01 = ctk.CTkLabel(self.sidebar_slider_frame, text="Variable I",
                                         font=ctk.CTkFont(size=10, weight="bold"), anchor='w')
@@ -136,7 +144,7 @@ def change_darkmode(choice):
 
 # Function to upload a file
 def upload_file():
-    utils.utils.upload_file()
+    utils.utils.only_upload_file()
 
 
 # Function for supervised prediction
@@ -148,6 +156,11 @@ def supervised():
 def unsupervised():
     utils.utils.predict_data_from_file_unsupervised()
 
+def registration():
+    utils.utils.register_user()
+
+def login():
+    utils.utils.login_user()
 
 # Function to handle hover events and update the label
 def on_hover(event, scatter, text_label):

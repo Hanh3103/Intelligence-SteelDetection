@@ -5,7 +5,6 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import pandas as pd
 import requests
 
-
 def upload_file():
     # Function to upload a file using tkinter file dialog
     file_path = filedialog.askopenfilename()
@@ -24,6 +23,27 @@ def upload_file():
         return None
 
     return df, filesize, filename
+
+
+def only_upload_file():
+    df, filesize, filename = upload_file()
+    # Convert DataFrame to JSON
+    df_json = df.to_json(orient='split')
+
+    # Include the DataFrame in the request payload
+    files = {"filename": filename, "filesize": filesize, "data": df_json}
+    try:
+        header = {"Authorization": f"Bearer {token_save}"}
+        print(header)
+        response = requests.post(
+            "http://127.0.0.1:8000/users/me/item",
+            files={"file": (filename, df_json, "application/json")},
+            headers=header
+        )
+        response.raise_for_status()
+        print(response.status_code)
+    except requests.exceptions.HTTPError as err:
+        raise SystemExit(err)
 
 
 def predict_data_from_file_unsupervised():
@@ -84,7 +104,8 @@ def predict_data_from_file_supervised():
 
     # Include the DataFrame in the request payload
     files = {"dataframe_input": {"data": df_json, "filesize": filesize, "filename": filename}}
-    # write files to a json file
+
+    # write files to a json file for testing with swagger later
     with open('files.json', 'w') as outfile:
         json.dump(files, outfile)
 
@@ -134,3 +155,44 @@ def predict_data_from_database(sql_string):
     # Function to predict data from a database using an SQL statement
     print(f"Processing SQL statement: {sql_string}")
 """
+
+
+def register_user():
+    username = "hanh3"
+    full_name = "hanhNguyen"
+    email = "test3@te.de"
+    password = "123456"
+    disabled = False
+    json_data = {
+        "username": username,
+        "full_name": full_name,
+        "email": email,
+        "password": password,
+        "disabled": disabled
+    }
+
+    try:
+        response = requests.post("http://127.0.0.1:8000/registrate", json=json_data)
+        response.raise_for_status()
+        print(response.json())
+    except requests.exceptions.HTTPError as err:
+        raise SystemExit(err)
+
+
+def login_user():
+    username = "hanh3"
+    password = "123456"
+
+    try:
+        response = requests.post("http://127.0.0.1:8000/token", data={"username": username, "password": password})
+        response.raise_for_status()
+
+        response_json = response.json()
+        token = response_json["access_token"]
+        token_t = response_json["token_type"]
+        global token_save
+        global token_type
+        token_save = token
+        token_type = token_t
+    except requests.exceptions.HTTPError as err:
+        raise SystemExit(err)
