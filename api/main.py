@@ -19,7 +19,7 @@ def main():
     fastapi_thread = threading.Thread(target=run_fastapi_server)
     fastapi_thread.start()
 
-    run_tkinter_app()
+    #run_tkinter_app()
 
 if __name__ == "__main__":
     main()
