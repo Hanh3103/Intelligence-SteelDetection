@@ -15,7 +15,6 @@ from db import save_dataframe_to_database, get_dataframe_from_database
 
 fast_app = FastAPI()
 
-
 def get_db():
     db = dataBase.SessionLocal()
     try:
@@ -216,7 +215,15 @@ async def upload_own_item(
         data_frame: dict = None
 ):
     file_name, namedb, file_size, df_data = await save_file(current_user, data_frame)
-    print(file_name, namedb, file_size, df_data)
+    # check if the namedb already exists
+    item = db.query(UploadedItemTable).filter(UploadedItemTable.namedb == namedb).first()
+    if item:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Item already exists",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
     do = await save_item_to_database(current_user, db, file_name, namedb, file_size)
     if do:
         df = await convert_json_to_df(df_data)
@@ -225,7 +232,7 @@ async def upload_own_item(
     else:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Item could not be uploaded",
+            detail="Item could not be uploaded successfully due to an error in the database",
             headers={"WWW-Authenticate": "Bearer"},
         )
 
@@ -269,20 +276,27 @@ async def read_own_items(
     items = db.query(UploadedItemTable).filter(UploadedItemTable.owner_id == current_user_db.id).offset(skip).limit(
         limit).all()
 
+    if not items:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="No items found",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
     # get all tables from the database with the same name as the items
-    list_tables = []
+    dict_tables = {}
     for item in items:
         table = get_dataframe_from_database(item.namedb)
-        list_tables.append(table)
+        dict_tables[item.namedb] = table
 
     # convert the tables to json
-    list_json = []
-    for table in list_tables:
+    dict_json = {}
+    for name, table in dict_tables.items():
         table_json = table.to_json(orient='split')
-        list_json.append(table_json)
+        dict_json[name] = table_json
 
     # create a json response
-    response = JSONResponse(content=list_json)
+    response = JSONResponse(content=dict_json)
     return response
 
 # @fast_app.get("/users/me/items")
