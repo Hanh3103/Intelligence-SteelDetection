@@ -254,15 +254,36 @@ async def save_file(current_user_db, data_frame):
     file_name = data_input.get("filename")
     file_size = data_input.get("filesize")
 
-    # create a unique table name to save the data to the database to the current user
     namedb = current_user_db.username + "_" + file_name
-
-    # user_directory = readConfig.read_config_value("UPLOAD", "UPLOAD_FOLDER") + "/" + current_user_db.username
-    # os.makedirs(user_directory, exist_ok=True)
-    # file_path = user_directory + "/" + file_name
-    # with open(file_path, "w") as file:
-    #     json.dump(df_json, file)
     return file_name, namedb, file_size, df_json
+
+
+@fast_app.get("/users/me/items")
+async def read_own_items(
+        db: Session = Depends(get_db),
+        current_user: UserInDB = Depends(get_current_active_user),
+        skip: int = 0,
+        limit: int = 10
+) -> JSONResponse:
+    current_user_db = db.query(UserTable).filter(UserTable.username == current_user.username).first()
+    items = db.query(UploadedItemTable).filter(UploadedItemTable.owner_id == current_user_db.id).offset(skip).limit(
+        limit).all()
+
+    # get all tables from the database with the same name as the items
+    list_tables = []
+    for item in items:
+        table = get_dataframe_from_database(item.namedb)
+        list_tables.append(table)
+
+    # convert the tables to json
+    list_json = []
+    for table in list_tables:
+        table_json = table.to_json(orient='split')
+        list_json.append(table_json)
+
+    # create a json response
+    response = JSONResponse(content=list_json)
+    return response
 
 # @fast_app.get("/users/me/items")
 # async def read_own_items(db: Session = Depends(get_db),

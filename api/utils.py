@@ -1,4 +1,6 @@
+import json
 import os
+from io import StringIO
 from tkinter import filedialog, Tk
 
 import pandas as pd
@@ -54,7 +56,7 @@ def only_upload_file():
     try:
         header = {"Authorization": f"Bearer {token_save}"}
         print(header)
-        response = requests.post("http://127.0.0.1:8000/users/me/item", json= data, headers=header)
+        response = requests.post("http://127.0.0.1:8000/users/me/item", json=data, headers=header)
         response.raise_for_status()
         print(response.status_code)
         print(response.json())
@@ -152,3 +154,22 @@ def open_sql_dialog():
 def predict_data_from_database(sql_string):
     print(f"Processing SQL statement: {sql_string}")
 """
+
+
+def get_all_items():
+    try:
+        header = {"Authorization": f"Bearer {token_save}"}
+        response = requests.get("http://127.0.0.1:8000/users/me/items", headers=header)
+        response.raise_for_status()
+
+        list_items = json.loads(response.content)
+
+        # turn into list of dataframes
+        list_df = []
+        for i, item in enumerate(list_items):
+            df = pd.read_json(StringIO(item), orient='split')
+            list_df.append(df)
+
+        print(list_df)
+    except requests.exceptions.HTTPError as err:
+        raise SystemExit(err)

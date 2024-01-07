@@ -47,8 +47,12 @@ class App(ctk.CTk):
                                                          command=login)
         self.sidebar_button_unsupervised.grid(row=4, column=0, padx=20, pady=10, columnspan=2, sticky='nsew')
 
+        self.sidebar_button_unsupervised = ctk.CTkButton(self.sidebar_frame, corner_radius=8, text='Get Items',
+                                                         command=get_all_items)
+        self.sidebar_button_unsupervised.grid(row=5, column=0, padx=20, pady=10, columnspan=2, sticky='nsew')
+
         self.sidebar_slider_frame = ctk.CTkFrame(self.sidebar_frame, width=140)
-        self.sidebar_slider_frame.grid(row=5, column=0, padx=20, pady=10, sticky='n')
+        self.sidebar_slider_frame.grid(row=6, column=0, padx=20, pady=10, sticky='n')
 
         self.label_var01 = ctk.CTkLabel(self.sidebar_slider_frame, text="Variable I",
                                         font=ctk.CTkFont(size=10, weight="bold"), anchor='w')
@@ -141,6 +145,9 @@ def unsupervised():
 
 def login():
     utils.login_user()
+
+def get_all_items():
+    utils.get_all_items()
 
 
 def on_hover(event, scatter, text_label):
