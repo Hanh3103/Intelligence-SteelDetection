@@ -28,6 +28,28 @@ def upload_file():
     return df, filesize, filename
 
 
+def register_user():
+    username = "hanh3"
+    full_name = "hanhNguyen"
+    email = "test3@te.de"
+    password = "123456"
+    disabled = False
+    json_data = {
+        "username": username,
+        "full_name": full_name,
+        "email": email,
+        "password": password,
+        "disabled": disabled
+    }
+
+    try:
+        response = requests.post("http://127.0.0.1:8000/registrate", json=json_data)
+        response.raise_for_status()
+        print(response.json())
+    except requests.exceptions.HTTPError as err:
+        raise SystemExit(err)
+
+
 def login_user():
     username = "hanh3"
     password = "123456"
@@ -74,7 +96,7 @@ def predict_data_from_file_unsupervised():
 
     # Include the DataFrame in the request payload
     files = {"dataframe_input": {"data": df_json, "filesize": filesize, "filename": filename}}
-    response = requests.post("http://127.0.0.1:8000/predict_supervised", json=files)
+    response = requests.post("http://127.0.0.1:8000/predict/unsupervised", json=files)
 
     data = response.json()
     df2 = pd.DataFrame.from_dict(data)
@@ -84,18 +106,31 @@ def predict_data_from_file_unsupervised():
 
 
 def predict_data_from_file_supervised():
-    df = upload_file()
+    # Function to predict data from an uploaded file in supervised mode
+    df, filesize, filename = upload_file()
 
+    # TODO only take the first 10 rows from the dataframe > only temporary
+    df = df.head(10)
+
+    # TODO remove the last column from the dataframe > only temporary
+    df = df.iloc[:, :-1]
+
+    # Convert DataFrame to JSON
     df_json = df.to_json(orient='split')
 
     # Include the DataFrame in the request payload
-    files = {"dataframe_input": {"data": df_json}}
-    response = requests.post("http://127.0.0.1:8000/predict_supervised", json=files)
+    files = {"dataframe_input": {"data": df_json, "filesize": filesize, "filename": filename}}
 
+    # write files to a json file for testing with swagger later
+    with open('files.json', 'w') as outfile:
+        json.dump(files, outfile)
+
+    response = requests.post("http://127.0.0.1:8000/predict/supervised", json=files)
+
+    # Process the response data
     data = response.json()
-    df2 = pd.DataFrame.from_dict(data)
-    print(df2)
-
+    prediction = data.get("prediction")
+    print(prediction)
     # To be implemented: plot the response data to gui
 
 
@@ -121,5 +156,5 @@ def get_all_items():
         raise SystemExit(err)
 
 
-def show_dataframes(dict_dataframes): # show dataframes in gui but not elegant!
+def show_dataframes(dict_dataframes):  # show dataframes in gui but not elegant!
     show(**dict_dataframes)

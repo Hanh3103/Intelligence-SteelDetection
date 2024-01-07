@@ -1,19 +1,22 @@
 from io import StringIO
 import pandas as pd
 from fastapi.responses import JSONResponse
-from fastapi import FastAPI, File, Depends, HTTPException, status
+from fastapi import FastAPI, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from datetime import datetime, timedelta
 from jose import jwt, JWTError
 from passlib.context import CryptContext
-from models import User, UserInDB, Token, TokenData, UserTable, UploadedItem, UploadedItemTable
+from models import User, UserInDB, Token, TokenData, UserTable, UploadedItemTable
 import db as dataBase
 from sqlalchemy.orm import Session
 from api.readConfig import read_config_value
 from typing_extensions import Annotated
 from db import save_dataframe_to_database, get_dataframe_from_database
+from MLModels.supervised import steel_classifier
+import numpy as np
 
 fast_app = FastAPI()
+
 
 def get_db():
     db = dataBase.SessionLocal()
@@ -36,29 +39,6 @@ async def root():
     return {"message": "Hello World"}
 
 
-@fast_app.post("/predict_supervised")
-async def process_data(dataframe_input: dict):
-    data_input = dataframe_input.get("dataframe_input")
-    df_json = data_input.get("data")
-
-    df = await convert_json_to_df(df_json)
-
-    # save the dataframe into the database
-    dataBase.save_dataframe_to_database(df, "OESdata")
-
-    df_json = df.to_json(orient='split')
-
-    response_data = {
-        "input_value": dataframe_input,
-        "statistics": df_json
-    }
-    return JSONResponse(content=response_data)
-
-    # 1.) To be implemented: ML Algorithm on Dataframe
-
-    # 2.) To be implemented: return result form Algorithm
-
-
 async def convert_json_to_df(df_json):
     # Verwende StringIO, um die JSON-Zeichenfolge zu einem Datei-ähnlichen Puffer zu machen
     df_buffer = StringIO(df_json)
@@ -67,8 +47,44 @@ async def convert_json_to_df(df_json):
     return df
 
 
-@fast_app.post("/predict_unsupervised")
 async def process_data(dataframe_input: dict):
+    data_input = dataframe_input.get("dataframe_input")
+    df_json = data_input.get("data")
+
+    df = await convert_json_to_df(df_json)
+
+    # Call supervised model
+    # TODO: mode train model or prediction!
+    supervised_classifier = steel_classifier.SteelClassifier("../MLModels/supervised/test.h5",
+                                                             "../MLModels/supervised/le.pkl",
+                                                             "MLModels.supervised.supervised_test", "dlst",
+                                                             True)
+
+    response_predict = []
+    for index, row in df.iterrows():
+        instance = row.values
+        instance = np.char.mod('%s', instance)
+        instance = np.char.replace(instance, ',', '.')
+        instance = [float(i) for i in instance]
+        instance = np.array(instance).reshape(1, -1)
+        prediction = supervised_classifier.predict(instance)
+        response_predict.append(prediction[0][0])
+
+    # df_json = df.to_json(orient='split')
+
+    response_data = {
+        "prediction": response_predict
+    }
+    return response_data
+
+
+@fast_app.post("/predict/supervised")
+async def predict_from_file_supervised(dataframe_input: dict):
+    return await process_data(dataframe_input)
+
+
+@fast_app.post("/predict/unsupervised")
+async def predict_from_file_unsupervised(dataframe_input: dict):
     data_input = dataframe_input.get("dataframe_input")
     df_json = data_input.get("data")
 

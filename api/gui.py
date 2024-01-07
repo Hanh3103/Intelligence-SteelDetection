@@ -43,16 +43,20 @@ class App(ctk.CTk):
                                                          command=unsupervised)
         self.sidebar_button_unsupervised.grid(row=3, column=0, padx=20, pady=10, columnspan=2, sticky='nsew')
 
+        self.sidebar_button_unsupervised = ctk.CTkButton(self.sidebar_frame, corner_radius=8, text='Registration',
+                                                         command=registration)
+        self.sidebar_button_unsupervised.grid(row=4, column=0, padx=20, pady=10, columnspan=2, sticky='nsew')
+
         self.sidebar_button_unsupervised = ctk.CTkButton(self.sidebar_frame, corner_radius=8, text='login',
                                                          command=login)
-        self.sidebar_button_unsupervised.grid(row=4, column=0, padx=20, pady=10, columnspan=2, sticky='nsew')
+        self.sidebar_button_unsupervised.grid(row=5, column=0, padx=20, pady=10, columnspan=2, sticky='nsew')
 
         self.sidebar_button_unsupervised = ctk.CTkButton(self.sidebar_frame, corner_radius=8, text='Get Items',
                                                          command=get_all_items)
-        self.sidebar_button_unsupervised.grid(row=5, column=0, padx=20, pady=10, columnspan=2, sticky='nsew')
+        self.sidebar_button_unsupervised.grid(row=6, column=0, padx=20, pady=10, columnspan=2, sticky='nsew')
 
         self.sidebar_slider_frame = ctk.CTkFrame(self.sidebar_frame, width=140)
-        self.sidebar_slider_frame.grid(row=6, column=0, padx=20, pady=10, sticky='n')
+        self.sidebar_slider_frame.grid(row=7, column=0, padx=20, pady=10, sticky='n')
 
         self.label_var01 = ctk.CTkLabel(self.sidebar_slider_frame, text="Variable I",
                                         font=ctk.CTkFont(size=10, weight="bold"), anchor='w')
@@ -143,11 +147,17 @@ def supervised():
 def unsupervised():
     utils.predict_data_from_file_unsupervised()
 
+
 def login():
     utils.login_user()
 
+
 def get_all_items():
     utils.get_all_items()
+
+
+def registration():
+    utils.register_user()
 
 
 def on_hover(event, scatter, text_label):
@@ -157,5 +167,3 @@ def on_hover(event, scatter, text_label):
         # Größe im Textlabel anzeigen
         size_of_hovered_point = scatter.get_sizes()[ind]
         text_label.set(f"Größe des  Punktes: {round(size_of_hovered_point, 2)}")
-
-

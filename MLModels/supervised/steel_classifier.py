@@ -36,10 +36,10 @@ class SteelClassifier:
 
 
 
-my_classifier = SteelClassifier("test.h5", 'le.pkl', "supervised_test", "dlst", True)
-test_data = [0.206166666666667, 0.241833333333333, 0.568666666666667, 0.0169166666666667, 0.0336666666666667,
-             0.00798333333333333, 0.0506333333333333, 0.00323333333333333, 0.202666666666667
-             ]
-test_data = np.array(test_data).reshape(1, -1)
-print(my_classifier.predict(test_data))
-#my_classifier.save_model('test.h5', 'le.pkl')
+# my_classifier = SteelClassifier("test.h5", 'le.pkl', "supervised_test", "dlst", True)
+# test_data = [0.206166666666667, 0.241833333333333, 0.568666666666667, 0.0169166666666667, 0.0336666666666667,
+#              0.00798333333333333, 0.0506333333333333, 0.00323333333333333, 0.202666666666667
+#              ]
+# test_data = np.array(test_data).reshape(1, -1)
+# print(my_classifier.predict(test_data))
+# #my_classifier.save_model('test.h5', 'le.pkl')
