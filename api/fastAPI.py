@@ -9,13 +9,17 @@ from fastapi.responses import JSONResponse
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 
+from ML_Models.supervised import steel_classifier, supervised_test
 from db.db import authenticate_user, create_access_token, check_if_user_name_unique, get_password_hash, \
     get_current_active_user, get_db
 from db.dbModels import User, UserInDB, Token, UserTable, UploadedItemTable
 from utils import readConfig  # Importing a utility function for reading configuration
 
+
 # Create a FastAPI app instance
 fast_app = FastAPI()
+classifier = steel_classifier.my_classifier
+test_data = steel_classifier.test_data
 
 # Read configuration values
 SECRET_KEY = readConfig.read_config_value('TOKEN', 'SECRET_KEY')
@@ -31,6 +35,21 @@ async def root():
 
 # Common function to process data
 async def process_data(dataframe_input: dict):
+    data_input = test_data
+    df_json = data_input.get("data")
+
+    df_buffer = StringIO(df_json)
+    df = pd.read_json(df_buffer, orient='split')
+
+    df_json = df.to_json(orient='split')
+
+    response_data = {
+        "input_value": dataframe_input,
+        "statistics": df_json
+    }
+    return JSONResponse(content=response_data)
+
+async def process_data2(dataframe_input: dict):
     data_input = dataframe_input.get("dataframe_input")
     df_json = data_input.get("data")
 
@@ -141,7 +160,7 @@ async def upload_own_item(
     file_name = data_input.get("filename")
     file_size = data_input.get("filesize")
 
-    user_directory = read_config_value("UPLOAD", "UPLOAD_FOLDER") + "/" + current_user_db.username
+    user_directory = readConfig.read_config_value("UPLOAD", "UPLOAD_FOLDER") + "/" + current_user_db.username
     os.makedirs(user_directory, exist_ok=True)
 
     file_path = user_directory + "/" + file_name
