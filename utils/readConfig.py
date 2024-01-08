@@ -5,7 +5,7 @@ def read_config():
     # Function to read the entire configuration from 'config.ini'
     config = configparser.ConfigParser()
     try:
-        config.read('../resources/config.ini')
+        config.read('./resources/config.ini')
     except configparser.Error as e:
         print(f"Error reading 'config.ini': {e}")
         # You can choose to raise an exception or return a default configuration here
