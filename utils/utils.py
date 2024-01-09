@@ -5,6 +5,7 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import pandas as pd
 import requests
 
+
 def upload_file():
     # Function to upload a file using tkinter file dialog
     file_path = filedialog.askopenfilename()

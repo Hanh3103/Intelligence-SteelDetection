@@ -2,7 +2,7 @@ import threading
 import uvicorn
 
 from api.fastAPI import fast_app
-from GUI.gui import App
+from gui.gui import App
 
 
 def run_fastapi_server():
