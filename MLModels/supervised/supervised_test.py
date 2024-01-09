@@ -73,7 +73,7 @@ class dlst(SteelModelInterface):
         # self.model.fit(new_data, new_labels, epochs=100, batch_size=32)
         pass
 
-    def test(self):
+    def test_model(self):
         # Modell evaluieren
         loss, accuracy = self.model.evaluate(self.X_test, self.y_test)
         print(f'Loss: {loss}, Accuracy: {accuracy}')

@@ -32,7 +32,7 @@ class SteelClassifier:
         self.model.retrain(file_name)
 
     def test_model(self):
-        self.model.test()
+        self.model.test_model()
 
 
 
