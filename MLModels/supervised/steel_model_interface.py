@@ -18,6 +18,3 @@ class SteelModelInterface:
 
     def load_model(self, path_model, path_encoder):
         pass
-
-    def retrain_model(self, newdata_file):
-        pass
