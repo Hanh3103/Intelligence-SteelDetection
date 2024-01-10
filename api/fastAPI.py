@@ -133,36 +133,6 @@ async def create_user(new_user: UserInDB, db: Session = Depends(get_db)):
 async def read_users_me(current_user: User = Depends(get_current_user)):
     return current_user
 
-
-# Endpoint to get items owned by the current user
-@fast_app.get("/users/me/items")
-async def read_own_items(
-        db: Session = Depends(get_db),
-        current_user: UserInDB = Depends(get_current_active_user),
-        skip: int = 0,
-        limit: int = 10
-) -> JSONResponse:
-    current_user_db = db.query(UserTable).filter(UserTable.username == current_user.username).first()
-    items = db.query(UploadedItemTable).filter(UploadedItemTable.owner_id == current_user_db.id).offset(skip).limit(
-        limit).all()
-
-    # get all tables from the database with the same name as the items
-    list_tables = []
-    for item in items:
-        table = get_dataframe_from_database(item.namedb)
-        list_tables.append(table)
-
-    # convert the tables to json
-    list_json = []
-    for table in list_tables:
-        table_json = table.to_json(orient='split')
-        list_json.append(table_json)
-
-    # create a json response
-    response = JSONResponse(content=list_json)
-    return response
-
-
 # Endpoint to upload an item for the current user
 @fast_app.post("/users/me/item")
 async def upload_own_item(
@@ -171,6 +141,15 @@ async def upload_own_item(
         data_frame: dict = None
 ):
     file_name, namedb, file_size, df_data = await save_file(current_user, data_frame)
+    # check if the namedb already exists
+    item = db.query(UploadedItemTable).filter(UploadedItemTable.namedb == namedb).first()
+    if item:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Item already exists",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
     do = await save_item_to_database(current_user, db, file_name, namedb, file_size)
     if do:
         df = await convert_json_to_df(df_data)
@@ -179,7 +158,7 @@ async def upload_own_item(
     else:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Item could not be uploaded",
+            detail="Item could not be uploaded successfully due to an error in the database",
             headers={"WWW-Authenticate": "Bearer"},
         )
 
@@ -208,12 +187,44 @@ async def save_file(current_user_db, data_frame):
     file_name = data_input.get("filename")
     file_size = data_input.get("filesize")
 
-    # create a unique table name to save the data to the database to the current user
     namedb = current_user_db.username + "_" + file_name
-
-    # user_directory = readConfig.read_config_value("UPLOAD", "UPLOAD_FOLDER") + "/" + current_user_db.username
-    # os.makedirs(user_directory, exist_ok=True)
-    # file_path = user_directory + "/" + file_name
-    # with open(file_path, "w") as file:
-    #     json.dump(df_json, file)
     return file_name, namedb, file_size, df_json
+
+
+# Endpoint to delete an item owned by the current user
+@fast_app.get("/users/me/items")
+async def read_own_items(
+        db: Session = Depends(get_db),
+        current_user: UserInDB = Depends(get_current_active_user),
+        skip: int = 0,
+        limit: int = 10
+) -> JSONResponse:
+    current_user_db = db.query(UserTable).filter(UserTable.username == current_user.username).first()
+    items = db.query(UploadedItemTable).filter(UploadedItemTable.owner_id == current_user_db.id).offset(skip).limit(
+        limit).all()
+
+    if not items:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="No items found",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
+    # get all tables from the database with the same name as the items
+    dict_tables = {}
+    for item in items:
+        table = get_dataframe_from_database(item.namedb)
+        dict_tables[item.namedb] = table
+
+    # convert the tables to json
+    list_json = []
+    for name, table in dict_tables.items():
+        table_dict_one = {}
+        table_json = table.to_json(orient='split')
+        table_dict_one["name"] = name
+        table_dict_one["data"] = table_json
+        list_json.append(table_dict_one)
+
+    # create a json response
+    response = JSONResponse(content=list_json)
+    return response

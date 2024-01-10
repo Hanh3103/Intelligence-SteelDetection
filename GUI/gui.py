@@ -1,6 +1,4 @@
 import tkinter as tk
-from tkinter import messagebox
-
 import customtkinter as ctk
 import matplotlib.pyplot as plt
 import numpy as np
@@ -150,7 +148,7 @@ class App(ctk.CTk):
 
         # Sliders for variables in the sidebar
         self.sidebar_slider_frame = ctk.CTkFrame(self.sidebar_frame, width=140)
-        self.sidebar_slider_frame.grid(row=6, column=0, padx=20, pady=10, sticky='n')
+        self.sidebar_slider_frame.grid(row=7, column=0, padx=20, pady=10, sticky='n')
 
         self.label_var01 = ctk.CTkLabel(self.sidebar_slider_frame, text="Variable I",
                                         font=ctk.CTkFont(size=10, weight="bold"), anchor='w')
@@ -251,6 +249,9 @@ def unsupervised():
     utils.utils.predict_data_from_file_unsupervised()
 
 
+
+def get_user_items():
+    utils.utils.get_all_items()
 
 # Function to handle hover events and update the label
 def on_hover(event, scatter, text_label):
