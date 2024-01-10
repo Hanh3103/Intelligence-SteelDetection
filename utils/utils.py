@@ -166,13 +166,15 @@ def get_all_items():
         if response.status_code == 401:
             print(response.json().get("detail"))
 
-        list_items = response.json()
+        list_json = json.loads(response.content)
 
         # turn into list of dataframes
         dict_dataframes = {}
-        for name, table_json in list_items.items():
-            table = pd.read_json(StringIO(table_json), orient='split')
-            dict_dataframes[name] = table
+        for item in list_json:
+            name = item["name"]
+            data = item["data"]
+            df = pd.read_json(StringIO(data), orient='split')
+            dict_dataframes[name] = df
 
         show_dataframes(dict_dataframes)
 

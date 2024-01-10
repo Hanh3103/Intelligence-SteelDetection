@@ -134,36 +134,6 @@ async def create_user(new_user: UserInDB, db: Session = Depends(get_db)):
 async def read_users_me(current_user: User = Depends(get_current_user)):
     return current_user
 
-
-# Endpoint to get items owned by the current user
-@fast_app.get("/users/me/items")
-async def read_own_items(
-        db: Session = Depends(get_db),
-        current_user: UserInDB = Depends(get_current_active_user),
-        skip: int = 0,
-        limit: int = 10
-) -> JSONResponse:
-    current_user_db = db.query(UserTable).filter(UserTable.username == current_user.username).first()
-    items = db.query(UploadedItemTable).filter(UploadedItemTable.owner_id == current_user_db.id).offset(skip).limit(
-        limit).all()
-
-    # get all tables from the database with the same name as the items
-    list_tables = []
-    for item in items:
-        table = get_dataframe_from_database(item.namedb)
-        list_tables.append(table)
-
-    # convert the tables to json
-    list_json = []
-    for table in list_tables:
-        table_json = table.to_json(orient='split')
-        list_json.append(table_json)
-
-    # create a json response
-    response = JSONResponse(content=list_json)
-    return response
-
-
 # Endpoint to upload an item for the current user
 @fast_app.post("/users/me/item")
 async def upload_own_item(
@@ -248,11 +218,14 @@ async def read_own_items(
         dict_tables[item.namedb] = table
 
     # convert the tables to json
-    dict_json = {}
+    list_json = []
     for name, table in dict_tables.items():
+        table_dict_one = {}
         table_json = table.to_json(orient='split')
-        dict_json[name] = table_json
+        table_dict_one["name"] = name
+        table_dict_one["data"] = table_json
+        list_json.append(table_dict_one)
 
     # create a json response
-    response = JSONResponse(content=dict_json)
+    response = JSONResponse(content=list_json)
     return response
