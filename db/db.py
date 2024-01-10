@@ -14,7 +14,6 @@ from utils import readConfig  # Importing a utility function for reading configu
 # Read database URL from configuration
 url = readConfig.read_config_value("DATABASE", "DB_URL")
 
-
 # Create a database engine
 engine = create_engine(url, pool_pre_ping=True)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
@@ -34,12 +33,13 @@ ALGORITHM = readConfig.read_config_value('TOKEN', 'ALGORITHM')
 ACCESS_TOKEN_EXPIRE_MINUTES = int(readConfig.read_config_value('TOKEN', 'ACCESS_TOKEN_EXPIRE_MINUTES'))
 
 
-def get_db():
+def get_db() -> Session:
     db = SessionLocal()
     try:
         yield db
     finally:
         db.close()
+    return db
 
 
 # Function to save a DataFrame to a PostgreSQL table
@@ -91,7 +91,7 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
 
 
 # Function to get the current user based on the JWT token
-async def get_current_user(token: str = Depends(oauth2_scheme), db_session=Depends(SessionLocal)):
+async def get_current_user(token: str = Depends(oauth2_scheme), db_session: Session = Depends(get_db)):
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
@@ -99,6 +99,7 @@ async def get_current_user(token: str = Depends(oauth2_scheme), db_session=Depen
     )
 
     try:
+        # Your JWT decoding logic
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         username: str = payload.get("sub")
         if username is None:
@@ -107,10 +108,12 @@ async def get_current_user(token: str = Depends(oauth2_scheme), db_session=Depen
     except JWTError:
         raise credentials_exception
 
-    user = get_user(token_data.username, db_session)
-    if user is None:
+    # Assuming get_user returns a dictionary with the expected structure
+    user_dict = get_user(token_data.username, db_session)
+    if user_dict is None:
         raise credentials_exception
-    return user
+
+    return user_dict
 
 
 # Function to get the current active user

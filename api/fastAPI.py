@@ -1,21 +1,19 @@
 from datetime import timedelta
 from io import StringIO
-import os
-import json
 
+import numpy as np
 import pandas as pd
 from fastapi import FastAPI, Depends, HTTPException, status
-from fastapi.responses import JSONResponse
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 from starlette.responses import JSONResponse
 
-from db.db import authenticate_user, create_access_token, check_if_user_name_unique, get_password_hash, \
-    get_current_active_user, get_db, save_dataframe_to_database, get_dataframe_from_database
-from db.dbModels import User, UserInDB, Token, UserTable, UploadedItemTable, UploadedItem
-from utils import readConfig  # Importing a utility function for reading configuration
 from MLModels.supervised import steel_classifier
-import numpy as np
+from db.db import authenticate_user, create_access_token, check_if_user_name_unique, get_password_hash, \
+    get_current_active_user, get_db, save_dataframe_to_database, get_dataframe_from_database, oauth2_scheme, \
+    get_current_user
+from db.dbModels import User, UserInDB, Token, UserTable, UploadedItemTable
+from utils import readConfig  # Importing a utility function for reading configuration
 
 # Create a FastAPI app instance
 fast_app = FastAPI()
@@ -24,7 +22,7 @@ fast_app = FastAPI()
 SECRET_KEY = readConfig.read_config_value('TOKEN', 'SECRET_KEY')
 ALGORITHM = readConfig.read_config_value('TOKEN', 'ALGORITHM')
 ACCESS_TOKEN_EXPIRE_MINUTES = int(readConfig.read_config_value('TOKEN', 'ACCESS_TOKEN_EXPIRE_MINUTES'))
-
+Session = get_db()
 
 # Root endpoint
 @fast_app.get("/")
@@ -132,9 +130,9 @@ async def create_user(new_user: UserInDB, db: Session = Depends(get_db)):
         )
 
 
-# Endpoint to get information about the current user
+# Endpoint to get current user
 @fast_app.get("/users/me", response_model=User)
-async def read_users_me(current_user: User = Depends(get_current_active_user)):
+async def read_users_me(current_user: User = Depends(get_current_user)):
     return current_user
 
 
