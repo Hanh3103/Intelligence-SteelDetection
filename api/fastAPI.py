@@ -10,8 +10,7 @@ from starlette.responses import JSONResponse
 
 from MLModels.supervised import steel_classifier
 from db.db import authenticate_user, create_access_token, check_if_user_name_unique, get_password_hash, \
-    get_current_active_user, get_db, save_dataframe_to_database, get_dataframe_from_database, oauth2_scheme, \
-    get_current_user
+    get_current_active_user, get_db, save_dataframe_to_database, get_dataframe_from_database, get_current_user
 from db.dbModels import User, UserInDB, Token, UserTable, UploadedItemTable
 from utils import readConfig  # Importing a utility function for reading configuration
 
@@ -22,7 +21,7 @@ fast_app = FastAPI()
 SECRET_KEY = readConfig.read_config_value('TOKEN', 'SECRET_KEY')
 ALGORITHM = readConfig.read_config_value('TOKEN', 'ALGORITHM')
 ACCESS_TOKEN_EXPIRE_MINUTES = int(readConfig.read_config_value('TOKEN', 'ACCESS_TOKEN_EXPIRE_MINUTES'))
-Session = get_db()
+
 
 # Root endpoint
 @fast_app.get("/")

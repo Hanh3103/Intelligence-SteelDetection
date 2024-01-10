@@ -39,7 +39,6 @@ def get_db() -> Session:
         yield db
     finally:
         db.close()
-    return db
 
 
 # Function to save a DataFrame to a PostgreSQL table
