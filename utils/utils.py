@@ -35,13 +35,15 @@ def only_upload_file():
     data = {"data_frame": {"filename": filename, "filesize": filesize, "data": df_json}}
     try:
         header = {"Authorization": f"Bearer {token_save}"}
-        print(header)
-        response = requests.get("http://127.0.0.1:8000/users/me", headers=header)
-        response.raise_for_status()
-        print(response.status_code)
-        print(response.json())
+        response = requests.post("http://127.0.0.1:8000/users/me/item", json=data, headers=header)
+
+        if response.status_code == 401:
+            print(response.json().get("detail"))
+
     except requests.exceptions.HTTPError as err:
-        raise SystemExit(err)
+        print(err)
+    except requests.exceptions.ConnectionError as err:
+        print(err)
 
 
 def predict_data_from_file_unsupervised():

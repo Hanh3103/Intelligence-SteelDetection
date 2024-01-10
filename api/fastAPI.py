@@ -172,6 +172,15 @@ async def upload_own_item(
         data_frame: dict = None
 ):
     file_name, namedb, file_size, df_data = await save_file(current_user, data_frame)
+    # check if the namedb already exists
+    item = db.query(UploadedItemTable).filter(UploadedItemTable.namedb == namedb).first()
+    if item:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Item already exists",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
     do = await save_item_to_database(current_user, db, file_name, namedb, file_size)
     if do:
         df = await convert_json_to_df(df_data)
@@ -180,7 +189,7 @@ async def upload_own_item(
     else:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Item could not be uploaded",
+            detail="Item could not be uploaded successfully due to an error in the database",
             headers={"WWW-Authenticate": "Bearer"},
         )
 
@@ -209,12 +218,5 @@ async def save_file(current_user_db, data_frame):
     file_name = data_input.get("filename")
     file_size = data_input.get("filesize")
 
-    # create a unique table name to save the data to the database to the current user
     namedb = current_user_db.username + "_" + file_name
-
-    # user_directory = readConfig.read_config_value("UPLOAD", "UPLOAD_FOLDER") + "/" + current_user_db.username
-    # os.makedirs(user_directory, exist_ok=True)
-    # file_path = user_directory + "/" + file_name
-    # with open(file_path, "w") as file:
-    #     json.dump(df_json, file)
     return file_name, namedb, file_size, df_json
