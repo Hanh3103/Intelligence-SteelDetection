@@ -147,13 +147,6 @@ class App(ctk.CTk):
                                                          command=unsupervised)
         self.sidebar_button_unsupervised.grid(row=3, column=0, padx=20, pady=10, columnspan=2, sticky='nsew')
 
-        self.sidebar_button_unsupervised = ctk.CTkButton(self.sidebar_frame, corner_radius=8, text='registration',
-                                                         command=registration)
-        self.sidebar_button_unsupervised.grid(row=4, column=0, padx=20, pady=10, columnspan=2, sticky='nsew')
-
-        self.sidebar_button_unsupervised = ctk.CTkButton(self.sidebar_frame, corner_radius=8, text='login',
-                                                         command=login)
-        self.sidebar_button_unsupervised.grid(row=5, column=0, padx=20, pady=10, columnspan=2, sticky='nsew')
 
         # Sliders for variables in the sidebar
         self.sidebar_slider_frame = ctk.CTkFrame(self.sidebar_frame, width=140)
@@ -257,13 +250,6 @@ def supervised():
 def unsupervised():
     utils.utils.predict_data_from_file_unsupervised()
 
-
-def registration():
-    utils.utils.register_user()
-
-
-def login():
-    utils.utils.login_user()
 
 
 # Function to handle hover events and update the label
