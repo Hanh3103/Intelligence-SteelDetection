@@ -220,3 +220,39 @@ async def save_file(current_user_db, data_frame):
 
     namedb = current_user_db.username + "_" + file_name
     return file_name, namedb, file_size, df_json
+
+
+# Endpoint to delete an item owned by the current user
+@fast_app.get("/users/me/items")
+async def read_own_items(
+        db: Session = Depends(get_db),
+        current_user: UserInDB = Depends(get_current_active_user),
+        skip: int = 0,
+        limit: int = 10
+) -> JSONResponse:
+    current_user_db = db.query(UserTable).filter(UserTable.username == current_user.username).first()
+    items = db.query(UploadedItemTable).filter(UploadedItemTable.owner_id == current_user_db.id).offset(skip).limit(
+        limit).all()
+
+    if not items:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="No items found",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
+    # get all tables from the database with the same name as the items
+    dict_tables = {}
+    for item in items:
+        table = get_dataframe_from_database(item.namedb)
+        dict_tables[item.namedb] = table
+
+    # convert the tables to json
+    dict_json = {}
+    for name, table in dict_tables.items():
+        table_json = table.to_json(orient='split')
+        dict_json[name] = table_json
+
+    # create a json response
+    response = JSONResponse(content=dict_json)
+    return response

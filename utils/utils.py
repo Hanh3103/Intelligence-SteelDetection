@@ -1,20 +1,20 @@
 import json
+import os
+from io import StringIO
 from tkinter import filedialog, Tk
 from matplotlib import pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import pandas as pd
 import requests
+from pandasgui import show
 
 
 def upload_file():
-    # Function to upload a file using tkinter file dialog
     file_path = filedialog.askopenfilename()
 
-    # Extract filename and filesize
     filename = file_path.split('/')[-1]
-    filesize = file_path.split('/')[-2]
+    filesize = os.path.getsize(file_path)
 
-    # Read the file based on its type (CSV or Excel)
     if file_path.endswith('.csv'):
         df = pd.read_csv(file_path)
     elif file_path.endswith(('.xls', '.xlsx')):
@@ -116,46 +116,6 @@ def predict_data_from_file_supervised():
     prediction = data.get("prediction")
     print(prediction)
 
-    # # Plot the data using Matplotlib
-    # plot_frame = Tk()
-    # plot_frame.title("Matplotlib Plot in Tkinter")
-    #
-    # # Assuming 'Date' is a column in your DataFrame
-    # x_values = df['Date']
-    # # Assuming 'Fe' is another column in your DataFrame
-    # y_values = df['Fe']
-    #
-    # # Create a Matplotlib figure
-    # fig, ax = plt.subplots()
-    # ax.plot(x_values, y_values, label='Fe over Date')
-    # ax.set_xlabel('Date')
-    # ax.set_ylabel('Fe')
-    # ax.set_title('Matplotlib Plot')
-    #
-    # # Embed the Matplotlib figure in the Tkinter window
-    # canvas = FigureCanvasTkAgg(fig, master=plot_frame)
-    # canvas.draw()
-    # canvas.get_tk_widget().pack()
-    #
-    # # Display the Tkinter window
-    # plot_frame.mainloop()
-
-    # To be implemented: plot the response data to the gui
-
-
-# The commented-out section can be uncommented and implemented as needed.
-"""
-def open_sql_dialog():
-    # Function to open a dialog for entering an SQL statement
-    sql_string = simpledialog.askstring("Input SQL Statement", "Enter your SQL statement:")
-    if sql_string is not None:
-        predict_data_from_database(sql_string)
-
-def predict_data_from_database(sql_string):
-    # Function to predict data from a database using an SQL statement
-    print(f"Processing SQL statement: {sql_string}")
-"""
-
 
 def register_user():
     username = "hanh3"
@@ -196,3 +156,29 @@ def login_user():
         token_type = token_t
     except requests.exceptions.HTTPError as err:
         raise SystemExit(err)
+
+
+def get_all_items():
+    try:
+        header = {"Authorization": f"Bearer {token_save}"}
+        response = requests.get("http://127.0.0.1:8000/users/me/items", headers=header)
+
+        if response.status_code == 401:
+            print(response.json().get("detail"))
+
+        list_items = response.json()
+
+        # turn into list of dataframes
+        dict_dataframes = {}
+        for name, table_json in list_items.items():
+            table = pd.read_json(StringIO(table_json), orient='split')
+            dict_dataframes[name] = table
+
+        show_dataframes(dict_dataframes)
+
+    except requests.exceptions.HTTPError as err:
+        raise SystemExit(err)
+
+
+def show_dataframes(dict_dataframes):  # show dataframes in gui but not elegant!
+    show(**dict_dataframes)
