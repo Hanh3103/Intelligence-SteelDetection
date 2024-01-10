@@ -177,9 +177,9 @@ def register_user():
         raise SystemExit(err)
 
 
-def login_user():
-    username = "hanh3"
-    password = "123456"
+def login_user(username, password):
+    username = username
+    password = password
 
     try:
         response = requests.post("http://127.0.0.1:8000/token", data={"username": username, "password": password})
