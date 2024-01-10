@@ -104,7 +104,6 @@ async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(
     return {"access_token": access_token, "token_type": "bearer"}
 
 
-# Registration endpoint for creating a new user
 @fast_app.post("/registrate")
 async def create_user(new_user: UserInDB, db: Session = Depends(get_db)):
     is_unique = check_if_user_name_unique(new_user.username, db)

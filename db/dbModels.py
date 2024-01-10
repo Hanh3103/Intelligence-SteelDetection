@@ -28,8 +28,12 @@ class User(BaseModel):
 
 
 # Define a Pydantic BaseModel for UserInDB, inheriting from User
-class UserInDB(User):
+class UserInDB(BaseModel):
+    username: str
+    full_name: str
+    email: str
     password: str
+    disabled: bool
 
 
 # Define a Pydantic BaseModel for UploadedItem

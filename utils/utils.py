@@ -155,18 +155,17 @@ def predict_data_from_database(sql_string):
 """
 
 
-def register_user():
-    username = "hanh3"
-    full_name = "hanhNguyen"
-    email = "test3@te.de"
-    password = "123456"
-    disabled = False
+def register_user(username, password, full_name, email):
+    username = username
+    password = password
+    full_name = full_name
+    email = email
     json_data = {
         "username": username,
         "full_name": full_name,
         "email": email,
         "password": password,
-        "disabled": disabled
+        "disabled": False
     }
 
     try:
