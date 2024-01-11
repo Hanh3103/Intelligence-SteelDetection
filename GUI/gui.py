@@ -1,112 +1,15 @@
 import tkinter as tk
-from tkinter import messagebox
 
 import customtkinter as ctk
 import matplotlib.pyplot as plt
 import numpy as np
-import requests
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import utils.utils
+
 
 # Set appearance mode and default color theme
 ctk.set_appearance_mode("System")
 ctk.set_default_color_theme("blue")
-
-
-# Login Screen class
-class LoginScreen(tk.Tk):
-    def __init__(self, main_app):
-        super().__init__()
-
-        self.title("Login")
-        self.geometry(f"{1920}x{1080}")
-
-        # Login Fields
-        self.label_username = tk.Label(self, text="Username:")
-        self.label_username.pack(pady=(20, 5))
-        self.entry_username = tk.Entry(self)
-        self.entry_username.pack(pady=5)
-
-        self.label_password = tk.Label(self, text="Password:")
-        self.label_password.pack(pady=(10, 5))
-        self.entry_password = tk.Entry(self, show="*")
-        self.entry_password.pack(pady=5)
-
-        # Login Button
-        self.btn_login = tk.Button(self, text="Login", command=self.login)
-        self.btn_login.pack(pady=20)
-
-        # Registration Button
-        self.btn_register = tk.Button(self, text="Register", command=self.register)
-        self.btn_register.pack(pady=10)
-
-        # Reference to the main application
-        self.main_app = main_app
-
-    def login(self):
-        # Get username and password from the entry fields
-        username = self.entry_username.get()
-        password = self.entry_password.get()
-
-        try:
-            utils.utils.login_user(username, password)
-
-            messagebox.showinfo("Login Successful", "Welcome, " + username + "!")
-            self.destroy()  # Close the login screen
-            self.main_app.login_successful = True
-        except requests.exceptions.HTTPError as err:
-            messagebox.showerror("Login Failed", "Invalid username or password")
-            self.main_app.login_successful = False
-
-    def register(self):
-        registration_window = RegistrationWindow(self)
-
-
-class RegistrationWindow(tk.Toplevel):
-    def __init__(self, login_screen):
-        super().__init__()
-
-        self.login_screen = login_screen
-        self.title("Register")
-        self.geometry(f"{1920}x{1080}")
-
-        # Registration Fields
-        self.label_username = tk.Label(self, text="Username:")
-        self.label_username.pack(pady=(20, 5))
-        self.entry_username = tk.Entry(self)
-        self.entry_username.pack(pady=5)
-
-        self.label_password = tk.Label(self, text="Password:")
-        self.label_password.pack(pady=(10, 5))
-        self.entry_password = tk.Entry(self, show="*")
-        self.entry_password.pack(pady=5)
-
-        self.label_email = tk.Label(self, text="Email:")
-        self.label_email.pack(pady=(10, 5))
-        self.entry_email = tk.Entry(self)
-        self.entry_email.pack(pady=5)
-
-        self.label_fullname = tk.Label(self, text="Full Name:")
-        self.label_fullname.pack(pady=(10, 5))
-        self.entry_fullname = tk.Entry(self)
-        self.entry_fullname.pack(pady=5)
-
-        # Register Button
-        self.btn_register = tk.Button(self, text="Register", command=lambda: self.registerUser())
-        self.btn_register.pack(pady=20)
-
-    def registerUser(self):
-        # Get values from the entry fields
-        username = self.entry_username.get()
-        password = self.entry_password.get()
-        email = self.entry_email.get()
-        full_name = self.entry_fullname.get()
-
-        utils.utils.register_user(username, password, email, full_name)
-
-        # Close the registration window
-        self.destroy()
-
 
 # Main Application class
 class App(ctk.CTk):
