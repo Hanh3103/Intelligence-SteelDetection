@@ -20,10 +20,13 @@ class App(ctk.CTk):
         self.login_successful = False
 
         # root
-        self.protocol("WM_DELETE_WINDOW")
         self.title("Steel Identifier.py")
-        self.geometry(f"{1920}x{1080}")
-        self.minsize(500, 300)
+        self.attributes('-fullscreen', True)
+        self.attributes('-topmost', True)  # To keep the window on top
+
+        # Bind the Escape key to exit fullscreen
+        self.bind('<Escape>', lambda event: self.attributes('-fullscreen', False))
+
         # root Layout
         self.columnconfigure(1, weight=8)
         self.columnconfigure(0, weight=0)
