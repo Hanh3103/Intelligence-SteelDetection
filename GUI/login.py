@@ -27,9 +27,9 @@ class LoginScreen(ctk.CTk):
         self.entry_password = ctk.CTkEntry(self, show="*", placeholder_text="Password")
         self.entry_password.grid(row=2, column=0, pady=5, padx=100, sticky="ew")
 
-        self.entry_email = ctk.CTkEntry(self, show="*", placeholder_text="Email")
+        self.entry_email = ctk.CTkEntry(self, placeholder_text="Email")
         self.entry_email.grid_forget()
-        self.entry_name = ctk.CTkEntry(self, show="*", placeholder_text="Full Name")
+        self.entry_name = ctk.CTkEntry(self, placeholder_text="Full Name")
         self.entry_name.grid_forget()
 
         # Login Button
