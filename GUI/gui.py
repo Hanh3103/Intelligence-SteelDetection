@@ -20,6 +20,7 @@ class App(ctk.CTk):
         self.login_successful = False
 
         # root
+        self.protocol("WM_DELETE_WINDOW")
         self.title("Steel Identifier.py")
         self.geometry(f"{1920}x{1080}")
         self.minsize(500, 300)

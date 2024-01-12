@@ -26,7 +26,7 @@ class AppWithLogin(App):
     def wait_for_login(self):
         # Create and display the login screen
         self.login_screen = LoginScreen(self)
-        self.login_screen.wait_window()
+        self.login_screen.mainloop()
 
 
 def main():

@@ -1,6 +1,6 @@
 import tkinter as tk
 from tkinter import messagebox
-
+import customtkinter as ctk
 
 import requests
 
@@ -9,31 +9,33 @@ from GUI.registration import RegistrationWindow
 
 
 
-class LoginScreen(tk.Tk):
+class LoginScreen(ctk.CTk):
     def __init__(self, main_app):
         super().__init__()
 
         self.title("Login")
-        self.geometry(f"{1920}x{1080}")
+        self.geometry(f"{400}x{400}")
+        #Caption
+        label = ctk.CTkLabel(self, text="Anmeldung Stahlklassifizierung")
+        label.grid(row=0, column=0)
 
         # Login Fields
-        self.label_username = tk.Label(self, text="Username:")
-        self.label_username.pack(pady=(20, 5))
-        self.entry_username = tk.Entry(self)
-        self.entry_username.pack(pady=5)
 
-        self.label_password = tk.Label(self, text="Password:")
-        self.label_password.pack(pady=(10, 5))
-        self.entry_password = tk.Entry(self, show="*")
-        self.entry_password.pack(pady=5)
+        self.entry_username = ctk.CTkEntry(self, placeholder_text="Username")
+        self.entry_username.grid(row=1, column=0, pady=5)
+        self.entry_password = ctk.CTkEntry(self, show="*", placeholder_text="Password")
+        self.entry_password.grid(row=2, column=0, pady=5)
+
 
         # Login Button
-        self.btn_login = tk.Button(self, text="Login", command=self.login)
-        self.btn_login.pack(pady=20)
+        self.btn_login = ctk.CTkButton(self, text="Login", command=self.login)
+        self.btn_login.grid(row=3, column=0, pady=5)
+        self.bind('<Return>', lambda event: self.login())
+
 
         # Registration Button
-        self.btn_register = tk.Button(self, text="Register", command=self.register)
-        self.btn_register.pack(pady=10)
+        self.btn_register = ctk.CTkButton(self, text="Register", command=self.register)
+        self.btn_register.grid(row=4, column=0, pady=5)
 
         # Reference to the main application
         self.main_app = main_app
