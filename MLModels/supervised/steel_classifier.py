@@ -49,8 +49,8 @@ class SteelClassifier:
 '''
 data = pd.read_csv('labeled_OES_data.csv')
 data.replace(',', '.', regex=True, inplace=True)
-data = data.drop(columns="steel_class")
-my_classifier = SteelClassifier(data, '', "xgboost_algorithm", "XGBoost", True)
+#data = data.drop(columns="steel_class")
+my_classifier = SteelClassifier(data, '', "xgboost_algorithm", "XGBoost", False)
 
 
 test_data = {
@@ -65,7 +65,7 @@ test_data = {
     "Cu": [0.146833333333333]
 }
 df = pd.DataFrame(test_data)
-print(my_classifier.predict(data))
+#print(my_classifier.predict(data))
 print(my_classifier.predict(df))
 #my_classifier.save_model('xgboost_model.json', '')
 '''
