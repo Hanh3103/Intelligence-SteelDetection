@@ -9,8 +9,9 @@ from sqlalchemy.orm import Session
 from starlette.responses import JSONResponse
 
 from MLModels.supervised import steel_classifier
-from db.db import authenticate_user, create_access_token, check_if_user_name_unique, get_password_hash, \
-    get_current_active_user, get_db, save_dataframe_to_database, get_dataframe_from_database, get_current_user
+from db.db import (authenticate_user, create_access_token, check_if_user_name_unique, get_password_hash, \
+    get_current_active_user, get_db, save_dataframe_to_database, get_dataframe_from_database, get_current_user,
+                   delete_table_from_database)
 from db.dbModels import User, UserInDB, Token, UserTable, UploadedItemTable
 from utils import readConfig  # Importing a utility function for reading configuration
 
@@ -227,3 +228,43 @@ async def read_own_items(
     # create a json response
     response = JSONResponse(content=list_json)
     return response
+
+# Endpoint to delete an item owned by the current user
+@fast_app.delete("/users/me/item/{table_id}")
+async def delete_own_item(
+        db: Session = Depends(get_db),
+        current_user: UserInDB = Depends(get_current_active_user),
+        table_id: int = None
+):
+    item = await get_all_item_with_id(current_user, db, table_id)
+
+    try:
+        # delete the table from the database
+        delete_table_from_database(item.namedb)
+
+        # delete the item from the database
+        db.delete(item)
+        db.commit()
+        return {"message": "Item deleted successfully"}
+    except Exception as e:
+        print(e)
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Item could not be deleted successfully due to an error in the database",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
+
+async def get_all_item_with_id(current_user, db, table_id):
+    current_user_db = await get_user_db(current_user, db)
+    item = db.query(UploadedItemTable).filter(UploadedItemTable.owner_id == current_user_db.id).filter(
+        UploadedItemTable.id == table_id).first()
+    if not item:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Item not found",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    return item
+
