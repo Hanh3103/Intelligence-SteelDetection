@@ -40,9 +40,13 @@ class XGBoost(SteelModelInterface):
 
     def predict(self, instances):
         instances = self.make_data_numeric(instances)
-        if type(self.data) != "<class 'pandas.core.frame.DataFrame'>":
-            instances = xgb.DMatrix(instances)
-        return self.model.predict(instances)
+        conv_instances = xgb.DMatrix(instances)
+        try:
+            results = self.model.predict(instances)
+        except:
+            results = self.model.predict(conv_instances)
+
+        return results
 
     def create_model(self, data):
         self.data = data
