@@ -10,7 +10,8 @@ from starlette.responses import JSONResponse
 
 from MLModels.supervised import steel_classifier
 from db.db import (authenticate_user, create_access_token, check_if_user_name_unique, get_password_hash, \
-    get_current_active_user, get_db, save_dataframe_to_database, get_dataframe_from_database, get_current_user,
+                   get_current_active_user, get_db, save_dataframe_to_database, get_dataframe_from_database,
+                   get_current_user,
                    delete_table_from_database)
 from db.dbModels import User, UserInDB, Token, UserTable, UploadedItemTable
 from utils import readConfig  # Importing a utility function for reading configuration
@@ -133,6 +134,7 @@ async def create_user(new_user: UserInDB, db: Session = Depends(get_db)):
 async def read_users_me(current_user: User = Depends(get_current_user)):
     return current_user
 
+
 # Endpoint to upload an item for the current user
 @fast_app.post("/users/me/item")
 async def upload_own_item(
@@ -229,6 +231,7 @@ async def read_own_items(
     response = JSONResponse(content=list_json)
     return response
 
+
 # Endpoint to delete an item owned by the current user
 @fast_app.delete("/users/me/item/{table_id}")
 async def delete_own_item(
@@ -268,3 +271,7 @@ async def get_all_item_with_id(current_user, db, table_id):
         )
     return item
 
+
+async def get_user_db(current_user, db) -> UserTable:
+    current_user_db = db.query(UserTable).filter(UserTable.username == current_user.username).first()
+    return current_user_db
