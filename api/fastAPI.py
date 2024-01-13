@@ -142,27 +142,48 @@ async def upload_own_item(
         current_user: UserInDB = Depends(get_current_active_user),
         data_frame: dict = None
 ):
-    file_name, namedb, file_size, df_data = await save_file(current_user, data_frame)
-    # check if the namedb already exists
-    item = db.query(UploadedItemTable).filter(UploadedItemTable.namedb == namedb).first()
-    if item:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Item already exists",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
+    file_name, namedb, file_size, df_data = await extract_keys_of_dict(current_user, data_frame)
 
-    do = await save_item_to_database(current_user, db, file_name, namedb, file_size)
-    if do:
-        df = await convert_json_to_df(df_data)
-        save_dataframe_to_database(df, namedb)
-        return {"message": "Item uploaded successfully"}
-    else:
+    # check if the number of items in database less than 20
+    items = db.query(UploadedItemTable).filter(UploadedItemTable.owner_id == current_user.id).all()
+    if len(items) >= 20:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Item could not be uploaded successfully due to an error in the database",
+            detail="Maximum number of items reached, please delete some items",
             headers={"WWW-Authenticate": "Bearer"},
         )
+    else:
+        # if the number of items in database less than 20, then check if the file name already exists
+        # check if the filename already exists
+        items = db.query(UploadedItemTable).filter(UploadedItemTable.owner_id == current_user.id).filter(
+            UploadedItemTable.filename == file_name).all()
+
+        # check if the file size is the same as the one in the database, which means that the file already exists
+        for item in items:
+            if item.filesize == file_size:
+                raise HTTPException(
+                    status_code=status.HTTP_401_UNAUTHORIZED,
+                    detail="File already exists",
+                    headers={"WWW-Authenticate": "Bearer"},
+                )
+
+        # if the file name already exists, but there is a different file size, then add the number of items with the
+        # same name
+        if len(items) > 0:
+            namedb = namedb + "_" + str(len(items))
+            file_name = file_name + "_" + str(len(items))
+
+        do = await save_item_to_database(current_user, db, file_name, namedb, file_size)
+        if do:
+            df = await convert_json_to_df(df_data)
+            save_dataframe_to_database(df, namedb)
+            return {"message": "Item uploaded successfully"}
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Item could not be uploaded successfully due to an error in the database",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
 
 
 async def save_item_to_database(current_user, db, file_name, name_db, file_size):
@@ -183,7 +204,7 @@ async def save_item_to_database(current_user, db, file_name, name_db, file_size)
         return False
 
 
-async def save_file(current_user_db, data_frame):
+async def extract_keys_of_dict(current_user_db, data_frame):
     data_input = data_frame.get("data_frame")
     df_json = data_input.get("data")
     file_name = data_input.get("filename")
