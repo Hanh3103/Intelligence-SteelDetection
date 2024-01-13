@@ -43,29 +43,29 @@ class SteelClassifier:
 #print(my_classifier.predict(test_data))
 #print(my_classifier.test_model())
 #my_classifier.save_model('test.h5', 'le.pkl')
-#
-#
-#
-#data = pd.read_csv('labeled_OES_data.csv')
-#data.replace(',', '.', regex=True, inplace=True)
-#
-#my_classifier = SteelClassifier('xgboost_model.json', '', "xgboost_algorithm", "XGBoost", True)
-#
-#
-#test_data = {
-#    "C": [0.0609833333333333],
-#    "Si": [0.005],
-#    "Mn": [0.312333333333333],
-#    "P": [0.0199166666666667],
-#    "S": [0.03495],
-#    "Cr": [0.0249166666666667],
-#    "Ni": [0.0465666666666667],
-#    "Al": [0.002],
-#    "Cu": [0.146833333333333]
-#}
-#
-#df = pd.DataFrame(test_data)
-#print(my_classifier.predict(df))
-#data = data.drop(columns="steel_class")
-#print(my_classifier.predict(data))
-##my_classifier.save_model('xgboost_model.json', '')
+
+
+
+data = pd.read_csv('labeled_OES_data.csv')
+data.replace(',', '.', regex=True, inplace=True)
+
+my_classifier = SteelClassifier("xgboost_model.json", '', "xgboost_algorithm", "XGBoost", True)
+
+
+test_data = {
+    "C": [0.0609833333333333],
+    "Si": [0.005],
+    "Mn": [0.312333333333333],
+    "P": [0.0199166666666667],
+    "S": [0.03495],
+    "Cr": [0.0249166666666667],
+    "Ni": [0.0465666666666667],
+    "Al": [0.002],
+    "Cu": [0.146833333333333]
+}
+
+df = pd.DataFrame(test_data)
+print(my_classifier.predict(df))
+data = data.drop(columns="steel_class")
+print(my_classifier.predict(data))
+my_classifier.save_model('xgboost_model.json', '')
