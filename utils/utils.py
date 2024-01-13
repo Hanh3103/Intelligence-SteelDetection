@@ -175,6 +175,8 @@ def get_all_items():
             df = pd.read_json(StringIO(data), orient='split')
             dict_dataframes[name] = df
 
+        print(dict_dataframes.keys())
+
         show_dataframes(dict_dataframes)
 
     except requests.exceptions.HTTPError as err:
@@ -183,3 +185,17 @@ def get_all_items():
 
 def show_dataframes(dict_dataframes):  # show dataframes in gui but not elegant!
     show(**dict_dataframes)
+
+
+def delete_item_by_name(name):
+    try:
+        header = {"Authorization": f"Bearer {token_save}"}
+        response = requests.delete(f"http://127.0.0.1:8000/users/me/item/{name}", headers=header)
+
+        if response.status_code == 401:
+            print(response.json().get("detail"))
+        else:
+            print(f"Item with name {name} deleted.")
+
+    except requests.exceptions.HTTPError as err:
+        raise SystemExit(err)

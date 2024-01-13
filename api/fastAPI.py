@@ -148,7 +148,7 @@ async def upload_own_item(
     items = db.query(UploadedItemTable).filter(UploadedItemTable.owner_id == current_user.id).all()
     if len(items) >= 20:
         raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
+            status_code=status.HTTP_403_FORBIDDEN,
             detail="Maximum number of items reached, please delete some items",
             headers={"WWW-Authenticate": "Bearer"},
         )
@@ -162,7 +162,7 @@ async def upload_own_item(
         for item in items:
             if item.filesize == file_size:
                 raise HTTPException(
-                    status_code=status.HTTP_401_UNAUTHORIZED,
+                    status_code=status.HTTP_403_FORBIDDEN,
                     detail="File already exists",
                     headers={"WWW-Authenticate": "Bearer"},
                 )
@@ -180,7 +180,7 @@ async def upload_own_item(
             return {"message": "Item uploaded successfully"}
         else:
             raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
+                status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Item could not be uploaded successfully due to an error in the database",
                 headers={"WWW-Authenticate": "Bearer"},
             )
@@ -228,7 +228,7 @@ async def read_own_items(
 
     if not items:
         raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
+            status_code=status.HTTP_404_NOT_FOUND,
             detail="No items found",
             headers={"WWW-Authenticate": "Bearer"},
         )
@@ -265,19 +265,21 @@ async def delete_own_item(
         UploadedItemTable.namedb == table_name).first()
     if not item:
         raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
+            status_code=status.HTTP_404_NOT_FOUND,
             detail="Item not found",
             headers={"WWW-Authenticate": "Bearer"},
         )
     else:
-        delete_dataframe = await delete_table_from_database(table_name)
-        if delete_dataframe:
+        delete_table_from_database(table_name)
+        try:
             db.delete(item)
             db.commit()
             return {"message": "Item deleted successfully"}
-        else:
+        except Exception as e:
+            print(e)
+            db.rollback()
             raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
+                status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Item could not be deleted successfully due to an error in the database",
                 headers={"WWW-Authenticate": "Bearer"},
             )
