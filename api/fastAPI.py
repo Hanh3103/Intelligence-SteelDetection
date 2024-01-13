@@ -254,45 +254,30 @@ async def read_own_items(
 
 
 # Endpoint to delete an item owned by the current user
-@fast_app.delete("/users/me/item/{table_id}")
+@fast_app.delete("/users/me/item/{table_name}")
 async def delete_own_item(
         db: Session = Depends(get_db),
         current_user: UserInDB = Depends(get_current_active_user),
-        table_id: int = None
+        table_name: str = None
 ):
-    item = await get_all_item_with_id(current_user, db, table_id)
-
-    try:
-        # delete the table from the database
-        delete_table_from_database(item.namedb)
-
-        # delete the item from the database
-        db.delete(item)
-        db.commit()
-        return {"message": "Item deleted successfully"}
-    except Exception as e:
-        print(e)
-        db.rollback()
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Item could not be deleted successfully due to an error in the database",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
-
-
-async def get_all_item_with_id(current_user, db, table_id):
-    current_user_db = await get_user_db(current_user, db)
+    current_user_db = db.query(UserTable).filter(UserTable.username == current_user.username).first()
     item = db.query(UploadedItemTable).filter(UploadedItemTable.owner_id == current_user_db.id).filter(
-        UploadedItemTable.id == table_id).first()
+        UploadedItemTable.namedb == table_name).first()
     if not item:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Item not found",
             headers={"WWW-Authenticate": "Bearer"},
         )
-    return item
-
-
-async def get_user_db(current_user, db) -> UserTable:
-    current_user_db = db.query(UserTable).filter(UserTable.username == current_user.username).first()
-    return current_user_db
+    else:
+        delete_dataframe = await delete_table_from_database(table_name)
+        if delete_dataframe:
+            db.delete(item)
+            db.commit()
+            return {"message": "Item deleted successfully"}
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Item could not be deleted successfully due to an error in the database",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
