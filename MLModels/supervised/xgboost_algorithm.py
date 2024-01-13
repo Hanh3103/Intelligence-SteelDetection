@@ -40,7 +40,9 @@ class XGBoost(SteelModelInterface):
 
     def predict(self, instances):
         instances = self.make_data_numeric(instances)
-        return self.model.predict(xgb.DMatrix(instances))
+        if type(self.data) != "<class 'pandas.core.frame.DataFrame'>":
+            instances = xgb.DMatrix(instances)
+        return self.model.predict(instances)
 
     def create_model(self, data):
         self.data = data
@@ -72,11 +74,13 @@ class XGBoost(SteelModelInterface):
         return "Accuracy XGBoost: " + str(sum(score_array) / len(score_array))
 
     def save_model(self, model_name, le_name):
-        self.model.save_model("xgboost_model.json")
+        self.model.save_model(model_name)
 
     def load_model(self, path_model, path_encoder):
+        self.data = path_model
         xgb2 = xgb.Booster()
-        xgb2.load_model("xgboost_model.json")
+        xgb2.load_model(self.data)
         self.model = xgb2
+        print(self.model.feature_names)
 
 

@@ -40,8 +40,7 @@ async def process_data(dataframe_input: dict):
     # TODO: mode train model or prediction!
     supervised_classifier = steel_classifier.SteelClassifier("../MLModels/supervised/test.h5",
                                                              "../MLModels/supervised/le.pkl",
-                                                             "MLModels.supervised.deep_learning", "DeepLearning1",
-                                                             True)
+                                                             "MLModels.supervised.deep_learning", "DeepLearning1")
 
     response_predict = []
     for index, row in df.iterrows():

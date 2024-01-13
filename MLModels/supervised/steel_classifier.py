@@ -9,11 +9,16 @@ class SteelClassifier:
         self.model = model
 
 
-    def __init__(self, data_frame, encoder_file_path, module_name, class_name, existing_model):
+    def __init__(self, data_frame, encoder_file_path, module_name, class_name):
 
         module = importlib.import_module(module_name)
         model_class = getattr(module, class_name)
         self.model = model_class()
+
+        existing_model = False
+        if type(data_frame) != "<class 'pandas.core.frame.DataFrame'>":
+            existing_model = True
+
         if existing_model:
             self.model.load_model(data_frame, encoder_file_path)
         else:
@@ -46,11 +51,11 @@ class SteelClassifier:
 ##my_classifier.save_model('test.h5', 'le.pkl')
 
 
-'''
+
 data = pd.read_csv('labeled_OES_data.csv')
 data.replace(',', '.', regex=True, inplace=True)
-#data = data.drop(columns="steel_class")
-my_classifier = SteelClassifier(data, '', "xgboost_algorithm", "XGBoost", False)
+
+my_classifier = SteelClassifier('xgboost_model.json', '', "xgboost_algorithm", "XGBoost")
 
 
 test_data = {
@@ -64,8 +69,9 @@ test_data = {
     "Al": [0.002],
     "Cu": [0.146833333333333]
 }
+
 df = pd.DataFrame(test_data)
-#print(my_classifier.predict(data))
 print(my_classifier.predict(df))
+data = data.drop(columns="steel_class")
+print(my_classifier.predict(data))
 #my_classifier.save_model('xgboost_model.json', '')
-'''
