@@ -89,32 +89,122 @@ def predict_data_from_file_unsupervised():
     # To be implemented: plot the response data to the gui
 
 
-def predict_data_from_file_supervised():
-    # Function to predict data from an uploaded file in supervised mode
-    df, filesize, filename = upload_file()
+def upload_model_file():
+    file_path = filedialog.askopenfilename()
 
-    # TODO only take the first 10 rows from the dataframe > only temporary
-    df = df.head(10)
+    filename = file_path.split('/')[-1]
 
-    # TODO remove the last column from the dataframe > only temporary
-    df = df.iloc[:, :-1]
+    if file_path.endswith(('.json', '.h5')):
+        with open(file_path, 'rb') as file:
+            file_data = file.read()
+            return filename, file_data
+    elif file_path == '':
+        raise Exception("No file selected.")
+    else:
+        raise Exception("Unsupported file type. Please provide a Json or h5 file.")
 
-    # Convert DataFrame to JSON
-    df_json = df.to_json(orient='split')
 
-    # Include the DataFrame in the request payload
-    files = {"dataframe_input": {"data": df_json, "filesize": filesize, "filename": filename}}
+def upload_encoded_file():
+    file_path = filedialog.askopenfilename()
 
-    # write files to a json file for testing with swagger later
-    with open('files.json', 'w') as outfile:
-        json.dump(files, outfile)
+    filename = file_path.split('/')[-1]
 
-    response = requests.post("http://127.0.0.1:8000/predict/supervised", json=files)
+    if file_path.endswith('.pkl'):
+        with open(file_path, 'rb') as file:
+            file_data = file.read()
+            return filename, file_data
+    elif file_path == '':
+        raise ValueError("No file selected.")
+    else:
+        raise Exception("Unsupported file type. Please provide a pickle file.")
+
+
+def predict_with_supervised(existing_model, table_name_to_train, algorithm, table_name_to_predict, name_of_function):
+    validate_params(algorithm, table_name_to_predict)
+
+    if existing_model == "False":  # train new model and predict
+        # table_name_to_train should not be empty
+        if table_name_to_train == "":
+            raise ValueError("Please provide a table name to train the model.")
+
+        # there should only encode files be uploaded > is this also optional?
+        try:
+            # Upload encoded file
+            encoded_file_name, encoded_file_data = upload_encoded_file()
+        except ValueError as e:
+            encoded_file_name = ""
+            encoded_file_data = b''
+        except Exception as e:
+            print(e)
+            return
+        files = {"upload_model_file": ("", b''),
+                 "encoded_file": (encoded_file_name, encoded_file_data)}
+
+    else:  # use upload existing model and predict
+        # table_name_to_train should be empty else raise error message and then stop
+        if table_name_to_train != "":
+            print("Please leave the table name to train the model empty.")
+            return
+        else:
+            try:
+                # Upload model file > is required
+                model_file_name, model_file_data = upload_model_file()
+                # Upload encoded file > encoded file is optional depending on the algorithm
+                try:
+                    encoded_file_name, encoded_file_data = upload_encoded_file()
+                except ValueError as e:
+                    encoded_file_name = ""
+                    encoded_file_data = b''
+                except Exception as e:
+                    print(e)
+                    return
+
+            except Exception as e:
+                print(e)
+                return
+
+            # Include the uploaded files in the request payload
+            files = {"upload_model_file": (model_file_name, model_file_data),
+                     "encoded_file": (encoded_file_name, encoded_file_data)}
+
+    # Include parameters in the request payload
+    payload = {
+        "existing_model": existing_model,
+        "table_name_to_train": table_name_to_train,  # this is the table name of the training data, the table muss first
+                                                    # be uploaded over "Data import"
+        "algorithm": algorithm,
+        "table_name_to_predict": table_name_to_predict,  # this is the table name of the data to predict, the table muss
+                                                        # first be uploaded over "Data import"
+        "name_of_function": name_of_function            # Test / Predict/ Save model button
+    }
+    payload = json.dumps(payload)
+
+    data = {
+        "up_model_options": payload
+    }
+    print(data)
+
+    header = {"accept": "application/json", "Authorization": f"Bearer {token_save}"}
+    response = requests.post("http://127.0.0.1:8000/predict/supervised", files=files,
+                             data=data, headers=header)
+
+    if response.status_code != 200:
+        print(response.json().get("detail"))
 
     # Process the response data
     data = response.json()
     prediction = data.get("prediction")
     print(prediction)
+
+
+def validate_params(algorithm, table_name_to_predict):
+    # Algorithm and table_name_to_predict should not be empty independently of mode_train
+    # Algorithm should not be empty
+    if algorithm == "":
+        raise Exception("Please provide an algorithm.")
+    # table_name_to_predict should not be empty
+    if table_name_to_predict == "":
+        raise Exception("Please provide a table name to predict the data.")
 
 
 def register_user(username, password, full_name, email):

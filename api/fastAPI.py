@@ -1,12 +1,15 @@
+import os
 from datetime import timedelta
 from io import StringIO
 
 import numpy as np
 import pandas as pd
-from fastapi import FastAPI, Depends, HTTPException, status
+from fastapi import FastAPI, Depends, HTTPException, status, File, UploadFile, Form
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 from starlette.responses import JSONResponse
+from pydantic import Json
+from typing import Optional
 
 from MLModels.supervised import steel_classifier
 from db.db import (authenticate_user, create_access_token, check_if_user_name_unique, get_password_hash, \
@@ -36,31 +39,6 @@ async def process_data(dataframe_input: dict):
     data_input = dataframe_input.get("dataframe_input")
     df_json = data_input.get("data")
 
-    df = await convert_json_to_df(df_json)
-
-    # Call supervised model
-    # TODO: mode train model or prediction!
-    supervised_classifier = steel_classifier.SteelClassifier("../MLModels/supervised/test.h5",
-                                                             "../MLModels/supervised/le.pkl",
-                                                             "MLModels.supervised.deep_learning", "DeepLearning1", True)
-
-    response_predict = []
-    for index, row in df.iterrows():
-        instance = row.values
-        instance = np.char.mod('%s', instance)
-        instance = np.char.replace(instance, ',', '.')
-        instance = [float(i) for i in instance]
-        instance = np.array(instance).reshape(1, -1)
-        prediction = supervised_classifier.predict(instance)
-        response_predict.append(prediction[0][0])
-
-    # df_json = df.to_json(orient='split')
-
-    response_data = {
-        "prediction": response_predict
-    }
-    return response_data
-
 
 async def convert_json_to_df(df_json):
     df_buffer = StringIO(df_json)
@@ -70,18 +48,174 @@ async def convert_json_to_df(df_json):
 
 # Endpoint for supervised prediction
 @fast_app.post("/predict/supervised")
-async def predict_supervised(dataframe_input: dict = None):
-    # TODO: save the file in the database before making the prediction
+async def predict_supervised(
+        db: Session = Depends(get_db),
+        current_user: UserInDB = Depends(get_current_active_user),
+        upload_model_file: UploadFile = File(...),
+        encoded_file: UploadFile = File(...),
+        up_model_options: Json = Form(...)
+):
+    try:
+        algorithm, existing_model, table_name_to_predict, table_name_to_train, name_of_function = await parse_payload(
+            up_model_options)
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e),
+            headers={"WWW-Authenticate": "Bearer"},
+        )
 
-    # file_name, file_path, file_size, df_data = await save_file(current_user, dataframe_input)
-    # do = await save_item_to_database(current_user, db, file_name, file_path, file_size)
-    # if do:
-    #     # convert json to dataframe
-    #     df_buffer = StringIO(df_data)
-    #     df = pd.read_json(df_buffer, orient='split')
-    #
-    #     # Call supervised model
-    return await process_data(dataframe_input)
+    # get the actual dataframe from the database
+    try:
+        table_to_predict_df = get_dataframe_from_database(table_name_to_predict)
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Table to predict not found in database " + str(e),
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
+    parent_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+    module_name, class_name = await extract_modul_class_name(algorithm)
+
+    if existing_model == "True":
+        classifier = await existing_model_predict(class_name, encoded_file, module_name, parent_dir, upload_model_file)
+    else:
+        classifier = await train_model_then_predict(class_name, encoded_file, module_name, parent_dir,
+                                                    table_name_to_train)
+
+    if name_of_function == "Save":
+        # TODO send the model to client to save it there , the client muss be asked for a path to save the model and
+        #  the encoder as well as the name of the model and the encoder
+        try:
+            classifier.save_model("model.h5", "le.pkl")
+
+            return JSONResponse(content={})
+        except Exception as e:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Model could not be saved " + str(e),
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+    elif name_of_function == "Test":
+        try:
+            test_result = classifier.test_model()
+        except Exception as e:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Model could not be tested " + str(e),
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+        return JSONResponse(content=test_result)
+    elif name_of_function == "Predict":
+        if algorithm == "deep_learning":
+            # this algorithm takes only numpy array as input
+            response_predict = []
+            for index, row in table_to_predict_df.iterrows():
+                instance = row.values
+                instance = np.char.mod('%s', instance)
+                instance = np.char.replace(instance, ',', '.')
+                instance = [float(i) for i in instance]
+                instance = np.array(instance).reshape(1, -1)
+                prediction = classifier.predict(instance)
+                response_predict.append(prediction[0][0])
+        else:
+            # xgboost takes only dataframe as input
+            response_predict = classifier.predict(table_to_predict_df)
+
+        return JSONResponse(content=response_predict)
+    else:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Please provide a valid name of function.",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
+
+async def train_model_then_predict(class_name, encoded_file, module_name, parent_dir, table_name_to_train):
+    try:
+        if encoded_file.filename == "":
+            encoded_file_path = ""
+        else:
+            encoded_file_path = await save_uploaded_file(encoded_file, parent_dir)
+
+        # get the actual dataframe from the database
+        table_to_train_df = get_dataframe_from_database(table_name_to_train)
+        table_to_train_df.replace(',', '.', regex=True, inplace=True)
+        # load the classifier
+        classifier = steel_classifier.SteelClassifier(table_to_train_df,
+                                                      encoded_file_path,
+                                                      module_name,
+                                                      class_name,
+                                                      False)
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_417_EXPECTATION_FAILED,
+            detail="Cannot setup the model " + str(e),
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    return classifier
+
+
+async def existing_model_predict(class_name, encoded_file, module_name, parent_dir, upload_model_file):
+    try:
+        model_file_path = await save_uploaded_file(upload_model_file, parent_dir)
+
+        # for some algorithms the encoder file is not needed TODO: check again!
+        if encoded_file.filename == "":
+            encoded_file_path = ""
+        else:
+            encoded_file_path = await save_uploaded_file(encoded_file, parent_dir)
+
+        # load the classifier
+        classifier = steel_classifier.SteelClassifier(model_file_path,
+                                                      encoded_file_path,
+                                                      module_name,
+                                                      class_name,
+                                                      True)
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e),
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    return classifier
+
+
+async def save_uploaded_file(uploaded_file, parent_dir):
+    # Upload file
+    uploaded_file_name = uploaded_file.filename
+    uploaded_file_data = await uploaded_file.read()
+    # Save file using the same name on the server
+    uploaded_file_path = os.path.join(parent_dir, "MLModels", "supervised", uploaded_file_name)
+    with open(uploaded_file_path, "wb") as buffer:
+        buffer.write(uploaded_file_data)
+    return uploaded_file_path
+
+
+async def extract_modul_class_name(algorithm):
+    # Get the module name and class name from the algorithm
+    module_name = "MLModels.supervised." + algorithm
+    class_name = ""
+    if algorithm == "deep_learning":
+        class_name = "DeepLearning1"
+    elif algorithm == "xgboost_algorithm":
+        class_name = "XGBoost"
+    return module_name, class_name
+
+
+async def parse_payload(dataframe_input):
+    existing_model = dataframe_input.get("existing_model")
+    table_name_to_train = dataframe_input.get("table_name_to_train")
+    algorithm = dataframe_input.get("algorithm")
+    table_name_to_predict = dataframe_input.get("table_name_to_predict")
+    name_of_function = dataframe_input.get("name_of_function")
+    if table_name_to_predict == "":
+        raise Exception("Please provide a table name to predict.")
+    if algorithm == "":
+        raise Exception("Please provide an algorithm.")
+    return algorithm, existing_model, table_name_to_predict, table_name_to_train, name_of_function
 
 
 # Endpoint for unsupervised prediction
