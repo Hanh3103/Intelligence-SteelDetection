@@ -10,7 +10,6 @@ from sqlalchemy.orm import Session
 from starlette.responses import JSONResponse
 from fastapi.encoders import jsonable_encoder
 
-
 from MLModels.supervised import steel_classifier
 from MLModels.unsupervised import cluster_Algorithm
 from enums import unsupervised_models_enum
@@ -43,8 +42,8 @@ async def process_supervised_data(dataframe_input: dict):
 
     # Call supervised model
     # TODO: mode train model or prediction!
-    supervised_classifier = steel_classifier.SteelClassifier("../MLModels/supervised/test.h5",
-                                                             "../MLModels/supervised/le.pkl",
+    supervised_classifier = steel_classifier.SteelClassifier("../resources/res_supervised/test.h5",
+                                                             "../resources/res_supervised/le.pkl",
                                                              "MLModels.supervised.deep_learning", "DeepLearning1", True)
 
     response_predict = []
@@ -66,14 +65,12 @@ async def process_supervised_data(dataframe_input: dict):
 
 
 async def convert_json_to_df(df_json):
-
     df_buffer = StringIO(df_json)
     df = pd.read_json(df_buffer, orient='split')
     return df
 
 
 async def extract_model_options_and_df(data: dict):
-
     df_input = data.get("dataframe_input").get("data")
     df = await convert_json_to_df(df_input)
 
@@ -83,6 +80,7 @@ async def extract_model_options_and_df(data: dict):
         "model_options": model_options_input,
         "data_frame": df
     }
+
 
 # Endpoint for supervised prediction
 @fast_app.post("/predict/supervised")
@@ -101,13 +99,12 @@ async def predict_supervised(dataframe_input: dict = None):
 
 
 # Endpoint for unsupervised prediction
-#@fast_app.post("/predict_unsupervised")
-#async def predict_unsupervised(dataframe_input: dict):
+# @fast_app.post("/predict_unsupervised")
+# async def predict_unsupervised(dataframe_input: dict):
 #    return await process_unsupervised_data(dataframe_input)
 
 @fast_app.post("/predict/unsupervised/kmeans")
 async def predict_unsupervised(data: dict):
-
     extracted_data = await extract_model_options_and_df(data)
 
     return cluster_Algorithm.kmeans(extracted_data["data_frame"], extracted_data["model_options"]["k_components"],
@@ -116,10 +113,10 @@ async def predict_unsupervised(data: dict):
 
 @fast_app.post("/predict/unsupervised/gmm")
 async def predict_unsupervised(data: dict):
-
     extracted_data = await extract_model_options_and_df(data)
 
-    response_predict = cluster_Algorithm.gmm_algorithm(extracted_data["data_frame"], extracted_data["model_options"]["k_components"])
+    response_predict = cluster_Algorithm.gmm_algorithm(extracted_data["data_frame"],
+                                                       extracted_data["model_options"]["k_components"])
 
     if isinstance(response_predict, pd.DataFrame):
         return response_predict.to_json(orient='split')
@@ -129,25 +126,26 @@ async def predict_unsupervised(data: dict):
 
 @fast_app.post("/predict/unsupervised/hierarchical")
 async def predict_unsupervised(data: dict):
-
     extracted_data = await extract_model_options_and_df(data)
 
-    response_predict = cluster_Algorithm.hierarchical(extracted_data["data_frame"], extracted_data["model_options"]["k_components"])
+    response_predict = cluster_Algorithm.hierarchical(extracted_data["data_frame"],
+                                                      extracted_data["model_options"]["k_components"])
     return response_predict.to_json(orient='split')
 
 
 @fast_app.post("/predict/unsupervised/tsne")
 async def predict_unsupervised_tsne(data: dict):
-
     extracted_data = await extract_model_options_and_df(data)
 
-    response_predict = cluster_Algorithm.tsne_algorithm(extracted_data["data_frame"], extracted_data["model_options"]["n_neighbours"], extracted_data["model_options"]["steps"], extracted_data["model_options"]["mode"])
+    response_predict = cluster_Algorithm.tsne_algorithm(extracted_data["data_frame"],
+                                                        extracted_data["model_options"]["n_neighbours"],
+                                                        extracted_data["model_options"]["steps"],
+                                                        extracted_data["model_options"]["mode"])
     return response_predict
 
 
 @fast_app.post("/predict/unsupervised/pca")
 async def predict_unsupervised(data: dict):
-
     extracted_data = await extract_model_options_and_df(data)
 
     response_pca = cluster_Algorithm.pca(extracted_data["data_frame"], extracted_data["model_options"]["scaler"])
@@ -156,13 +154,13 @@ async def predict_unsupervised(data: dict):
 
 @fast_app.post("/predict/unsupervised/umap")
 async def predict_unsupervised(data: dict):
-
     extracted_data = await extract_model_options_and_df(data)
 
-    response_data = cluster_Algorithm.apply_umap(extracted_data["data_frame"], extracted_data["model_options"]["n_neighbours"], extracted_data["model_options"]["min_dist"], extracted_data["model_options"]["k_components"])
+    response_data = cluster_Algorithm.apply_umap(extracted_data["data_frame"],
+                                                 extracted_data["model_options"]["n_neighbours"],
+                                                 extracted_data["model_options"]["min_dist"],
+                                                 extracted_data["model_options"]["k_components"])
     return response_data.tolist()
-
-
 
 
 # Token endpoint for user authentication
@@ -208,6 +206,7 @@ async def create_user(new_user: UserInDB, db: Session = Depends(get_db)):
 @fast_app.get("/users/me", response_model=User)
 async def read_users_me(current_user: User = Depends(get_current_user)):
     return current_user
+
 
 # Endpoint to upload an item for the current user
 @fast_app.post("/users/me/item")

@@ -13,6 +13,7 @@ from MLModels.unsupervised import cluster_Algorithm
 
 from enums import unsupervised_models_enum
 
+
 def upload_file():
     file_path = filedialog.askopenfilename()
 
@@ -51,10 +52,9 @@ def only_upload_file():
 
 
 def predict_data_from_file_unsupervised_kmeans(file, k_components: int, scaler=None):
-
     model_options = {
-            "k_components": k_components,
-            "scaler": scaler,
+        "k_components": k_components,
+        "scaler": scaler,
     }
 
     response = call_unsupervised_algorithm(file, model_options, "predict/unsupervised/kmeans")
@@ -65,9 +65,8 @@ def predict_data_from_file_unsupervised_kmeans(file, k_components: int, scaler=N
 
 
 def predict_data_from_file_unsupervised_gmm(file, k_components: int):
-
     model_options = {
-            "k_components": k_components,
+        "k_components": k_components,
     }
 
     response = call_unsupervised_algorithm(file, model_options, "predict/unsupervised/gmm")
@@ -78,9 +77,8 @@ def predict_data_from_file_unsupervised_gmm(file, k_components: int):
 
 
 def predict_data_from_file_unsupervised_hierarchical(file, k_components: int):
-
     model_options = {
-            "k_components": k_components,
+        "k_components": k_components,
     }
 
     response = call_unsupervised_algorithm(file, model_options, "predict/unsupervised/hierarchical")
@@ -91,11 +89,10 @@ def predict_data_from_file_unsupervised_hierarchical(file, k_components: int):
 
 
 def predict_data_from_file_unsupervised_tsne(file, n_neighbours: int, steps: int, mode: str):
-
     model_options = {
-            "n_neighbours": n_neighbours,
-            "mode": mode,
-            "steps": steps
+        "n_neighbours": n_neighbours,
+        "mode": mode,
+        "steps": steps
     }
 
     response = call_unsupervised_algorithm(file, model_options, "predict/unsupervised/tsne")
@@ -104,9 +101,8 @@ def predict_data_from_file_unsupervised_tsne(file, n_neighbours: int, steps: int
 
 
 def predict_data_from_file_unsupervised_pca(file, scaler=None):
-
     model_options = {
-            "scaler": scaler,
+        "scaler": scaler,
     }
 
     response = call_unsupervised_algorithm(file, model_options, "predict/unsupervised/pca")
@@ -117,11 +113,10 @@ def predict_data_from_file_unsupervised_pca(file, scaler=None):
 
 
 def predict_data_from_file_unsupervised_umap(file, n_neighbours: int, k_components: int, min_dist: float):
-
     model_options = {
-            "n_neighbours": n_neighbours,
-            "k_components": k_components,
-            "min_dist": min_dist
+        "n_neighbours": n_neighbours,
+        "k_components": k_components,
+        "min_dist": min_dist
     }
 
     response = call_unsupervised_algorithm(file, model_options, "predict/unsupervised/umap")
@@ -145,12 +140,13 @@ def call_unsupervised_algorithm(file, model_parameter, url: str):
 
     return requests.post("http://127.0.0.1:8000/" + url, json=data)
 
+
 # Aktuell wird standardmäßig kmeans algorithmus aufgerufen bei unsupervised button click
 # Kann man später lösen indem man hier ein switch case einbaut oder aus der gui gleich
 # den jeweiligen Algorithmus aufruft.
 # Testweise kann man hier auch die anderen unsupervised algorithmen aufrufen,
 # diese sind ebenfalls weiter oben implementiert.
-# Als Uploaddatei bitte test_data.csv aus dem Ordner /resources übergeben,
+# Als Uploaddatei bitte test_data_unsupervised.csv aus dem Ordner /resources übergeben,
 # da nur für diese Datei ein Output garantiert ist
 
 def predict_data_from_file_unsupervised():

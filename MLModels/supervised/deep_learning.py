@@ -2,15 +2,16 @@
 import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
-from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Dense
+from tensorflow.python.keras.models import Sequential
+
+from tensorflow.python.keras.layers import Dense
 from sklearn.preprocessing import LabelEncoder
 import numpy as np
-from tensorflow.keras.models import load_model
+from tensorflow.python.keras.models import load_model
 import joblib
-from tensorflow.keras.optimizers import Adam
-from tensorflow.keras.layers import Dropout
-from tensorflow.keras import regularizers
+from tensorflow.python.keras.optimizers import adam_v2
+from tensorflow.python.keras.layers import Dropout
+from tensorflow.python.keras import regularizers
 
 from MLModels.supervised.steel_model_interface import SteelModelInterface
 
@@ -51,7 +52,7 @@ class DeepLearning1(SteelModelInterface):
         self.model.add(Dense(len(self.label_encoder.classes_), activation='softmax'))
 
         # Modell kompilieren
-        optimizer = Adam(learning_rate=0.001)
+        optimizer = adam_v2(learning_rate=0.001)
         self.model.compile(optimizer=optimizer, loss='sparse_categorical_crossentropy', metrics=['accuracy'])
 
         # Modell trainieren

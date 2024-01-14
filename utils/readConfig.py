@@ -6,9 +6,9 @@ def read_config():
     config = configparser.ConfigParser()
     try:
         try:
-            config.read_file(open('./resources/config.ini'))      # for vscode
+            config.read_file(open('./resources/config/config.ini'))      # for vscode
         except FileNotFoundError as e:
-            config.read_file(open('../resources/config.ini'))     # for pycharm
+            config.read_file(open('../resources/config/config.ini'))     # for pycharm
     except configparser.Error as e:
         print(f"Error reading 'config.ini': {e}")
         # You can choose to raise an exception or return a default configuration here
