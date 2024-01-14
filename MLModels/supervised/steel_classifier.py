@@ -2,12 +2,12 @@
 import importlib
 import numpy as np
 import pandas as pd
-class SteelClassifier:
 
+
+class SteelClassifier:
 
     def __init__(self, model):
         self.model = model
-
 
     def __init__(self, data_frame, encoder_file_path, module_name, class_name, existing_model):
 
@@ -20,18 +20,14 @@ class SteelClassifier:
         else:
             self.model.create_model(data_frame)
 
-
-
     def predict(self, instances):
         return self.model.predict(instances)
-
 
     def save_model(self, model_name, le_name):
         self.model.save_model(model_name, le_name)
 
     def test_model(self):
         return self.model.test_model()
-
 
 
 # deep learning takes only numpy array as input
@@ -43,31 +39,30 @@ class SteelClassifier:
 # test_data = np.array(test_data).reshape(1, -1)
 # print(my_classifier.predict(test_data))
 # print(my_classifier.test_model())
-#my_classifier.save_model('test.h5', 'le.pkl')
+# my_classifier.save_model('test.h5', 'le.pkl')
 #
 #
 # xgboost takes only dataframe as input
 # data = pd.read_csv('labeled_OES_data.csv')
 # data.replace(',', '.', regex=True, inplace=True)
 #
-# my_classifier = SteelClassifier('labeled_OES_data.csv', '', "xgboost_algorithm", "XGBoost", False)
-#
+# my_classifier = SteelClassifier('xgboost_model.json', '', "xgboost_algorithm", "XGBoost", True)
 #
 # test_data = {
-#    "C": [0.0609833333333333],
-#    "Si": [0.005],
-#    "Mn": [0.312333333333333],
-#    "P": [0.0199166666666667],
-#    "S": [0.03495],
-#    "Cr": [0.0249166666666667],
-#    "Ni": [0.0465666666666667],
-#    "Al": [0.002],
-#    "Cu": [0.146833333333333]
+#     "C": [0.0609833333333333],
+#     "Si": [0.005],
+#     "Mn": [0.312333333333333],
+#     "P": [0.0199166666666667],
+#     "S": [0.03495],
+#     "Cr": [0.0249166666666667],
+#     "Ni": [0.0465666666666667],
+#     "Al": [0.002],
+#     "Cu": [0.146833333333333]
 # }
 #
 # df = pd.DataFrame(test_data)
 # print(my_classifier.predict(df))
 # data = data.drop(columns="steel_class")
 # print(my_classifier.predict(data))
-# print(my_classifier.test_model())
-#my_classifier.save_model('xgboost_model.json', '')
+# #print(my_classifier.test_model())
+# my_classifier.save_model('test_save_model.json', 'encoder_save_model.pkl')

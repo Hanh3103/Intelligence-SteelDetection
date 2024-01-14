@@ -9,9 +9,9 @@ from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 from starlette.responses import JSONResponse
 from pydantic import Json
-from typing import Optional
 
 from MLModels.supervised import steel_classifier
+from MLModels.supervised.supervised_Algo_Name import AlgorithmSupervised
 from db.db import (authenticate_user, create_access_token, check_if_user_name_unique, get_password_hash, \
                    get_current_active_user, get_db, save_dataframe_to_database, get_dataframe_from_database,
                    get_current_user,
@@ -34,6 +34,7 @@ async def root():
     return {"message": "Hello World"}
 
 
+# ------------------------------------Data------------------------------------#
 # Common function to process data
 async def process_data(dataframe_input: dict):
     data_input = dataframe_input.get("dataframe_input")
@@ -46,7 +47,28 @@ async def convert_json_to_df(df_json):
     return df
 
 
+# ------------------------------------SuperVised------------------------------------#
 # Endpoint for supervised prediction
+def prediction_result(classifier, table_to_predict_df, algorithm):
+    global response_predict
+    if algorithm == AlgorithmSupervised.DeepLearning.value[0]:
+        # this algorithm takes only numpy array as input
+        response_predict = []
+        for index, row in table_to_predict_df.iterrows():
+            instance = row.values
+            instance = np.char.mod('%s', instance)
+            instance = np.char.replace(instance, ',', '.')
+            instance = [float(i) for i in instance]
+            instance = np.array(instance).reshape(1, -1)
+            prediction = classifier.predict(instance)
+            response_predict.append(prediction[0][0])
+    elif algorithm == AlgorithmSupervised.Xgboost.value[0]:
+        # xgboost takes only dataframe as input
+        response_predict = classifier.predict(table_to_predict_df)
+
+    return response_predict
+
+
 @fast_app.post("/predict/supervised")
 async def predict_supervised(
         db: Session = Depends(get_db),
@@ -55,13 +77,14 @@ async def predict_supervised(
         encoded_file: UploadFile = File(...),
         up_model_options: Json = Form(...)
 ):
+    # parse the payload
     try:
         algorithm, existing_model, table_name_to_predict, table_name_to_train, name_of_function = await parse_payload(
             up_model_options)
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=str(e),
+            detail="parse payload problem" + str(e),
             headers={"WWW-Authenticate": "Bearer"},
         )
 
@@ -80,57 +103,40 @@ async def predict_supervised(
     module_name, class_name = await extract_modul_class_name(algorithm)
 
     if existing_model == "True":
-        classifier = await existing_model_predict(class_name, encoded_file, module_name, parent_dir, upload_model_file)
+        classifier = await existing_model_classifier(class_name, encoded_file, module_name, parent_dir,
+                                                     upload_model_file)
+        # only prediction works !!!
+        try:
+            results = prediction_result(classifier, table_to_predict_df, algorithm)
+            return {"prediction": results}
+        except Exception as e:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="prediction existing model has problems" + str(e),
+                headers={"WWW-Authenticate": "Bearer"},
+            )
     else:
         classifier = await train_model_then_predict(class_name, encoded_file, module_name, parent_dir,
                                                     table_name_to_train)
-
-    if name_of_function == "Save":
-        # TODO send the model to client to save it there , the client muss be asked for a path to save the model and
-        #  the encoder as well as the name of the model and the encoder
+        # prediction then save the model then test the model
         try:
-            classifier.save_model("model.h5", "le.pkl")
-
-            return JSONResponse(content={})
+            results = prediction_result(classifier, table_to_predict_df, algorithm)
+            print(type(results))
+            print(results)
+            test_results = classifier.test_model()
+            print(test_results)
+            print(type(test_results))
+            name_of_model_to_save = algorithm + [algo.value[1] for algo in AlgorithmSupervised
+                                                 if algo.value[0] == algorithm][0]
+            name_of_encoder_to_save = "encoder_" + algorithm + ".pkl"
+            classifier.save_model(name_of_model_to_save, name_of_encoder_to_save)
+            return {"prediction": results, "test_results": test_results}
         except Exception as e:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Model could not be saved " + str(e),
+                detail="prediction and saving have problems " + str(e),
                 headers={"WWW-Authenticate": "Bearer"},
             )
-    elif name_of_function == "Test":
-        try:
-            test_result = classifier.test_model()
-        except Exception as e:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Model could not be tested " + str(e),
-                headers={"WWW-Authenticate": "Bearer"},
-            )
-        return JSONResponse(content=test_result)
-    elif name_of_function == "Predict":
-        if algorithm == "deep_learning":
-            # this algorithm takes only numpy array as input
-            response_predict = []
-            for index, row in table_to_predict_df.iterrows():
-                instance = row.values
-                instance = np.char.mod('%s', instance)
-                instance = np.char.replace(instance, ',', '.')
-                instance = [float(i) for i in instance]
-                instance = np.array(instance).reshape(1, -1)
-                prediction = classifier.predict(instance)
-                response_predict.append(prediction[0][0])
-        else:
-            # xgboost takes only dataframe as input
-            response_predict = classifier.predict(table_to_predict_df)
-
-        return JSONResponse(content=response_predict)
-    else:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Please provide a valid name of function.",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
 
 
 async def train_model_then_predict(class_name, encoded_file, module_name, parent_dir, table_name_to_train):
@@ -158,11 +164,11 @@ async def train_model_then_predict(class_name, encoded_file, module_name, parent
     return classifier
 
 
-async def existing_model_predict(class_name, encoded_file, module_name, parent_dir, upload_model_file):
+async def existing_model_classifier(class_name, encoded_file, module_name, parent_dir, upload_model_file):
     try:
         model_file_path = await save_uploaded_file(upload_model_file, parent_dir)
 
-        # for some algorithms the encoder file is not needed TODO: check again!
+        # encode file is optional !!! > it can be empty "except for deep learning in case exist_model is true"
         if encoded_file.filename == "":
             encoded_file_path = ""
         else:
@@ -198,10 +204,10 @@ async def extract_modul_class_name(algorithm):
     # Get the module name and class name from the algorithm
     module_name = "MLModels.supervised." + algorithm
     class_name = ""
-    if algorithm == "deep_learning":
-        class_name = "DeepLearning1"
-    elif algorithm == "xgboost_algorithm":
-        class_name = "XGBoost"
+    if algorithm == AlgorithmSupervised.DeepLearning.value[0]:
+        class_name = AlgorithmSupervised.DeepLearning.value[2]
+    elif algorithm == AlgorithmSupervised.Xgboost.value[0]:
+        class_name = AlgorithmSupervised.Xgboost.value[2]
     return module_name, class_name
 
 
@@ -216,6 +222,9 @@ async def parse_payload(dataframe_input):
     if algorithm == "":
         raise Exception("Please provide an algorithm.")
     return algorithm, existing_model, table_name_to_predict, table_name_to_train, name_of_function
+
+
+# ------------------------------------UnSuperVised------------------------------------#
 
 
 # Endpoint for unsupervised prediction
@@ -387,6 +396,7 @@ async def read_own_items(
     return response
 
 
+# ------------------------------------Delete a table with table name------------------------------------#
 # Endpoint to delete an item owned by the current user
 @fast_app.delete("/users/me/item/{table_name}")
 async def delete_own_item(

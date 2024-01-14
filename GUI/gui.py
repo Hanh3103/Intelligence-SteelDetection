@@ -255,11 +255,11 @@ def supervised():
     #                                     "xgboost_algorithm",
     #                                     "hanh3_test.csv",
     #                                     "prediction")
-    utils.utils.predict_with_supervised("False",
-                                        "hanh3_labeled_OES_data.csv",
-                                        "xgboost_algorithm",
-                                        "hanh3_test.csv",
-                                        "prediction")
+    utils.utils.predict_with_supervised_algo("False",
+                                             "hanh3_labeled_OES_data.csv",
+                                             "xgboost_algorithm",
+                                             "hanh3_test.csv",
+                                             "prediction")
 
 
 # Function for unsupervised prediction
