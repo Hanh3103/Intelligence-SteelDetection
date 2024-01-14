@@ -242,7 +242,8 @@ def change_darkmode(choice):
 
 # Function to upload a file
 def upload_file():
-    utils.utils.only_upload_file()
+     #utils.utils.only_upload_file()
+     utils.utils.upload_transformed_dataframe_to_steel_db()
 
 
 # Function for supervised prediction
