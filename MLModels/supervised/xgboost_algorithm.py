@@ -78,10 +78,12 @@ class XGBoost(SteelModelInterface):
         # Parameter des Classifiers ermittlet durch Hyperparameter Optimization
         # siehe JupyterNotebook XGBoost_Supervisedlearning
         self.model = xgb.XGBClassifier(objective="multi:softmax",
-                                       num_class=num_class,
+                                       num_class=5,
+                                       n_estimators=100,
                                        max_depth=3,
-                                       learning_rate=0.05,
-                                       gamma=0.01)
+                                       learning_rate=1,
+                                       gamma=0.1,
+                                       reg_lambda=20)
 
         # Trainiere model
         self.model.fit(self.X_train, self.y_train)
@@ -91,10 +93,12 @@ class XGBoost(SteelModelInterface):
         num_class = len(self.load_steel_type_dict_from_json().keys())
         score_array = cross_val_score(
             xgb.XGBClassifier(objective="multi:softmax",
-                              num_class=num_class,
+                              num_class=5,
+                              n_estimators=100,
                               max_depth=3,
-                              learning_rate=0.05,
-                              gamma=0.01),
+                              learning_rate=1,
+                              gamma=0.1,
+                              reg_lambda=20),
             self.X,
             self.y,
             cv=9)
