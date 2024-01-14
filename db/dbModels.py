@@ -1,6 +1,7 @@
 # Import necessary modules and classes
+from psycopg2._psycopg import Float
 from pydantic import BaseModel
-from sqlalchemy import Column, String, Boolean, Integer, ForeignKey
+from sqlalchemy import Column, String, Boolean, Integer, ForeignKey,Float, Double
 from sqlalchemy.orm import declarative_base, relationship
 from typing import Dict
 
@@ -43,6 +44,15 @@ class UploadedItem(BaseModel):
     data: dict
 
 
+class SteelDataModel(BaseModel):
+    intSteelData: int
+    strFileName: str
+    strSteelType: str
+    strMaterial: str
+    doubleMaterialValue: float
+    strOwnerID: str
+
+
 # Define a SQLAlchemy Table for UserTable
 class UserTable(Base):
     __tablename__ = 'users_table'
@@ -61,6 +71,11 @@ class UserTable(Base):
                          cascade="all, delete",
                          uselist=True)
 
+    steel_items = relationship("SteelData",
+                               back_populates="owner",
+                               cascade="all, delete",
+                               uselist=True)
+
 
 # Define a SQLAlchemy Table for UploadedItemTable
 class UploadedItemTable(Base):
@@ -77,3 +92,16 @@ class UploadedItemTable(Base):
 
     # Define a relationship with UserTable
     owner = relationship("UserTable", back_populates="items")
+
+
+class SteelData(Base):
+    __tablename__ = 'daSteelData'
+
+    intSteelDataID = Column(Integer, primary_key=True, autoincrement=True)
+    strFileName = Column(String)
+    strSteelType = Column(String)
+    strMaterial = Column(String)
+    doubleMaterialValue = Column(Float)
+    strOwnerID = Column(Integer, ForeignKey('users_table.id'), nullable=False)
+
+    owner = relationship("UserTable", back_populates="steel_items")

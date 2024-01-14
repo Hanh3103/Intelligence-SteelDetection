@@ -183,3 +183,61 @@ def get_all_items():
 
 def show_dataframes(dict_dataframes):  # show dataframes in gui but not elegant!
     show(**dict_dataframes)
+
+
+def upload_transformed_dataframe_to_steel_db():
+    steel_data = return_transformed_dataframe_to_steel_data()
+
+    steel_data_json = steel_data.to_json(orient='split')
+    header = {"Authorization": f"Bearer {token_save}"}
+    json_data = {
+        'filename': steel_data['strFileName'].iloc[0],
+        'steeldata': steel_data_json
+    }
+
+    response = requests.post("http://127.0.0.1:8000/users/me/upload_steel_data", headers=header, json=json_data)
+
+
+def return_transformed_dataframe_to_steel_data():
+    # Step 1: Get DataFrame from CSV or Excel file
+    dataframe, filename = return_dataframe_and_filename_from_csv_or_xlsx()
+
+    # Step 2: Extract columns, indices, and raw_data directly from DataFrame
+    columns = dataframe.columns
+    raw_data = dataframe.values.tolist()
+
+    transformed_data = []
+
+    # Step 3: Iterate over raw data to transform and append to the new structure
+    for idx, row in enumerate(raw_data):
+        steel_type = row[-1]  # Assuming the steel class is the last column
+        for i, value in enumerate(row[:-1]):
+            material = columns[i]
+            material_value = float(str(value).replace(',', '.'))  # Convert comma to dot and parse as float
+            transformed_data.append({
+                'intSteelDataID': idx,
+                'strFileName': filename,
+                'strSteelType': steel_type,
+                'strMaterial': material,
+                'doubleMaterialValue': material_value
+            })
+
+    # Step 4: Convert transformed data to Pandas DataFrame
+    df_transformed_data = pd.DataFrame(transformed_data)
+
+    return df_transformed_data
+
+
+def return_dataframe_and_filename_from_csv_or_xlsx():
+    file_path = filedialog.askopenfilename()
+    filename = os.path.basename(file_path)
+
+    if file_path.endswith('.csv'):
+        df = pd.read_csv(file_path)
+    elif file_path.endswith(('.xls', '.xlsx')):
+        df = pd.read_excel(file_path)
+    else:
+        print("Unsupported file type. Please provide a CSV or Excel file.")
+        return None
+
+    return df, filename

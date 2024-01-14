@@ -133,6 +133,7 @@ async def create_user(new_user: UserInDB, db: Session = Depends(get_db)):
 async def read_users_me(current_user: User = Depends(get_current_user)):
     return current_user
 
+
 # Endpoint to upload an item for the current user
 @fast_app.post("/users/me/item")
 async def upload_own_item(
@@ -228,3 +229,49 @@ async def read_own_items(
     # create a json response
     response = JSONResponse(content=list_json)
     return response
+
+
+@fast_app.post("/users/me/upload_steel_data")
+async def upload_steel_data(
+        db: Session = Depends(get_db),
+        current_user: UserInDB = Depends(get_current_active_user),
+        data_frame: dict = None
+):
+    print(data_frame["filename"])
+    item = db.query(UploadedItemTable).filter(UploadedItemTable.filename == data_frame["filename"]).first()
+    if item:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Item already exists",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
+    do = await save_item_to_uploaded_items_database(current_user, db, data_frame["filename"], )
+    if do:
+        df = await convert_json_to_df(data_frame["steeldata"])
+        save_dataframe_to_database(df, "daSteelData")
+        return {"message": "Item uploaded successfully"}
+    else:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Item could not be uploaded successfully due to an error in the database",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
+
+async def save_item_to_uploaded_items_database(current_user, db, file_name):
+    try:
+        current_user_db = db.query(UserTable).filter(UserTable.username == current_user.username).first()
+        new_item = UploadedItemTable(
+            owner_id=current_user_db.id,
+            filename=file_name,
+            filesize=0,
+            namedb="daSteelData"
+        )
+        db.add(new_item)
+        db.commit()
+        return True
+    except Exception as e:
+        print(e)
+        db.rollback()
+        return False
