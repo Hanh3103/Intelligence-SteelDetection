@@ -22,3 +22,5 @@ python-multipart~=0.0.6
 bcrypt
 starlette~=0.27.0
 pandasgui~=0.2.14
+skfuzzy~=0.4.2
+umap-learn~=0.5.5
