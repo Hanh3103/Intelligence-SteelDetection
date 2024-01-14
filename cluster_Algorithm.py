@@ -71,18 +71,21 @@ def tsne_algorithm(data, perplexity, mode):
         mode (str): The mode of t-SNE, either '2D' or '3D'.
 
     Returns:
-        str: The transformed data in JSON format.
+        DataFrame: The transformed data.
     """
     steps = 10000
+    numeric_cols = data.select_dtypes(include=['number']).columns
+    data_to_cluster = data[numeric_cols]
+
     if mode == '2D':
         tsne = TSNE(n_components=2, perplexity=perplexity, n_iter=steps, random_state=0)
-        tsne_results_2D = tsne.fit_transform(data)
-        return tsne_results_2D.to_json()
+        tsne_results_2D = tsne.fit_transform(data_to_cluster)
+        return tsne_results_2D
 
     elif mode == '3D':
         tsne = TSNE(n_components=3, perplexity=perplexity, n_iter=steps, random_state=0)
-        tsne_results_3D = tsne.fit_transform(data)
-        return tsne_results_3D.to_json()
+        tsne_results_3D = tsne.fit_transform(data_to_cluster)
+        return tsne_results_3D
 
     else:
         print("Invalid mode. Please choose either '2D' or '3D'.")
@@ -215,15 +218,31 @@ def kmeans(dataframe, k, scaler=None):
 
 # UMAP Algorithmus
 def apply_umap(data, n_neighbors=15, min_dist=0.1, n_components=2):
-    fit = (umap.UMAP(n_neighbors, min_dist, n_components))
+    """
+    Apply UMAP to the data.
+    :param data: input dataframe
+    :param n_neighbors: number of neighbors
+    :param min_dist: min distance between clusters
+    :param n_components: number of components
+    :return: umap dataframe
+    """
+    fit = umap.UMAP(n_neighbors, min_dist, n_components)
     u = fit.fit_transform(data)
     return u
 
 
 # Hierarchical Algorithmus
 def hierarchical(data, n_clusters):
+    """
+    Apply Hierarchical Clustering to the data.
+    :param data: input dataframe
+    :param n_clusters: number of clusters
+    :return: dataframe with cluster column
+    """
+    numeric_cols = data.select_dtypes(include=['number']).columns
+    data_to_cluster = data[numeric_cols]
     cluster = AgglomerativeClustering(n_clusters, metric='euclidean', linkage='ward')
-    cluster.fit(data)
+    cluster.fit(data_to_cluster)
     labels = cluster.labels_
     data['Cluster'] = labels
     return data
