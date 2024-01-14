@@ -167,7 +167,7 @@ def pca(dataframe, scaler=None):
     pca = PCA()
     pca.fit(numeric_data)
 
-    return pca
+    return pca.explained_variance_ratio_
 
 
 # KMEANS Algorithmus
