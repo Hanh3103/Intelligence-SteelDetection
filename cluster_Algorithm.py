@@ -10,6 +10,8 @@ from sklearn.decomposition import PCA
 from sklearn.cluster import KMeans
 
 'GMM_Algorithmus'
+
+
 def recommend_gmm_components(data, max_components=10):
     """
       Recommends the number of Gaussian Mixture Model (GMM) components based on the Bayesian Information Criterion (BIC).
@@ -17,7 +19,7 @@ def recommend_gmm_components(data, max_components=10):
       Parameters:
           data (pd.DataFrame): Input dataset.
           max_components (int): Maximum number of GMM components to be tested.
-          random_state (int): Random state for reproducibility.
+
 
       Returns:
           int: Recommended number of GMM components.
@@ -49,9 +51,8 @@ def gmm_algorithm(data, n_components):
        """
     # Extract relevant data
     random_state = 0
-    numeric_cols = dataframe.select_dtypes(include=['number']).columns
-    data_to_cluster = dataframe[numeric_cols]
-
+    numeric_cols = data.select_dtypes(include=['number']).columns
+    data_to_cluster = data[numeric_cols]
 
     # Create and fit GMM model
     gmm = GaussianMixture(n_components=n_components, random_state=random_state)
@@ -59,7 +60,6 @@ def gmm_algorithm(data, n_components):
 
     # Add GMM clusters to the data
     data['Cluster'] = clusters_gmm
-
 
     return data
 
@@ -85,7 +85,6 @@ def tsne_algorithm(data, perplexity, mode):
     Args:
         data (pandas.DataFrame): The data to be transformed.
         perplexity (float): number of comparisons between every datapoint with another datapoint.
-        steps (int): The number of iterations for t-SNE.
         mode (str): The mode of t-SNE, either '2D' or '3D'.
 
     Returns:
@@ -95,12 +94,16 @@ def tsne_algorithm(data, perplexity, mode):
     if mode == '2D':
         tsne = TSNE(n_components=2, perplexity=perplexity, n_iter=steps, random_state=0)
         tsne_results_2D = tsne.fit_transform(data)
-        return tsne_results_2D.to_json()
+        tsne_df = pd.DataFrame(tsne_results_2D, columns=['Dimension1', 'Dimension2'])
+        return tsne_df.to_json()
+
 
     elif mode == '3D':
         tsne = TSNE(n_components=3, perplexity=perplexity, n_iter=steps, random_state=0)
         tsne_results_3D = tsne.fit_transform(data)
-        return tsne_results_3D.to_json()
+        tsne_df = pd.DataFrame(tsne_results_3D, columns=['Dimension1', 'Dimension2'])
+        return tsne_df.to_json()
+
 
     else:
         print("Invalid mode. Please choose either '2D' or '3D'.")
@@ -150,8 +153,9 @@ def fuzzy_c_mean_predict(data, cntr):
         return None
 
 
-
 'PCA_Algorithmus'
+
+
 def pca(dataframe, scaler=None):
     """
     Apply optional scaling and PCA to the numeric columns of a DataFrame.
@@ -186,6 +190,8 @@ def pca(dataframe, scaler=None):
 
 
 'K-Means Algorthm'
+
+
 def kmeans(dataframe, k, scaler=None):
     """
     Apply k-means clustering to the DataFrame.
@@ -230,24 +236,55 @@ def kmeans(dataframe, k, scaler=None):
 
     return dataframe
 
+
 'U-Map'
 
-def apply_umap(data,n_neighbors=15, min_dist=0.1, n_components=2):
+
+def apply_umap(data, n_neighbors=15, min_dist=0.1, n_components=2):
+    """
+    Applies Uniform Manifold Approximation and Projection (UMAP) to reduce the dimensionality of the input data.
+
+    Parameters:
+        - data: Input data to be transformed (must be a pandas DataFrame).
+        - n_neighbors: The size of local neighborhood used for manifold approximation (default is 15).
+        - min_dist: The minimum distance between points in the low-dimensional representation (default is 0.1).
+        - n_components: The number of dimensions in the embedded space (default is 2).
+
+    Returns:
+        - u: The low-dimensional representation of the input data.
+    """
+    if not isinstance(data, pd.DataFrame):
+        raise ValueError("Input data must be a pandas DataFrame.")
+
     fit = umap.UMAP(
         n_neighbors=n_neighbors,
         min_dist=min_dist,
         n_components=n_components,
-        metric=metric
+        metric='euclidean'  # Specify the metric for UMAP (e.g., 'euclidean', 'cosine', etc.)
     )
     u = fit.fit_transform(data)
     return u
 
 
+def hierarchical(data, n_clusters):
+    """
+    Applies Hierarchical Agglomerative Clustering to the input data.
 
-def hierarchical(data,n_clusters):
+    Parameters:
+        - data: Input data for clustering (must be a pandas DataFrame).
+        - n_clusters: The number of clusters to form.
+
+    Returns:
+        - data: The input data with an additional 'Cluster' column indicating the assigned cluster for each data point.
+    """
+    if not isinstance(data, pd.DataFrame):
+        raise ValueError("Input data must be a pandas DataFrame.")
+
     cluster = AgglomerativeClustering(
-    nclusters=n_clusters, metric='euclidean', linkage='ward')
-    cluster.fit(data)
-    labels = cluster.labels
+        n_clusters=n_clusters,
+        affinity='euclidean',  # Specify the distance metric (e.g., 'euclidean', 'cosine', etc.)
+        linkage='ward'  # Specify the linkage criterion for clustering (e.g., 'ward', 'complete', 'average', etc.)
+    )
+    labels = cluster.fit_predict(data)
     data['Cluster'] = labels
     return data
