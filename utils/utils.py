@@ -169,7 +169,7 @@ def upload_file_with_file_ending(file_ending):
 
         return filename, file_data
     elif file_path == '':
-        raise Exception("No file selected.")
+        raise ValueError("No file selected.")
     else:
         raise Exception("Unsupported file type. Please provide" + file_ending + " file.")
 

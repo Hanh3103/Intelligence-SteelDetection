@@ -257,7 +257,7 @@ def supervised():
     #                                     "prediction")
     utils.utils.predict_with_supervised_algo("False",
                                              "hanh3_labeled_OES_data.csv",
-                                             "xgboost_algorithm",
+                                             "deep_learning",
                                              "hanh3_test.csv",
                                              "prediction")
 

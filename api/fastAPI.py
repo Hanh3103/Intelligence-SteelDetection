@@ -20,8 +20,6 @@ from db.db import (authenticate_user, create_access_token, check_if_user_name_un
                    delete_table_from_database)
 from MLModels.unsupervised import cluster_Algorithm
 from enums import unsupervised_models_enum
-from db.db import authenticate_user, create_access_token, check_if_user_name_unique, get_password_hash, \
-    get_current_active_user, get_db, save_dataframe_to_database, get_dataframe_from_database, get_current_user
 from db.dbModels import User, UserInDB, Token, UserTable, UploadedItemTable
 from utils import readConfig  # Importing a utility function for reading configuration
 
@@ -39,7 +37,15 @@ ACCESS_TOKEN_EXPIRE_MINUTES = int(readConfig.read_config_value('TOKEN', 'ACCESS_
 async def root():
     return {"message": "Hello World"}
 
-# ------------------------------------SuperVised------------------------------------#
+
+# ------------------------------------Common Data Processing------------------------------------#
+async def convert_json_to_df(df_json):
+    df_buffer = StringIO(df_json)
+    df = pd.read_json(df_buffer, orient='split')
+    return df
+
+
+# ------------------------------------Supervised------------------------------------#
 # Endpoint for supervised prediction
 def prediction_result(classifier, table_to_predict_df, algorithm):
     global response_predict
@@ -60,11 +66,6 @@ def prediction_result(classifier, table_to_predict_df, algorithm):
 
     return response_predict
 
-
-async def convert_json_to_df(df_json):
-    df_buffer = StringIO(df_json)
-    df = pd.read_json(df_buffer, orient='split')
-    return df
 
 # Endpoint for supervised prediction
 @fast_app.post("/predict/supervised")
@@ -97,6 +98,7 @@ async def predict_supervised(
         )
 
     parent_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    print(parent_dir)
 
     module_name, class_name = await extract_modul_class_name(algorithm)
 
@@ -114,16 +116,16 @@ async def predict_supervised(
                 headers={"WWW-Authenticate": "Bearer"},
             )
     else:
-        classifier = await train_model_then_predict(class_name, encoded_file, module_name, parent_dir,
-                                                    table_name_to_train)
+        classifier = await train_model_then_predict_classifier(class_name, encoded_file, module_name, parent_dir,
+                                                               table_name_to_train)
         # prediction then save the model then test the model
         try:
             results = prediction_result(classifier, table_to_predict_df, algorithm)
-            print(type(results))
+            print(type(results))  # numpy array
             print(results)
             test_results = classifier.test_model()
             print(test_results)
-            print(type(test_results))
+            print(type(test_results))  # string
             name_of_model_to_save = algorithm + [algo.value[1] for algo in AlgorithmSupervised
                                                  if algo.value[0] == algorithm][0]
             name_of_encoder_to_save = "encoder_" + algorithm + ".pkl"
@@ -137,12 +139,14 @@ async def predict_supervised(
             )
 
 
-async def train_model_then_predict(class_name, encoded_file, module_name, parent_dir, table_name_to_train):
+async def train_model_then_predict_classifier(class_name, encoded_file, module_name, parent_dir, table_name_to_train):
     try:
         if encoded_file.filename == "":
             encoded_file_path = ""
         else:
             encoded_file_path = await save_uploaded_file(encoded_file, parent_dir)
+
+        print(encoded_file_path)
 
         # get the actual dataframe from the database
         table_to_train_df = get_dataframe_from_database(table_name_to_train)
@@ -192,7 +196,7 @@ async def save_uploaded_file(uploaded_file, parent_dir):
     uploaded_file_name = uploaded_file.filename
     uploaded_file_data = await uploaded_file.read()
     # Save file using the same name on the server
-    uploaded_file_path = os.path.join(parent_dir, "MLModels", "supervised", uploaded_file_name)
+    uploaded_file_path = os.path.join(parent_dir, "resources", "res_supervised", uploaded_file_name)
     with open(uploaded_file_path, "wb") as buffer:
         buffer.write(uploaded_file_data)
     return uploaded_file_path
@@ -295,6 +299,7 @@ async def predict_unsupervised(data: dict):
     return response_data.tolist()
 
 
+# --------------------------------------Token Authentication--------------------------------------#
 # Token endpoint for user authentication
 @fast_app.post("/token", response_model=Token)
 async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
@@ -340,6 +345,7 @@ async def read_users_me(current_user: User = Depends(get_current_user)):
     return current_user
 
 
+# --------------------------------------Upload a table--------------------------------------#
 # Endpoint to upload an item for the current user
 @fast_app.post("/users/me/item")
 async def upload_own_item(
@@ -417,6 +423,9 @@ async def extract_keys_of_dict(current_user_db, data_frame):
 
     namedb = current_user_db.username + "_" + file_name
     return file_name, namedb, file_size, df_json
+
+
+# ------------------------------------Get all tables------------------------------------#
 
 
 # Endpoint to delete an item owned by the current user
