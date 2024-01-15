@@ -12,6 +12,7 @@ from pandasgui import show
 from MLModels.unsupervised import cluster_Algorithm
 
 from enums import unsupervised_models_enum
+from MLModels.supervised.supervised_algo_enum import AlgorithmSupervised
 
 
 def upload_file():
@@ -156,32 +157,142 @@ def predict_data_from_file_unsupervised():
     predict_data_from_file_unsupervised_kmeans(upload_file(), 15, None)
 
 
-def predict_data_from_file_supervised():
-    # Function to predict data from an uploaded file in supervised mode
-    df, filesize, filename = upload_file()
+# ------------------------------------Supervised Algo------------------------------------#
+def upload_file_with_file_ending(file_ending):
+    file_path = filedialog.askopenfilename()
 
-    # TODO only take the first 10 rows from the dataframe > only temporary
-    df = df.head(10)
+    filename = file_path.split('/')[-1]
 
-    # TODO remove the last column from the dataframe > only temporary
-    df = df.iloc[:, :-1]
+    if file_path.endswith(file_ending):
+        with open(file_path, 'rb') as file:
+            file_data = file.read()
 
-    # Convert DataFrame to JSON
-    df_json = df.to_json(orient='split')
+        return filename, file_data
+    elif file_path == '':
+        raise Exception("No file selected.")
+    else:
+        raise Exception("Unsupported file type. Please provide" + file_ending + " file.")
 
-    # Include the DataFrame in the request payload
-    files = {"dataframe_input": {"data": df_json, "filesize": filesize, "filename": filename}}
 
-    # write files to a json file for testing with swagger later
-    with open('files.json', 'w') as outfile:
-        json.dump(files, outfile)
+def validate_params(algorithm, table_name_to_predict, existing_model, table_name_to_train):
+    # Algorithm and table_name_to_predict should not be empty independently of mode_train
+    # Algorithm should not be empty and must be a valid algorithm
+    if algorithm == "":
+        raise Exception("Please provide an algorithm.")
+    elif algorithm not in [algo.value[0] for algo in AlgorithmSupervised]:
+        raise Exception("Please provide a valid algorithm.")
 
-    response = requests.post("http://127.0.0.1:8000/predict/supervised", json=files)
+    # table_name_to_predict should not be empty
+    if table_name_to_predict == "":
+        raise Exception("Please provide a table name to predict the data.")
+
+    if existing_model == "False":
+        # table_name_to_train should not be empty
+        if table_name_to_train == "":
+            raise Exception("Please provide a table name to train the model.")
+    else:
+        # table_name_to_train should be empty
+        if table_name_to_train != "":
+            raise Exception("Please leave the table name to train the model empty.")
+
+
+"""
+existing_model: True or False (required)
+table_name_to_train: name of the table to train the model only needed if existing_model is False
+algorithm: name of the algorithm (required)
+table_name_to_predict: name of the table to predict the data(required)
+name_of_function: Test / Predict/ Save model button (required) > button > maybe redundant 
+"""
+
+
+def upload_encoded_file():
+    try:
+        # Upload encoded file
+        encoded_file_name, encoded_file_data = upload_file_with_file_ending(".pkl")
+    except ValueError as e:
+        encoded_file_name = ""
+        encoded_file_data = b''
+    except Exception as e:
+        print(e)
+        return
+    return encoded_file_name, encoded_file_data
+
+
+def upload_model_file(algorithm):
+    try:
+        model_file_name = ""
+        model_file_data = b''
+        # Upload model file
+        if algorithm == AlgorithmSupervised.DeepLearning.value[0]:
+            model_file_name, model_file_data = upload_file_with_file_ending(AlgorithmSupervised.DeepLearning.value[1])
+        elif algorithm == AlgorithmSupervised.Xgboost.value[0]:
+            model_file_name, model_file_data = upload_file_with_file_ending(AlgorithmSupervised.Xgboost.value[1])
+        return model_file_name, model_file_data
+    except ValueError as e:
+        print(e)
+        return
+    except Exception as e:
+        print(e)
+        return
+
+
+def predict_with_supervised_algo(existing_model, table_name_to_train, algorithm, table_name_to_predict,
+                                 name_of_function):
+    # Validate params
+    try:
+        validate_params(algorithm, table_name_to_predict, existing_model, table_name_to_train)
+    except Exception as e:
+        print(e)
+        return
+
+    # Upload files
+    if existing_model == "False":  # train new model and predict
+        # upload encoded file > is optional
+        encoded_file_name, encoded_file_data = upload_encoded_file()
+
+        files = {"upload_model_file": ("", b''),
+                 "encoded_file": (encoded_file_name, encoded_file_data)}
+
+    else:  # use upload existing model and predict
+        # Upload model file, ending of model is depend on the algorithm > is  required
+        model_file_name, model_file_data = upload_model_file(algorithm)
+        # Upload encoded file > is optional
+        encoded_file_name, encoded_file_data = upload_encoded_file()
+
+        # Include the uploaded files in the request payload
+        files = {"upload_model_file": (model_file_name, model_file_data),
+                 "encoded_file": (encoded_file_name, encoded_file_data)}
+
+    # Include parameters in the request payload
+    payload = {
+        "existing_model": existing_model,
+        "table_name_to_train": table_name_to_train,  # this is the table name of the training data, the table muss first
+        # be uploaded over "Data import"
+        "algorithm": algorithm,
+        "table_name_to_predict": table_name_to_predict,  # this is the table name of the data to predict, the table muss
+        # first be uploaded over "Data import"
+        "name_of_function": name_of_function  # Test / Predict/ Save model button
+    }
+    payload = json.dumps(payload)
+
+    data = {
+        "up_model_options": payload
+    }
+
+    header = {"accept": "application/json", "Authorization": f"Bearer {token_save}"}
+    response = requests.post("http://127.0.0.1:8000/predict/supervised", files=files,
+                             data=data, headers=header)
+
+    if response.status_code != 200:
+        print(response.json().get("detail"))
 
     # Process the response data
-    data = response.json()
-    prediction = data.get("prediction")
+    res = response.json()
+    prediction = res.get("prediction")
     print(prediction)
+
+
+# ------------------------------------End Supervised------------------------------------#
 
 
 def register_user(username, password, full_name, email):
@@ -242,6 +353,8 @@ def get_all_items():
             df = pd.read_json(StringIO(data), orient='split')
             dict_dataframes[name] = df
 
+        print(dict_dataframes.keys())
+
         show_dataframes(dict_dataframes)
 
     except requests.exceptions.HTTPError as err:
@@ -250,3 +363,17 @@ def get_all_items():
 
 def show_dataframes(dict_dataframes):  # show dataframes in gui but not elegant!
     show(**dict_dataframes)
+
+
+def delete_item_by_name(name):
+    try:
+        header = {"Authorization": f"Bearer {token_save}"}
+        response = requests.delete(f"http://127.0.0.1:8000/users/me/item/{name}", headers=header)
+
+        if response.status_code == 401:
+            print(response.json().get("detail"))
+        else:
+            print(f"Item with name {name} deleted.")
+
+    except requests.exceptions.HTTPError as err:
+        raise SystemExit(err)

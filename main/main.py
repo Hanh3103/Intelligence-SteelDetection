@@ -3,7 +3,7 @@ import threading
 import uvicorn
 
 from api.fastAPI import fast_app
-from gui.gui import App, LoginScreen
+from GUI.gui import App, LoginScreen
 
 
 def run_fastapi_server(app):
@@ -45,6 +45,8 @@ def main():
         run_tkinter_app(app)
     else:
         print("Login failed. Exiting...")
+
+    fastapi_thread.join()
 
 
 if __name__ == "__main__":

@@ -151,10 +151,13 @@ class App(ctk.CTk):
                                                          command=get_user_items)
         self.sidebar_button_unsupervised.grid(row=4, column=0, padx=20, pady=10, columnspan=2, sticky='nsew')
 
+        self.sidebar_button_unsupervised = ctk.CTkButton(self.sidebar_frame, corner_radius=8, text='delete Item',
+                                                         command=delete_item)
+        self.sidebar_button_unsupervised.grid(row=5, column=0, padx=20, pady=10, columnspan=2, sticky='nsew')
 
         # Sliders for variables in the sidebar
         self.sidebar_slider_frame = ctk.CTkFrame(self.sidebar_frame, width=140)
-        self.sidebar_slider_frame.grid(row=5, column=0, padx=20, pady=10, sticky='n')
+        self.sidebar_slider_frame.grid(row=6, column=0, padx=20, pady=10, sticky='n')
 
         self.label_var01 = ctk.CTkLabel(self.sidebar_slider_frame, text="Variable I",
                                         font=ctk.CTkFont(size=10, weight="bold"), anchor='w')
@@ -247,7 +250,16 @@ def upload_file():
 
 # Function for supervised prediction
 def supervised():
-    utils.utils.predict_data_from_file_supervised()
+    # utils.utils.predict_with_supervised("True",
+    #                                     "",
+    #                                     "xgboost_algorithm",
+    #                                     "hanh3_test.csv",
+    #                                     "prediction")
+    utils.utils.predict_with_supervised_algo("False",
+                                             "hanh3_labeled_OES_data.csv",
+                                             "xgboost_algorithm",
+                                             "hanh3_test.csv",
+                                             "prediction")
 
 
 # Function for unsupervised prediction
@@ -255,9 +267,13 @@ def unsupervised():
     utils.utils.predict_data_from_file_unsupervised()
 
 
-
 def get_user_items():
     utils.utils.get_all_items()
+
+
+def delete_item():
+    utils.utils.delete_item_by_name("hanh3_combined_OESdata.csv")
+
 
 # Function to handle hover events and update the label
 def on_hover(event, scatter, text_label):
