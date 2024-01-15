@@ -6,10 +6,10 @@ import numpy as np
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import utils.utils
 
-
 # Set appearance mode and default color theme
 ctk.set_appearance_mode("System")
 ctk.set_default_color_theme("blue")
+
 
 # Main Application class
 class App(ctk.CTk):
@@ -21,8 +21,8 @@ class App(ctk.CTk):
 
         # root
         self.title("Steel Identifier.py")
-        self.attributes('-fullscreen', True)
-        self.attributes('-topmost', True)  # To keep the window on top
+        self.attributes('-topmost', False)  # To keep the window on top -> needs to be false for fileupload
+        self.attributes('-fullscreen', False)
 
         # Bind the Escape key to exit fullscreen
         self.bind('<Escape>', lambda event: self.attributes('-fullscreen', False))
@@ -57,7 +57,6 @@ class App(ctk.CTk):
         self.sidebar_button_unsupervised = ctk.CTkButton(self.sidebar_frame, corner_radius=8, text='get Items',
                                                          command=get_user_items)
         self.sidebar_button_unsupervised.grid(row=4, column=0, padx=20, pady=10, columnspan=2, sticky='nsew')
-
 
         # Sliders for variables in the sidebar
         self.sidebar_slider_frame = ctk.CTkFrame(self.sidebar_frame, width=140)
@@ -162,9 +161,9 @@ def unsupervised():
     utils.utils.predict_data_from_file_unsupervised()
 
 
-
 def get_user_items():
     utils.utils.get_all_items()
+
 
 # Function to handle hover events and update the label
 def on_hover(event, scatter, text_label):
@@ -174,3 +173,8 @@ def on_hover(event, scatter, text_label):
         # Display the size in the text label
         size_of_hovered_point = scatter.get_sizes()[ind]
         text_label.set(f"Größe des  Punktes: {round(size_of_hovered_point, 2)}")
+
+
+# Fix for commit?
+def func():
+    return False

@@ -6,8 +6,6 @@ import requests
 import utils.utils
 
 
-
-
 class LoginScreen(ctk.CTk):
     def __init__(self, main_app):
         super().__init__()
@@ -17,7 +15,7 @@ class LoginScreen(ctk.CTk):
         self.center_window()
         self.grid_columnconfigure(0, weight=1)
 
-        #Caption
+        # Caption
         label = ctk.CTkLabel(self, text="Anmeldung Stahlklassifizierung", font=("Helvetica", 16, "bold"))
         label.grid(row=0, column=0, sticky="ew", pady=40, padx=80)
 
@@ -29,7 +27,7 @@ class LoginScreen(ctk.CTk):
 
         self.entry_email = ctk.CTkEntry(self, placeholder_text="Email")
         self.entry_email.grid_forget()
-        self.entry_nme = ctk.CTkEntry(self, placeholder_text="Full Name")
+        self.entry_name = ctk.CTkEntry(self, placeholder_text="Full Name")
         self.entry_name.grid_forget()
 
         # Login Button
@@ -48,7 +46,6 @@ class LoginScreen(ctk.CTk):
         # Registration Button
         self.btn_register = ctk.CTkButton(self, text="Register", command=self.register)
         self.btn_register.grid_forget()
-
 
         # Reference to the main application
         self.main_app = main_app
@@ -108,6 +105,3 @@ class LoginScreen(ctk.CTk):
 
         # Set the window position
         self.geometry("+{}+{}".format(x, y))
-
-
-
