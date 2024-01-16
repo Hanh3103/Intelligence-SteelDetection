@@ -159,7 +159,7 @@ def upload_file():
 def supervised():
     utils.utils.predict_with_supervised_algo("True",
                                              "",
-                                             "xgboost_algorithm",
+                                             "deep_learning",
                                              "hanh3_test.csv",
                                              "prediction")
     # utils.utils.predict_with_supervised_algo("False",
