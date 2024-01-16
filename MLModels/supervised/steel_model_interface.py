@@ -1,4 +1,4 @@
-#!/usr/local/bin/python3
+
 class SteelModelInterface:
 
     def __init__(self):

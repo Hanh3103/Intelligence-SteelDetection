@@ -4,7 +4,10 @@ import customtkinter as ctk
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
-import utils.utils
+
+from api_functions.database import get_all_items_of_user_from_db, upload_csv_or_xlsx_to_db_table, delete_db_table_by_name
+from api_functions.supervised import predict_with_supervised_algo
+from utils.unsupervised_utils import predict_data_from_file_unsupervised
 
 # Set appearance mode and default color theme
 ctk.set_appearance_mode("System")
@@ -55,11 +58,11 @@ class App(ctk.CTk):
         self.sidebar_button_unsupervised.grid(row=3, column=0, padx=20, pady=10, columnspan=2, sticky='nsew')
 
         self.sidebar_button_unsupervised = ctk.CTkButton(self.sidebar_frame, corner_radius=8, text='get Items',
-                                                         command=get_user_items)
+                                                         command=get_all_items_of_user_from_db_gui)
         self.sidebar_button_unsupervised.grid(row=4, column=0, padx=20, pady=10, columnspan=2, sticky='nsew')
 
         self.sidebar_button_unsupervised = ctk.CTkButton(self.sidebar_frame, corner_radius=8, text='delete Item',
-                                                         command=delete_item)
+                                                         command=delete_db_table_by_name_gui)
         self.sidebar_button_unsupervised.grid(row=5, column=0, padx=20, pady=10, columnspan=2, sticky='nsew')
 
         # Sliders for variables in the sidebar
@@ -111,7 +114,7 @@ class App(ctk.CTk):
         self.hover_label.grid(row=0, column=0, padx=10, pady=15, sticky='w')
 
         # Button to upload a file
-        self.import_button = ctk.CTkButton(self.main_frame, corner_radius=8, command=upload_file,
+        self.import_button = ctk.CTkButton(self.main_frame, corner_radius=8, command=upload_file_to_database,
                                            text='Datei Import')
         self.import_button.grid(row=0, column=0, sticky="ne", padx=10, pady=15)
 
@@ -151,16 +154,16 @@ def change_darkmode(choice):
 
 
 # Function to upload a file
-def upload_file():
-    utils.utils.only_upload_file()
+def upload_file_to_database():
+    upload_csv_or_xlsx_to_db_table()
 
 
 # Function for supervised prediction
 def supervised():
-    utils.utils.predict_with_supervised_algo("True",
+    predict_with_supervised_algo("True",
                                              "",
                                              "deep_learning",
-                                             "hanh3_test.csv",
+                                             "luca300_test_supervised_to_prediction.csv",
                                              "prediction")
     # utils.utils.predict_with_supervised_algo("False",
     #                                          "hanh3_labeled_OES_data.csv",
@@ -172,15 +175,15 @@ def supervised():
 
 # Function for unsupervised prediction
 def unsupervised():
-    utils.utils.predict_data_from_file_unsupervised()
+    predict_data_from_file_unsupervised()
 
 
-def get_user_items():
-    utils.utils.get_all_items()
+def get_all_items_of_user_from_db_gui():
+    get_all_items_of_user_from_db()
 
 
-def delete_item():
-    utils.utils.delete_item_by_name("hanh3_combined_OESdata.csv")
+def delete_db_table_by_name_gui():
+    delete_db_table_by_name("luca300_labeled_OES_data.csv")
 
 
 # Function to handle hover events and update the label
@@ -192,7 +195,3 @@ def on_hover(event, scatter, text_label):
         size_of_hovered_point = scatter.get_sizes()[ind]
         text_label.set(f"Größe des  Punktes: {round(size_of_hovered_point, 2)}")
 
-
-# Fix for commit?
-def func():
-    return False

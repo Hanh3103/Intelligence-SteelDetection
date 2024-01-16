@@ -2,7 +2,7 @@
 from pydantic import BaseModel
 from sqlalchemy import Column, String, Boolean, Integer, ForeignKey
 from sqlalchemy.orm import declarative_base, relationship
-from typing import Dict
+
 
 # Create a declarative base for SQLAlchemy
 Base = declarative_base()

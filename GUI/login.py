@@ -1,9 +1,6 @@
 from tkinter import messagebox
 import customtkinter as ctk
-
-import requests
-
-import utils.utils
+from api_functions.login_register import login_user, register_user
 
 
 class LoginScreen(ctk.CTk):
@@ -74,7 +71,7 @@ class LoginScreen(ctk.CTk):
         password = self.entry_password.get()
 
         try:
-            utils.utils.login_user(username, password)
+            login_user(username, password)
             self.destroy()  # Close the login screen
             self.main_app.login_successful = True
         except Exception as e:
@@ -89,7 +86,7 @@ class LoginScreen(ctk.CTk):
         email = self.entry_email.get()
         name = self.entry_name.get()
 
-        utils.utils.register_user(username, password, email, name)
+        register_user(username, password, email, name)
         messagebox.showinfo("Registration Successful", "You are now registered as: " + username + "!")
 
         # Close the registration window

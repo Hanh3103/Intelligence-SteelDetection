@@ -1,15 +1,18 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Optional
 
+import pandas as pd
+from fastapi import Depends, HTTPException
 from fastapi.security import OAuth2PasswordBearer
 from jose import jwt, JWTError
 from passlib.context import CryptContext
 from sqlalchemy import create_engine, MetaData, Table
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import sessionmaker, Session
+from starlette import status
 
-from api.fastAPI import *  # Importing FastAPI related components
 from db.dbModels import Base, UserInDB, UserTable, TokenData
 from utils import readConfig  # Importing a utility function for reading configuration
+from utils.constants import SECRET_KEY, ALGORITHM
 
 # Read database URL from configuration
 url = readConfig.read_config_value("DATABASE", "DB_URL")
@@ -26,11 +29,6 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 # Create an OAuth2PasswordBearer for token authentication
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
-
-# Read configuration values
-SECRET_KEY = readConfig.read_config_value('TOKEN', 'SECRET_KEY')
-ALGORITHM = readConfig.read_config_value('TOKEN', 'ALGORITHM')
-ACCESS_TOKEN_EXPIRE_MINUTES = int(readConfig.read_config_value('TOKEN', 'ACCESS_TOKEN_EXPIRE_MINUTES'))
 
 
 def get_db() -> Session:

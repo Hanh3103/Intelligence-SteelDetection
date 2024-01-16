@@ -1,16 +1,13 @@
-#!/usr/local/bin/python3
-import pandas as pd
-from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import StandardScaler
-from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Dense
-from sklearn.preprocessing import LabelEncoder
-import numpy as np
-from tensorflow.keras.models import load_model
 import joblib
-from tensorflow.keras.optimizers import Adam
-from tensorflow.keras.layers import Dropout
+import numpy as np
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import LabelEncoder
 from tensorflow.keras import regularizers
+from tensorflow.keras.layers import Dense
+from tensorflow.keras.layers import Dropout
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.models import load_model
+
 from MLModels.supervised.steel_model_interface import SteelModelInterface
 
 
