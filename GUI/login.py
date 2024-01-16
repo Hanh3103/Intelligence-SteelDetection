@@ -77,7 +77,8 @@ class LoginScreen(ctk.CTk):
             utils.utils.login_user(username, password)
             self.destroy()  # Close the login screen
             self.main_app.login_successful = True
-        except requests.exceptions.HTTPError as err:
+        except Exception as e:
+            print(e)
             messagebox.showerror("Login Failed", "Invalid username or password")
             self.main_app.login_successful = False
 
