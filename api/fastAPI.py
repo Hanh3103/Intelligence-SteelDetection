@@ -2,24 +2,23 @@ import os
 from datetime import timedelta
 from io import StringIO
 
-import numpy
+import base64
 import numpy as np
 import pandas as pd
 from fastapi import FastAPI, Depends, HTTPException, status, File, UploadFile, Form
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 from starlette.responses import JSONResponse
-from fastapi.encoders import jsonable_encoder
+from fastapi.responses import JSONResponse, StreamingResponse
 from pydantic import Json
 
 from MLModels.supervised import steel_classifier
-from MLModels.supervised.supervised_algo_enum import AlgorithmSupervised
+from enums.supervised_algo_enum import AlgorithmSupervised
 from db.db import (authenticate_user, create_access_token, check_if_user_name_unique, get_password_hash, \
                    get_current_active_user, get_db, save_dataframe_to_database, get_dataframe_from_database,
                    get_current_user,
                    delete_table_from_database)
 from MLModels.unsupervised import cluster_Algorithm
-from enums import unsupervised_models_enum
 from db.dbModels import User, UserInDB, Token, UserTable, UploadedItemTable
 from utils import readConfig  # Importing a utility function for reading configuration
 
@@ -47,9 +46,9 @@ async def convert_json_to_df(df_json):
 
 # ------------------------------------Supervised------------------------------------#
 # Endpoint for supervised prediction
-def prediction_result(classifier, table_to_predict_df, algorithm):
+def prediction_with_algorithm(classifier, table_to_predict_df, algorithm):
     global response_predict
-    if algorithm == AlgorithmSupervised.DeepLearning.value[0]:
+    if algorithm == AlgorithmSupervised.DeepLearning.value.get("algorithm"):
         # this algorithm takes only numpy array as input
         response_predict = []
         for index, row in table_to_predict_df.iterrows():
@@ -60,9 +59,9 @@ def prediction_result(classifier, table_to_predict_df, algorithm):
             instance = np.array(instance).reshape(1, -1)
             prediction = classifier.predict(instance)
             response_predict.append(prediction[0][0])
-    elif algorithm == AlgorithmSupervised.Xgboost.value[0]:
+    elif algorithm == AlgorithmSupervised.Xgboost.value.get("algorithm"):
         # xgboost takes only dataframe as input
-        response_predict = classifier.predict(table_to_predict_df)
+        response_predict = classifier.predict(table_to_predict_df).tolist()
 
     return response_predict
 
@@ -98,7 +97,6 @@ async def predict_supervised(
         )
 
     parent_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    print(parent_dir)
 
     module_name, class_name = await extract_modul_class_name(algorithm)
 
@@ -107,7 +105,7 @@ async def predict_supervised(
                                                      upload_model_file)
         # only prediction works !!!
         try:
-            results = prediction_result(classifier, table_to_predict_df, algorithm)
+            results = prediction_with_algorithm(classifier, table_to_predict_df, algorithm)
             return {"prediction": results}
         except Exception as e:
             raise HTTPException(
@@ -118,19 +116,19 @@ async def predict_supervised(
     else:
         classifier = await train_model_then_predict_classifier(class_name, encoded_file, module_name, parent_dir,
                                                                table_name_to_train)
-        # prediction then save the model then test the model
+        # predictions + save the model + test the model
         try:
-            results = prediction_result(classifier, table_to_predict_df, algorithm)
-            print(type(results))  # numpy array
-            print(results)
-            test_results = classifier.test_model()
-            print(test_results)
-            print(type(test_results))  # string
-            name_of_model_to_save = algorithm + [algo.value[1] for algo in AlgorithmSupervised
-                                                 if algo.value[0] == algorithm][0]
-            name_of_encoder_to_save = "encoder_" + algorithm + ".pkl"
-            classifier.save_model(name_of_model_to_save, name_of_encoder_to_save)
-            return {"prediction": results, "test_results": test_results}
+            results = prediction_with_algorithm(classifier, table_to_predict_df, algorithm) # list
+            test_results = classifier.test_model() # string
+            name_new_model, name_new_encoder, encoded_model, encoded_encoder = await save_trained_model_co_on_server(
+                algorithm, classifier, parent_dir)
+            json_response = JSONResponse(content={"prediction": results,
+                                                  "test_results": test_results,
+                                                  "name_new_model": name_new_model,
+                                                  "name_new_encoder": name_new_encoder,
+                                                  "encoded_model": encoded_model,
+                                                  "encoded_encoder": encoded_encoder})
+            return json_response
         except Exception as e:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
@@ -139,14 +137,37 @@ async def predict_supervised(
             )
 
 
+async def extract_format_algorithm(algorithm):
+    # Extract model and encoder format from algorithm
+    for algo in AlgorithmSupervised:
+        if algo.value.get("algorithm") == algorithm:
+            model_format = algo.value.get("model_format")
+            encoder_format = algo.value.get("encoder_format")
+            return model_format, encoder_format
+
+
+async def save_trained_model_co_on_server(algorithm, classifier, parent_dir):
+    model_format, encoder_format = await extract_format_algorithm(algorithm)
+    name_of_model_to_save = algorithm + model_format
+    name_of_encoder_to_save = "encoder_" + algorithm + encoder_format
+    path_to_save_model = os.path.join(parent_dir, "resources", "res_supervised", name_of_model_to_save)
+    path_to_save_encoder = os.path.join(parent_dir, "resources", "res_supervised", name_of_encoder_to_save)
+    classifier.save_model(path_to_save_model, path_to_save_encoder)
+    # Encode the file content as base64
+    with open(path_to_save_model, "rb") as file:
+        encoded_string_model = base64.b64encode(file.read()).decode("utf-8")
+    with open(path_to_save_encoder, "rb") as file:
+        encoded_string_encoder = base64.b64encode(file.read()).decode("utf-8")
+
+    return name_of_model_to_save, name_of_encoder_to_save, encoded_string_model, encoded_string_encoder
+
+
 async def train_model_then_predict_classifier(class_name, encoded_file, module_name, parent_dir, table_name_to_train):
     try:
         if encoded_file.filename == "":
             encoded_file_path = ""
         else:
             encoded_file_path = await save_uploaded_file(encoded_file, parent_dir)
-
-        print(encoded_file_path)
 
         # get the actual dataframe from the database
         table_to_train_df = get_dataframe_from_database(table_name_to_train)
@@ -169,7 +190,6 @@ async def train_model_then_predict_classifier(class_name, encoded_file, module_n
 async def existing_model_classifier(class_name, encoded_file, module_name, parent_dir, upload_model_file):
     try:
         model_file_path = await save_uploaded_file(upload_model_file, parent_dir)
-
         # encode file is optional !!! > it can be empty "except for deep learning in case exist_model is true"
         if encoded_file.filename == "":
             encoded_file_path = ""
@@ -206,10 +226,9 @@ async def extract_modul_class_name(algorithm):
     # Get the module name and class name from the algorithm
     module_name = "MLModels.supervised." + algorithm
     class_name = ""
-    if algorithm == AlgorithmSupervised.DeepLearning.value[0]:
-        class_name = AlgorithmSupervised.DeepLearning.value[2]
-    elif algorithm == AlgorithmSupervised.Xgboost.value[0]:
-        class_name = AlgorithmSupervised.Xgboost.value[2]
+    for algo in AlgorithmSupervised:
+        if algo.value.get("algorithm") == algorithm:
+            class_name = algo.value.get("class_name")
     return module_name, class_name
 
 
@@ -226,7 +245,7 @@ async def parse_payload(dataframe_input):
     return algorithm, existing_model, table_name_to_predict, table_name_to_train, name_of_function
 
 
-# ------------------------------------UnSuperVised------------------------------------#
+# ------------------------------------Unsupervised------------------------------------#
 async def extract_model_options_and_df(data: dict):
     df_input = data.get("dataframe_input").get("data")
     df = await convert_json_to_df(df_input)

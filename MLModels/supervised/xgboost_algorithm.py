@@ -44,7 +44,7 @@ class XGBoost(SteelModelInterface):
         self.data = self.data.map(pd.to_numeric)
 
         # Aufteilung in data (X) und result (y)
-        self.X = self.data.drop(self.data.iloc[:, -1], axis=1)
+        self.X = self.data.drop(self.data.columns[-1], axis=1)
         self.y = self.data.iloc[:, -1]
 
         # Aufteilung in Test- und Trainingsdaten

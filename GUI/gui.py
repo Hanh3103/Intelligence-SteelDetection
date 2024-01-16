@@ -54,7 +54,7 @@ class LoginScreen(tk.Tk):
             messagebox.showinfo("Login Successful", "Welcome, " + username + "!")
             self.destroy()  # Close the login screen
             self.main_app.login_successful = True
-        except requests.exceptions.HTTPError as err:
+        except Exception as e:
             messagebox.showerror("Login Failed", "Invalid username or password")
             self.main_app.login_successful = False
 
@@ -250,16 +250,17 @@ def upload_file():
 
 # Function for supervised prediction
 def supervised():
-    # utils.utils.predict_with_supervised("True",
-    #                                     "",
-    #                                     "xgboost_algorithm",
-    #                                     "hanh3_test.csv",
-    #                                     "prediction")
-    utils.utils.predict_with_supervised_algo("False",
-                                             "hanh3_labeled_OES_data.csv",
-                                             "deep_learning",
+    utils.utils.predict_with_supervised_algo("True",
+                                             "",
+                                             "xgboost_algorithm",
                                              "hanh3_test.csv",
                                              "prediction")
+    # utils.utils.predict_with_supervised_algo("False",
+    #                                          "hanh3_labeled_OES_data.csv",
+    #                                          "deep_learning",  # please choose between "deep_learning" and
+    #                                                                     # "xgboost_algorithm"
+    #                                          "hanh3_test.csv",
+    #                                          "prediction")
 
 
 # Function for unsupervised prediction
