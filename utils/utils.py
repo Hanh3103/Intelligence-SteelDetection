@@ -154,8 +154,8 @@ def predict_data_from_file_unsupervised():
 
 
 # ------------------------------------Supervised Algo------------------------------------#
-def upload_file_with_file_ending(file_ending):
-    file_path = filedialog.askopenfilename()
+def upload_file_with_file_ending(file_ending, text):
+    file_path = filedialog.askopenfilename(title=text)
 
     filename = file_path.split('/')[-1]
 
@@ -204,7 +204,8 @@ def extract_model_and_encoder_format(algorithm):
 def upload_encoded_file(encoder_format):
     try:
         # Upload encoded file
-        encoded_file_name, encoded_file_data = upload_file_with_file_ending(encoder_format)
+        text = "Upload encoder file"
+        encoded_file_name, encoded_file_data = upload_file_with_file_ending(encoder_format,text)
     except ValueError as e:  # if no file is selected the encoded file is optional
         encoded_file_name = ""
         encoded_file_data = b''
@@ -217,7 +218,8 @@ def upload_encoded_file(encoder_format):
 def upload_model_file(model_format):
     try:
         # Upload model file
-        model_file_name, model_file_data = upload_file_with_file_ending(model_format)
+        text = "Upload model file"
+        model_file_name, model_file_data = upload_file_with_file_ending(model_format,text)
         return model_file_name, model_file_data
     except ValueError as e:
         print(e)
