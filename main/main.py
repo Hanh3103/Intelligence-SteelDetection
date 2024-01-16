@@ -47,6 +47,8 @@ def main():
     else:
         print("Login failed. Exiting...")
 
+    fastapi_thread.join()
+
 
 if __name__ == "__main__":
     # Entry point of the program
