@@ -1,5 +1,5 @@
 import importlib
-
+#import pandas as pd
 
 
 class SteelClassifier:
@@ -28,14 +28,13 @@ class SteelClassifier:
         return self.model.test_model()
 
 
-# deep learning takes only numpy array as input
-# data = pd.read_csv('labeled_OES_data.csv')
-# data.replace(',', '.', regex=True, inplace=True)
-#
-# my_classifier = SteelClassifier('test.h5', 'le.pkl', "deep_learning", "DeepLearning1", True)
-# test_data = [0.0609833333333333, 0.005, 0.312333333333333, 0.0199166666666667, 0.03495, 0.0249166666666667, 0.0465666666666667, 0.002, 0.146833333333333]
-# test_data = np.array(test_data).reshape(1, -1)
-# print(my_classifier.predict(test_data))
+#data = pd.read_csv('/home/julius/Schreibtisch/fopra/gitProjekt/Intelligente-Stahlerkennung/resources/res_supervised/labeled_OES_data.csv')
+#data.replace(',', '.', regex=True, inplace=True)
+#test_data = data.iloc[-50:, :-1]
+#print(data.iloc[-50:, 9:])
+##
+#my_classifier = SteelClassifier('/home/julius/Schreibtisch/fopra/gitProjekt/Intelligente-Stahlerkennung/resources/res_supervised/test.h5', '/home/julius/Schreibtisch/fopra/gitProjekt/Intelligente-Stahlerkennung/resources/res_supervised/le.pkl', "deep_learning", "DeepLearning1", True)
+#print(my_classifier.predict(test_data))
 #print(my_classifier.test_model())
 # my_classifier.save_model('test.h5', 'le.pkl')
 #

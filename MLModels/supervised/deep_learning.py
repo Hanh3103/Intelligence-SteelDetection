@@ -56,7 +56,7 @@ class DeepLearning1(SteelModelInterface):
                        validation_data=(self.X_test, self.y_test))
 
     def predict(self, instances):
-        instances = np.array(instances).reshape(1, -1)
+        instances = instances.to_numpy(dtype=np.float64)
         predictions = self.model.predict(instances)
         predicted_classes = predictions.argmax(axis=-1)
         prediction_label = self.label_encoder.inverse_transform(predicted_classes)
