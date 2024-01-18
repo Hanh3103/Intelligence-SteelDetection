@@ -5,7 +5,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
-from api_functions.database import get_all_items_of_user_from_db, upload_csv_or_xlsx_to_db_table, delete_db_table_by_name
+from api_functions.database import get_all_items_of_user_from_db, upload_csv_or_xlsx_to_db_table, \
+    delete_db_table_by_name
 from api_functions.supervised import predict_with_supervised_algo
 from utils.unsupervised_utils import predict_data_from_file_unsupervised
 
@@ -160,17 +161,18 @@ def upload_file_to_database():
 
 # Function for supervised prediction
 def supervised():
-    predict_with_supervised_algo("True",
-                                             "",
-                                             "deep_learning",
-                                             "luca300_test_supervised_to_prediction.csv",
-                                             "prediction")
-    # utils.utils.predict_with_supervised_algo("False",
-    #                                          "hanh3_labeled_OES_data.csv",
-    #                                          "deep_learning",  # please choose between "deep_learning" and
-    #                                                                     # "xgboost_algorithm"
+    # predict_with_supervised_algo("True",
+    #                                          "",
+    #                                          "xgboost_algorithm",  # please choose between "deep_learning" and
+    #                                                                      # "xgboost_algorithm"
     #                                          "hanh3_test.csv",
     #                                          "prediction")
+    predict_with_supervised_algo("False",
+                                 "hanh3_labeled_OES_data.csv",
+                                 "xgboost_algorithm",  # please choose between "deep_learning" and
+                                 # "xgboost_algorithm"
+                                 "hanh3_test.csv",
+                                 "prediction")
 
 
 # Function for unsupervised prediction
@@ -194,4 +196,3 @@ def on_hover(event, scatter, text_label):
         # Display the size in the text label
         size_of_hovered_point = scatter.get_sizes()[ind]
         text_label.set(f"Größe des  Punktes: {round(size_of_hovered_point, 2)}")
-
