@@ -1,6 +1,7 @@
 import base64
 import os
 from tkinter import filedialog
+import logging
 
 import numpy as np
 from fastapi import HTTPException
@@ -204,32 +205,25 @@ def extract_model_and_encoder_format(algorithm):
             return model_format, encoder_format
 
 
-def upload_encoded_file(encoder_format):
+def upload_encoded_file(encoder_format, existing_model):
     try:
         # Upload encoded file
         text = "Upload encoder file"
         encoded_file_name, encoded_file_data = upload_file_with_file_ending(encoder_format, text)
-    except ValueError as e:  # if no file is selected the encoded file is optional
-        encoded_file_name = ""
-        encoded_file_data = b''
-    except Exception as e:
-        print(e)
-        return
+    except ValueError as e:  # if no file is selected
+        if existing_model == "True":  # the encoded file is required
+            raise Exception(str(e) + " The encoded file is required.")
+        else:  # the encoded file is optional
+            encoded_file_name = ""
+            encoded_file_data = b''
     return encoded_file_name, encoded_file_data
 
 
 def upload_model_file(model_format):
-    try:
-        # Upload model file
-        text = "Upload model file"
-        model_file_name, model_file_data = upload_file_with_file_ending(model_format, text)
-        return model_file_name, model_file_data
-    except ValueError as e:
-        print(e)
-        return
-    except Exception as e:
-        print(e)
-        return
+    # Upload model file
+    text = "Upload model file"
+    model_file_name, model_file_data = upload_file_with_file_ending(model_format, text)
+    return model_file_name, model_file_data
 
 
 def save_model_and_encoder(name_new_model, name_new_encoder, model_content, encoder_content):
