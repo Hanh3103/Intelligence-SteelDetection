@@ -40,7 +40,7 @@ def predict_with_supervised_algo(existing_model, table_name_to_train, algorithm,
     else:  # use upload existing model and predict
         # Upload model file, ending of model is depend on the algorithm > is  required
         model_file_name, model_file_data = upload_model_file(model_format)
-        # Upload encoded file > is optional
+        # Upload encoded file > is optional (actually not optional) TODO fix this
         encoded_file_name, encoded_file_data = upload_encoded_file(encoder_format)
 
         # Include the uploaded files in the request payload

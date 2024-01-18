@@ -161,18 +161,18 @@ def upload_file_to_database():
 
 # Function for supervised prediction
 def supervised():
-    # predict_with_supervised_algo("True",
-    #                                          "",
-    #                                          "xgboost_algorithm",  # please choose between "deep_learning" and
-    #                                                                      # "xgboost_algorithm"
-    #                                          "hanh3_test.csv",
-    #                                          "prediction")
-    predict_with_supervised_algo("False",
-                                 "hanh3_labeled_OES_data.csv",
+    predict_with_supervised_algo("True",
+                                 "",
                                  "xgboost_algorithm",  # please choose between "deep_learning" and
                                  # "xgboost_algorithm"
                                  "hanh3_test.csv",
                                  "prediction")
+    # predict_with_supervised_algo("False",
+    #                              "hanh3_labeled_OES_data.csv",
+    #                              "xgboost_algorithm",  # please choose between "deep_learning" and
+    #                              # "xgboost_algorithm"
+    #                              "hanh3_test.csv",
+    #                              "prediction")
 
 
 # Function for unsupervised prediction

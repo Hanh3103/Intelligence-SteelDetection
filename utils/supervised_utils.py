@@ -56,7 +56,21 @@ async def save_trained_model_co_on_server(algorithm, classifier, parent_dir):
     with open(path_to_save_encoder, "rb") as file:
         encoded_string_encoder = base64.b64encode(file.read()).decode("utf-8")
 
+    # delete the model and encoder on server
+    await delete_model_and_encoder(path_to_save_model, path_to_save_encoder)
+
     return name_of_model_to_save, name_of_encoder_to_save, encoded_string_model, encoded_string_encoder
+
+
+async def delete_model_and_encoder(path_of_model, path_of_encoder):
+    """
+    delete the model and encoder on server
+    :param path_of_model: absolute path of the model on server
+    :param path_of_encoder: absolute path of the encoder on server
+    """
+    if os.path.exists(path_of_model) and os.path.exists(path_of_encoder):
+        os.remove(path_of_model)
+        os.remove(path_of_encoder)
 
 
 async def train_model_then_predict_classifier(class_name, encoded_file, module_name, parent_dir, table_name_to_train):
@@ -99,6 +113,7 @@ async def existing_model_classifier(class_name, encoded_file, module_name, paren
                                                       module_name,
                                                       class_name,
                                                       True)
+        await delete_model_and_encoder(model_file_path, encoded_file_path)
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
