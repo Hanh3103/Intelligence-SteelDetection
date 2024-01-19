@@ -3,6 +3,7 @@ from pydantic import BaseModel
 from sqlalchemy import Column, String, Boolean, Integer, ForeignKey
 from sqlalchemy.orm import declarative_base, relationship
 
+
 # Create a declarative base for SQLAlchemy
 Base = declarative_base()
 
@@ -27,17 +28,19 @@ class User(BaseModel):
 
 
 # Define a Pydantic BaseModel for UserInDB, inheriting from User
-class UserInDB(User):
+class UserInDB(BaseModel):
+    username: str
+    full_name: str
+    email: str
     password: str
+    disabled: bool
 
 
 # Define a Pydantic BaseModel for UploadedItem
 class UploadedItem(BaseModel):
-    id: int
-    owner_id: int
     filename: str
     filesize: int
-    filepath: str
+    data: dict
 
 
 # Define a SQLAlchemy Table for UserTable
@@ -70,7 +73,7 @@ class UploadedItemTable(Base):
     # Add a commented-out column for filetype
     # filetype = Column(String)
     filesize = Column(Integer)
-    filepath = Column(String)
+    namedb = Column(String)
 
     # Define a relationship with UserTable
     owner = relationship("UserTable", back_populates="items")

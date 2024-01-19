@@ -1,4 +1,4 @@
-#!/usr/local/bin/python3
+
 class SteelModelInterface:
 
     def __init__(self):
@@ -17,7 +17,4 @@ class SteelModelInterface:
         pass
 
     def load_model(self, path_model, path_encoder):
-        pass
-
-    def retrain_model(self, newdata_file):
         pass

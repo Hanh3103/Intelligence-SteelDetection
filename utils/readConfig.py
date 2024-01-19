@@ -1,11 +1,14 @@
 import configparser
+import os
 
 
 def read_config():
     # Function to read the entire configuration from 'config.ini'
     config = configparser.ConfigParser()
+    parent_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     try:
-        config.read('/Users/luca/Documents/Intelligente-Stahlerkennung/resources/config.ini')
+        path_of_config = os.path.join(parent_dir, 'resources', 'config', 'config.ini')
+        config.read(path_of_config)
     except configparser.Error as e:
         print(f"Error reading 'config.ini': {e}")
         # You can choose to raise an exception or return a default configuration here

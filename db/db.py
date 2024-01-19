@@ -1,15 +1,18 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Optional
 
+import pandas as pd
+from fastapi import Depends, HTTPException
 from fastapi.security import OAuth2PasswordBearer
 from jose import jwt, JWTError
 from passlib.context import CryptContext
 from sqlalchemy import create_engine, MetaData, Table
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import sessionmaker, Session
+from starlette import status
 
-from api.fastAPI import *  # Importing FastAPI related components
 from db.dbModels import Base, UserInDB, UserTable, TokenData
 from utils import readConfig  # Importing a utility function for reading configuration
+from utils.constants import SECRET_KEY, ALGORITHM
 
 # Read database URL from configuration
 url = readConfig.read_config_value("DATABASE", "DB_URL")
@@ -27,13 +30,8 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 # Create an OAuth2PasswordBearer for token authentication
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
-# Read configuration values
-SECRET_KEY = readConfig.read_config_value('TOKEN', 'SECRET_KEY')
-ALGORITHM = readConfig.read_config_value('TOKEN', 'ALGORITHM')
-ACCESS_TOKEN_EXPIRE_MINUTES = int(readConfig.read_config_value('TOKEN', 'ACCESS_TOKEN_EXPIRE_MINUTES'))
 
-
-def get_db():
+def get_db() -> Session:
     db = SessionLocal()
     try:
         yield db
@@ -90,7 +88,7 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
 
 
 # Function to get the current user based on the JWT token
-async def get_current_user(token: str = Depends(oauth2_scheme), db_session=Depends(SessionLocal)):
+async def get_current_user(token: str = Depends(oauth2_scheme), db_session: Session = Depends(get_db)):
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
@@ -98,6 +96,7 @@ async def get_current_user(token: str = Depends(oauth2_scheme), db_session=Depen
     )
 
     try:
+        # Your JWT decoding logic
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         username: str = payload.get("sub")
         if username is None:
@@ -106,10 +105,12 @@ async def get_current_user(token: str = Depends(oauth2_scheme), db_session=Depen
     except JWTError:
         raise credentials_exception
 
-    user = get_user(token_data.username, db_session)
-    if user is None:
+    # Assuming get_user returns a dictionary with the expected structure
+    user_dict = get_user(token_data.username, db_session)
+    if user_dict is None:
         raise credentials_exception
-    return user
+
+    return user_dict
 
 
 # Function to get the current active user

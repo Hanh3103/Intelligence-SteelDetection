@@ -1,9 +1,14 @@
 import tkinter as tk
+
 import customtkinter as ctk
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
-import utils.utils
+
+from api_functions.database import get_all_items_of_user_from_db, upload_csv_or_xlsx_to_db_table, \
+    delete_db_table_by_name
+from api_functions.supervised import predict_with_supervised_algo
+from utils.unsupervised_utils import predict_data_from_file_unsupervised
 
 # Set appearance mode and default color theme
 ctk.set_appearance_mode("System")
@@ -15,10 +20,17 @@ class App(ctk.CTk):
     def __init__(self):
         super().__init__()
 
+        # Set login status
+        self.login_successful = False
+
         # root
         self.title("Steel Identifier.py")
-        self.geometry(f"{1100}x{580}")
-        self.minsize(500, 300)
+        self.attributes('-topmost', False)  # To keep the window on top -> needs to be false for fileupload
+        self.attributes('-fullscreen', False)
+
+        # Bind the Escape key to exit fullscreen
+        self.bind('<Escape>', lambda event: self.attributes('-fullscreen', False))
+
         # root Layout
         self.columnconfigure(1, weight=8)
         self.columnconfigure(0, weight=0)
@@ -46,9 +58,17 @@ class App(ctk.CTk):
                                                          command=unsupervised)
         self.sidebar_button_unsupervised.grid(row=3, column=0, padx=20, pady=10, columnspan=2, sticky='nsew')
 
+        self.sidebar_button_unsupervised = ctk.CTkButton(self.sidebar_frame, corner_radius=8, text='get Items',
+                                                         command=get_all_items_of_user_from_db_gui)
+        self.sidebar_button_unsupervised.grid(row=4, column=0, padx=20, pady=10, columnspan=2, sticky='nsew')
+
+        self.sidebar_button_unsupervised = ctk.CTkButton(self.sidebar_frame, corner_radius=8, text='delete Item',
+                                                         command=delete_db_table_by_name_gui)
+        self.sidebar_button_unsupervised.grid(row=5, column=0, padx=20, pady=10, columnspan=2, sticky='nsew')
+
         # Sliders for variables in the sidebar
         self.sidebar_slider_frame = ctk.CTkFrame(self.sidebar_frame, width=140)
-        self.sidebar_slider_frame.grid(row=4, column=0, padx=20, pady=10, sticky='n')
+        self.sidebar_slider_frame.grid(row=6, column=0, padx=20, pady=10, sticky='n')
 
         self.label_var01 = ctk.CTkLabel(self.sidebar_slider_frame, text="Variable I",
                                         font=ctk.CTkFont(size=10, weight="bold"), anchor='w')
@@ -95,7 +115,7 @@ class App(ctk.CTk):
         self.hover_label.grid(row=0, column=0, padx=10, pady=15, sticky='w')
 
         # Button to upload a file
-        self.import_button = ctk.CTkButton(self.main_frame, corner_radius=8, command=upload_file,
+        self.import_button = ctk.CTkButton(self.main_frame, corner_radius=8, command=upload_file_to_database,
                                            text='Datei Import')
         self.import_button.grid(row=0, column=0, sticky="ne", padx=10, pady=15)
 
@@ -135,18 +155,37 @@ def change_darkmode(choice):
 
 
 # Function to upload a file
-def upload_file():
-    utils.utils.upload_file()
+def upload_file_to_database():
+    upload_csv_or_xlsx_to_db_table()
 
 
 # Function for supervised prediction
 def supervised():
-    utils.utils.predict_data_from_file_supervised()
+    # predict_with_supervised_algo("True",
+    #                                          "",
+    #                                          "xgboost_algorithm",  # please choose between "deep_learning" and
+    #                                                                      # "xgboost_algorithm"
+    #                                          "hanh3_test.csv",
+    #                                          "prediction")
+    predict_with_supervised_algo("False",
+                                 "hanh3_labeled_OES_data.csv",
+                                 "xgboost_algorithm",  # please choose between "deep_learning" and
+                                 # "xgboost_algorithm"
+                                 "hanh3_test.csv",
+                                 "prediction")
 
 
 # Function for unsupervised prediction
 def unsupervised():
-    utils.utils.predict_data_from_file_unsupervised()
+    predict_data_from_file_unsupervised()
+
+
+def get_all_items_of_user_from_db_gui():
+    get_all_items_of_user_from_db()
+
+
+def delete_db_table_by_name_gui():
+    delete_db_table_by_name("luca300_labeled_OES_data.csv")
 
 
 # Function to handle hover events and update the label
