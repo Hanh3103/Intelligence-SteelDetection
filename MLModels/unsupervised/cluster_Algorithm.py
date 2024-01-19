@@ -4,7 +4,8 @@ import json
 import umap
 from sklearn.cluster import AgglomerativeClustering
 from sklearn.manifold import TSNE
-import skfuzzy as fuzz
+from sklearn.cluster import AffinityPropagation
+from sklearn.metrics import pairwise_distances
 import pandas as pd
 from sklearn.decomposition import PCA
 from sklearn.cluster import KMeans
@@ -97,51 +98,7 @@ def tsne_algorithm(data, perplexity, steps, mode):
     else:
         print("Invalid mode. Please choose either '2D' or '3D'.")
         return None
-
-
-# Fuzzy C-Means Algorithmus
-def fuzzy_c_mean_fit(data, n_clusters):
-    """
-    Applies the fuzzy c-means clustering algorithm to the data.
-
-     Args:
-        data (pandas.DataFrame): The data to be clustered.
-        n_clusters (int): The number of clusters.
-
-        Returns:
-            str: The cluster centers and the membership matrix in JSON format.
-        """
-    try:
-        cntr, u, u0, d, jm, p, fpc = fuzz.cluster.cmeans(data.transpose(), n_clusters, 1.4, error=0.005,
-                                                         maxiter=10000, init=None)
-        result = {
-            'cluster_centers': cntr.tolist(),
-            'membership_matrix': u.tolist()
-        }
-        return json.dumps(result)
-    except ValueError:
-        print("Invalid number of clusters.")
-        return None
-
-
-def fuzzy_c_mean_predict(data, cntr):
-    """
-    Predicts the membership matrix for the given data using the cluster centers.
-
-    Args:
-        data (pandas.DataFrame): The data to be predicted.
-        cntr (numpy.ndarray): The cluster centers from fitting.
-
-    Returns:
-        str: The membership matrix in JSON format.
-    """
-    try:
-        u, u0, d, jm, p, fpc = fuzz.cluster.cmeans_predict(data.transpose(), cntr, 1.4, error=0.005, maxiter=10000)
-        return u.to_json()
-    except ValueError:
-        print("Invalid cluster centers.")
-        return None
-
+    
 
 # PCA Algorithmus
 def pca(dataframe, scaler=None):
@@ -275,6 +232,28 @@ def hierarchical(data, n_clusters):
     cluster = AgglomerativeClustering(n_clusters, metric='euclidean', linkage='ward')
     cluster.fit(data_to_cluster)
     labels = cluster.labels_
+    data['Cluster'] = labels
+    return data
+
+
+def affinity_propagation(data):
+    """
+        Applies Affinity Propagation Clustering to the input data.
+
+        Parameters:
+            - data: Input data for clustering (must be a pandas DataFrame).
+
+        Returns:
+            - data: The input data with an additional 'Cluster' column indicating the assigned cluster for each data point.
+        """
+    #apply pca for better results
+    pca = PCA(n_components=3) 
+    df_pca = pca.fit_transform(data)
+
+    #apply affinity propagation
+    algorithm = AffinityPropagation(damping=0.5, preference=np.min(-pairwise_distances(df_pca, metric='euclidean')))
+    algorithm.fit(df_pca)
+    labels = algorithm.labels_
     data['Cluster'] = labels
     return data
 
