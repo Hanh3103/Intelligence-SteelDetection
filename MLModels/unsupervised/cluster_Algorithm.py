@@ -63,7 +63,7 @@ def gmm_algorithm(data, n_components):
 
 
 # TSNE Algorithmus
-def tsne_algorithm(data, perplexity, steps, mode):
+def tsne_algorithm(data, perplexity, mode):
     """
      Applies the t-SNE algorithm to the data.
 
@@ -74,27 +74,33 @@ def tsne_algorithm(data, perplexity, steps, mode):
          mode (str): The mode of t-SNE, either '2D' or '3D'.
 
      Returns:
-         str: The transformed data in JSON format.
+            list: The transformed data.
      """
+    
+    # select numeric columns to apply scaling
+    numeric_cols = data.select_dtypes(include=['number']).columns
+    if len(numeric_cols) == 0:
+        raise ValueError("DataFrame contains no numeric columns.")
 
-    columns_to_scale = ['Fe', 'C', 'Si', 'Mn', 'P', 'S', 'Cr', 'Mo', 'Ni', 'Al', 'Co', 'Cu', 'Nb', 'Ti', 'V', 'W', 'Pb',
-                        'Sn', 'B', 'Ca', 'Zr', 'As', 'Bi']
+    numeric_data = data[numeric_cols]
 
     scaler = FunctionTransformer(np.log1p, validate=True)
-    scaled_data = scaler.fit_transform(data[columns_to_scale])
+    scaled_data = scaler.fit_transform(numeric_data)
+    df_scaled = pd.DataFrame(scaled_data, columns=numeric_cols)
 
-    df_scaled = pd.DataFrame(scaled_data, columns=columns_to_scale)
-
+    # apply t-SNE algorithm with two dimensions
     if mode == '2D':
-        tsne = TSNE(n_components=2, perplexity=perplexity, n_iter=steps, random_state=0)
+        tsne = TSNE(n_components=2, perplexity=perplexity, n_iter=1000, random_state=0)
         tsne_results_2D = tsne.fit_transform(df_scaled)
         return tsne_results_2D.tolist()
-
+    
+    # apply t-SNE algorithm with three dimensions
     elif mode == '3D':
-        tsne = TSNE(n_components=3, perplexity=perplexity, n_iter=steps, random_state=0)
+        tsne = TSNE(n_components=3, perplexity=perplexity, n_iter=1000, random_state=0)
         tsne_results_3D = tsne.fit_transform(df_scaled)
         return tsne_results_3D.tolist()
-
+    
+    # raise error if mode is not 2D or 3D
     else:
         print("Invalid mode. Please choose either '2D' or '3D'.")
         return None
