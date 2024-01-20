@@ -10,8 +10,26 @@ from utils.upload_csv_or_xlsx import return_dataframe_filesize_filename_from_csv
 
 
 def upload_csv_or_xlsx_to_db_table():
+    """
+    Upload a CSV or XLSX file to a database table by sending a POST request.
+
+    Raises:
+        - HTTPError: If an HTTP error occurs during the request.
+        - ConnectionError: If a connection error occurs during the request.
+
+    Returns:
+        None.
+
+    Input: - The function uses the global function `get_token()` to retrieve the access token. - The function
+    internally calls `return_dataframe_filesize_filename_from_csv_or_xlsx()` to get the DataFrame, filesize,
+    and filename.
+
+    Output:
+        None. The function prints error details if a 401 status code is encountered.
+    """
     token_save = get_token()
     df, filesize, filename = return_dataframe_filesize_filename_from_csv_or_xlsx()
+
     # Convert DataFrame to JSON
     df_json = df.to_json(orient='split')
 
@@ -25,38 +43,77 @@ def upload_csv_or_xlsx_to_db_table():
             print(response.json().get("detail"))
 
     except requests.exceptions.HTTPError as err:
+        # Print HTTP error details
         print(err)
     except requests.exceptions.ConnectionError as err:
+        # Print connection error details
         print(err)
 
 
 def delete_db_table_by_name(name):
+    """
+    Delete a database table by sending a DELETE request with the specified name.
+
+    Args:
+        name (str): The name of the database table to be deleted.
+
+    Raises:
+        SystemExit: If an HTTP error occurs during the request.
+
+    Returns:
+        None.
+
+    Input:
+        - `name` (str): The name of the database table to be deleted. This is provided as a function parameter.
+
+    Output:
+        None. The function prints error details if a 401 status code is encountered or a success message otherwise.
+    """
     token_save = get_token()
     try:
         header = {"Authorization": f"Bearer {token_save}"}
         response = requests.delete(f"http://127.0.0.1:8000/users/me/item/{name}", headers=header)
 
         if response.status_code == 401:
+            # Print error details if a 401 status code is encountered
             print(response.json().get("detail"))
         else:
+            # Print a success message if the deletion is successful
             print(f"Item with name {name} deleted.")
 
     except requests.exceptions.HTTPError as err:
+        # Exit the system if an HTTP error occurs
         raise SystemExit(err)
 
 
 def get_all_items_of_user_from_db():
+    """
+    Retrieve all items of the user from the database by sending a GET request.
+
+    Raises:
+        SystemExit: If an HTTP error occurs during the request.
+
+    Returns:
+        None.
+
+    Input:
+        - The function uses the global function `get_token()` to retrieve the access token.
+
+    Output: None. The function prints error details if the response status code is not 200, prints the names of items
+    retrieved, and displays the dataframes associated with each item using the `show_dataframes` function.
+    """
     token_save = get_token()
     try:
         header = {"Authorization": f"Bearer {token_save}"}
         response = requests.get("http://127.0.0.1:8000/users/me/items", headers=header)
 
         if response.status_code != 200:
+            # Print error details if the response status code is not 200
             print(response.json().get("detail"))
 
         list_json = json.loads(response.content)
 
-        # turn into list of dataframes
+        # turn into a list of dataframes
         dict_dataframes = {}
         for item in list_json:
             name = item["name"]
@@ -64,9 +121,12 @@ def get_all_items_of_user_from_db():
             df = pd.read_json(StringIO(data), orient='split')
             dict_dataframes[name] = df
 
+        # Print the names of items retrieved
         print(dict_dataframes.keys())
 
+        # Display dataframes associated with each item
         show_dataframes(dict_dataframes)
 
     except requests.exceptions.HTTPError as err:
+        # Exit the system if an HTTP error occurs
         raise SystemExit(err)

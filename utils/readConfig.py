@@ -3,7 +3,12 @@ import os
 
 
 def read_config():
-    # Function to read the entire configuration from 'config.ini'
+    """
+    Reads the entire configuration from 'config.ini'.
+
+    Returns:
+    - ConfigParser object containing the configuration.
+    """
     config = configparser.ConfigParser()
     parent_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     try:
@@ -17,7 +22,15 @@ def read_config():
 
 
 def read_config_section(section):
-    # Function to read a specific section from the configuration
+    """
+    Reads a specific section from the configuration.
+
+    Parameters:
+    - section: Name of the section to be read.
+
+    Returns:
+    - Dictionary containing the specified section's data.
+    """
     config = read_config()
     if config:
         try:
@@ -28,7 +41,16 @@ def read_config_section(section):
 
 
 def read_config_value(section, key):
-    # Function to read a specific value from the configuration
+    """
+    Reads a specific value from the configuration.
+
+    Parameters:
+    - section: Name of the section containing the key.
+    - key: Key whose value needs to be retrieved.
+
+    Returns:
+    - Value associated with the specified key in the given section.
+    """
     config = read_config()
     if config:
         try:

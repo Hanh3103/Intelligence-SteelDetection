@@ -10,14 +10,25 @@ from utils.supervised_utils import validate_params, extract_model_and_encoder_fo
 def predict_with_supervised_algo(existing_model, table_name_to_train, algorithm, table_name_to_predict,
                                  name_of_function):
     """
-    controller for the button "Supervised" in the gui
+    Controller for the button "Supervised" in the GUI.
 
-    :param existing_model: True or False (required)
-    :param table_name_to_train: name of the table to train the model only needed if existing_model is False
-    :param algorithm: name of the algorithm (required)
-    :param table_name_to_predict: name of the table to predict the data(required)
-    :param name_of_function: Test / Predict/ Save model button (required) > button > maybe redundant
-    :return: the response of the server in json format
+    Args:
+        existing_model (bool): True or False (required).
+        table_name_to_train (str): Name of the table to train the model, only needed if existing_model is False.
+        algorithm (str): Name of the algorithm (required).
+        table_name_to_predict (str): Name of the table to predict the data (required).
+        name_of_function (str): Test / Predict/ Save model button (required) > button > may be redundant.
+
+    Returns:
+        dict: The response of the server in JSON format. Returns None in case of an exception.
+
+    Input:
+        - The function uses the global function `get_token()` to retrieve the access token.
+        - Calls `validate_params`, `extract_model_and_encoder_format`, `upload_encoded_file`, `upload_model_file`,
+          and `parser_supervised_response` as part of its execution.
+
+    Output:
+        dict: The response of the server in JSON format. Returns None in case of an exception.
     """
     token_save = get_token()
     # Validate params
@@ -34,7 +45,7 @@ def predict_with_supervised_algo(existing_model, table_name_to_train, algorithm,
                      "encoded_file": (encoded_file_name, encoded_file_data)}
 
         else:  # use upload existing model and predict
-            # Upload model file, ending of model is depend on the algorithm > is  required
+            # Upload model file, ending of model is depend on the algorithm > is required
             model_file_name, model_file_data = upload_model_file(model_format)
             # Upload encoded file > is optional (actually not optional)
             encoded_file_name, encoded_file_data = upload_encoded_file(encoder_format, existing_model)
@@ -47,13 +58,9 @@ def predict_with_supervised_algo(existing_model, table_name_to_train, algorithm,
         payload = {
             "existing_model": existing_model,
             "table_name_to_train": table_name_to_train,
-            # this is the table name of the training data, the table muss first
-            # be uploaded over "Data import"
             "algorithm": algorithm,
             "table_name_to_predict": table_name_to_predict,
-            # this is the table name of the data to predict, the table muss
-            # first be uploaded over "Data import"
-            "name_of_function": name_of_function  # Test / Predict/ Save model button > properly redundant
+            "name_of_function": name_of_function  # Test / Predict/ Save model button > may be redundant
         }
         payload = json.dumps(payload)
 
@@ -65,5 +72,6 @@ def predict_with_supervised_algo(existing_model, table_name_to_train, algorithm,
                                  data=data, headers=header)
         return parser_supervised_response(response, existing_model)
     except Exception as e:
+        # Print the exception and return None
         print(e)
-        return
+        return None
