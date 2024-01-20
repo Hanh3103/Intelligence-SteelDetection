@@ -5,7 +5,7 @@ This project is a containerized application that combines a FastAPI Python backe
 
 ## Project Structure
 
-- **api_functions:** Contains functions related to unsupervised learning predictions.
+- **api_functions:** Contains all functions related to call fastapi endpoints.
 - **db:** Database-related modules and models.
 - **endpoints:** FastAPI router modules for different functionalities.
 - **gui:** Modules for the Tkinter-based graphical user interface.
@@ -23,11 +23,7 @@ The docker-compose.yml file defines services for PostgreSQL and the Python FastA
 ## Usage
 
 1. **Clone the repository:**
-    ```bash
-    git clone https://github.com/yourusername/yourproject.git
-    cd yourproject
-    ```
-
+    
 2. **Build and run the Docker containers:**
     ```bash
     docker-compose up --build
@@ -71,7 +67,5 @@ Configurations are stored in the `resources/config/config.ini` file. Update conf
 
 ## Contributors
 
-- Your Name
-- Collaborator Name
+- Luca
 
-Feel free to contribute, report issues, or suggest improvements.
