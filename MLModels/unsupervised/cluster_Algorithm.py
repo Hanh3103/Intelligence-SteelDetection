@@ -65,45 +65,44 @@ def gmm_algorithm(data, n_components):
 # TSNE Algorithmus
 def tsne_algorithm(data, perplexity, mode):
     """
-     Applies the t-SNE algorithm to the data.
+    Applies the t-SNE algorithm to the data.
 
-     Args:
-         data (pandas.DataFrame): The data to be transformed.
-         perplexity (float): number of comparisons between every datapoint with another datapoint.
-         steps (int): The number of iterations for t-SNE.
-         mode (str): The mode of t-SNE, either '2D' or '3D'.
+    Args:
+        data (pandas.DataFrame): The data to be transformed.
+        perplexity (float): The perplexity parameter for t-SNE.
+        mode (str): The mode of t-SNE, either '2D' or '3D'.
 
-     Returns:
-            list: The transformed data.
-     """
-    
-    # select numeric columns to apply scaling
+    Returns:
+        list: The transformed data.
+    """
+
+    # Select numeric columns to apply scaling
     numeric_cols = data.select_dtypes(include=['number']).columns
     if len(numeric_cols) == 0:
         raise ValueError("DataFrame contains no numeric columns.")
 
     numeric_data = data[numeric_cols]
 
+    # Apply logarithmic scaling
     scaler = FunctionTransformer(np.log1p, validate=True)
     scaled_data = scaler.fit_transform(numeric_data)
     df_scaled = pd.DataFrame(scaled_data, columns=numeric_cols)
 
-    # apply t-SNE algorithm with two dimensions
+    # Apply t-SNE algorithm with two dimensions
     if mode == '2D':
         tsne = TSNE(n_components=2, perplexity=perplexity, n_iter=1000, random_state=0)
         tsne_results_2D = tsne.fit_transform(df_scaled)
         return tsne_results_2D.tolist()
-    
-    # apply t-SNE algorithm with three dimensions
+
+    # Apply t-SNE algorithm with three dimensions
     elif mode == '3D':
         tsne = TSNE(n_components=3, perplexity=perplexity, n_iter=1000, random_state=0)
         tsne_results_3D = tsne.fit_transform(df_scaled)
         return tsne_results_3D.tolist()
-    
-    # raise error if mode is not 2D or 3D
+
+    # Raise error if mode is not 2D or 3D
     else:
-        print("Invalid mode. Please choose either '2D' or '3D'.")
-        return None
+        raise ValueError("Invalid mode. Please choose either '2D' or '3D'.")
     
 
 # PCA Algorithmus
@@ -252,13 +251,12 @@ def affinity_propagation(data):
         Returns:
             - data: The input data with an additional 'Cluster' column indicating the assigned cluster for each data point.
         """
-    #apply pca for better results
-    pca = PCA(n_components=3) 
-    df_pca = pca.fit_transform(data)
+    if not isinstance(data, pd.DataFrame):
+        raise ValueError("Input data must be a pandas DataFrame.")
 
     #apply affinity propagation
-    algorithm = AffinityPropagation(damping=0.5, preference=np.min(-pairwise_distances(df_pca, metric='euclidean')))
-    algorithm.fit(df_pca)
+    algorithm = AffinityPropagation(damping=0.6, preference=0.6*np.min(-pairwise_distances(data, metric='l1')), max_iter=200, convergence_iter=15)
+    algorithm.fit(data)
     labels = algorithm.labels_
     data['Cluster'] = labels
     return data
