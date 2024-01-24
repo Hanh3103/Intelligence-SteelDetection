@@ -29,7 +29,7 @@ def predict_data_from_file_unsupervised_kmeans(file, k_components: int, scaler=N
         "scaler": scaler,
     }
 
-    response = call_unsupervised_algorithm(file, model_options, "predict/unsupervised/kmeans")
+    response = call_unsupervised_algorithm(file, "predict/unsupervised/kmeans", model_options)
 
     # Save response into Object
     json_string = response.json()
@@ -65,7 +65,7 @@ def predict_data_from_file_unsupervised_gmm(file, k_components: int):
         "k_components": k_components,
     }
 
-    response = call_unsupervised_algorithm(file, model_options, "predict/unsupervised/gmm")
+    response = call_unsupervised_algorithm(file, "predict/unsupervised/gmm", model_options)
 
     df_reconstructed = pd.read_json(response.json(), orient='split')
     print(df_reconstructed)
@@ -94,7 +94,7 @@ def predict_data_from_file_unsupervised_hierarchical(file, k_components: int):
         "k_components": k_components,
     }
 
-    response = call_unsupervised_algorithm(file, model_options, "predict/unsupervised/hierarchical")
+    response = call_unsupervised_algorithm(file, "predict/unsupervised/hierarchical", model_options)
 
     df_reconstructed = pd.read_json(response.json(), orient='split')
     print(df_reconstructed)
@@ -129,7 +129,7 @@ def predict_data_from_file_unsupervised_tsne(file, n_neighbours: int, steps: int
         "steps": steps
     }
 
-    response = call_unsupervised_algorithm(file, model_options, "predict/unsupervised/tsne")
+    response = call_unsupervised_algorithm(file, "predict/unsupervised/tsne", model_options)
     print(response.json())
     # Visualize response
 
@@ -156,7 +156,7 @@ def predict_data_from_file_unsupervised_pca(file, scaler=None):
         "scaler": scaler,
     }
 
-    response = call_unsupervised_algorithm(file, model_options, "predict/unsupervised/pca")
+    response = call_unsupervised_algorithm(file, "predict/unsupervised/pca", model_options)
     print(response.json())
     # df_reconstructed = pd.read_json(response.json(), orient='split')
     # print(df_reconstructed)
@@ -191,12 +191,20 @@ def predict_data_from_file_unsupervised_umap(file, n_neighbours: int, k_componen
         "min_dist": min_dist
     }
 
-    response = call_unsupervised_algorithm(file, model_options, "predict/unsupervised/umap")
+    response = call_unsupervised_algorithm(file, "predict/unsupervised/umap", model_options)
     print(response.json())
     # Visualize response
 
 
-def call_unsupervised_algorithm(file, model_parameter, url: str):
+def predict_data_from_file_unsupervised_affinity(file):
+
+    response = call_unsupervised_algorithm(file, "predict/unsupervised/affinity")
+    df_reconstructed = pd.read_json(response.json(), orient='split')
+    print(df_reconstructed)
+    # Visualize response
+
+
+def call_unsupervised_algorithm(file, url: str, model_parameter=None):
     """
     Call an unsupervised algorithm API with the specified file, model parameters, and URL.
 

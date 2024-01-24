@@ -4,8 +4,8 @@ from fastapi import FastAPI  # FastAPI framework for building APIs
 import uvicorn  # Uvicorn for running FastAPI server
 
 # Import components from custom modules
-from gui.gui import App  # Custom GUI application
-from gui.login import LoginScreen  # Login screen component
+from GUI.gui import App  # Custom GUI application
+from GUI.login import LoginScreen  # Login screen component
 from endpoints import endpoints_unsupervised, endpoints_supervised, endpoints_database, endpoints_register_token
 from fastapi import HTTPException, status
 

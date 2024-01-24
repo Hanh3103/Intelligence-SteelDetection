@@ -3,6 +3,7 @@ from fastapi import APIRouter
 
 from MLModels.unsupervised import cluster_Algorithm
 from utils.unsupervised_utils import extract_model_options_and_df
+from utils.unsupervised_utils import convert_json_to_df
 
 router = APIRouter()
 
@@ -138,3 +139,12 @@ async def predict_unsupervised_umap(data: dict):
                                                  extracted_data["model_options"]["min_dist"],
                                                  extracted_data["model_options"]["k_components"])
     return response_data.tolist()
+
+
+@router.post("/predict/unsupervised/affinity")
+async def predict_unsupervised_affinity(data: dict):
+
+    df_input = data.get("dataframe_input").get("data")
+    df = await convert_json_to_df(df_input)
+
+    return cluster_Algorithm.affinity_propagation(df).to_json(orient="split")
