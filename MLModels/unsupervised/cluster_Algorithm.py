@@ -4,6 +4,8 @@ import json
 import umap
 from sklearn.cluster import AgglomerativeClustering
 from sklearn.manifold import TSNE
+from sklearn.cluster import AffinityPropagation
+from sklearn.metrics import pairwise_distances
 import skfuzzy as fuzz
 import pandas as pd
 from sklearn.decomposition import PCA
@@ -278,3 +280,30 @@ def hierarchical(data, n_clusters):
     data['Cluster'] = labels
     return data
 
+def affinity_propagation(data):
+    """
+        Applies Affinity Propagation Clustering to the input data.
+
+        Parameters:
+            - data: Input data for clustering (must be a pandas DataFrame).
+
+        Returns:
+            - data: The input data with an additional 'Cluster' column indicating the assigned cluster for each data point.
+        """
+    if not isinstance(data, pd.DataFrame):
+        raise ValueError("Input data must be a pandas DataFrame.")
+
+    columns_to_scale = ['Fe', 'C', 'Si', 'Mn', 'P', 'S', 'Cr', 'Mo', 'Ni', 'Al', 'Co', 'Cu', 'Nb', 'Ti', 'V', 'W', 'Pb',
+                        'Sn', 'B', 'Ca', 'Zr', 'As', 'Bi']
+
+    scaler = FunctionTransformer(np.log1p, validate=True)
+    scaled_data = scaler.fit_transform(data[columns_to_scale])
+
+    df_scaled = pd.DataFrame(scaled_data, columns=columns_to_scale)
+
+    #apply affinity propagation
+    algorithm = AffinityPropagation(damping=0.6, preference=0.6*np.min(-pairwise_distances(df_scaled, metric='l1')), max_iter=200, convergence_iter=15)
+    algorithm.fit(df_scaled)
+    labels = algorithm.labels_
+    df_scaled['Cluster'] = labels
+    return df_scaled

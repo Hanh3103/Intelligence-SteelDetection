@@ -1,4 +1,6 @@
 from api_functions.unsupervised import predict_data_from_file_unsupervised_kmeans
+from api_functions.unsupervised import predict_data_from_file_unsupervised_affinity
+
 from utils.convert_json_to_dataframe import convert_json_to_df
 from utils.upload_csv_or_xlsx import return_dataframe_filesize_filename_from_csv_or_xlsx
 from fastapi import HTTPException, status
@@ -46,7 +48,7 @@ def predict_data_from_file_unsupervised():
     """
     try:
         # df, filesize, filename = upload_file()
-        predict_data_from_file_unsupervised_kmeans(return_dataframe_filesize_filename_from_csv_or_xlsx(), 15, None)
+        predict_data_from_file_unsupervised_affinity(return_dataframe_filesize_filename_from_csv_or_xlsx())
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                             detail=f"Error predicting data from file: {str(e)}")
