@@ -24,3 +24,6 @@ class Models(Enum):
     umap = "Umap"
     hierarchical = "Hierarchical"
     fuzzy = "Fuzzy"
+
+    def create_list(self):
+        return [model.value for model in Models]
