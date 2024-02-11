@@ -2,6 +2,7 @@ import tkinter as tk
 
 import customtkinter as ctk
 
+import enums.unsupervised_models_enum
 from api_functions.database import get_all_items_of_user_from_db, upload_csv_or_xlsx_to_db_table, \
     delete_db_table_by_name
 from api_functions.supervised import predict_with_supervised_algo
@@ -45,10 +46,10 @@ class App(ctk.CTk):
         self.sidebar_button_1 = ctk.CTkButton(self.sidebar_frame, corner_radius=8, text='Plot me!')
         self.sidebar_button_1.grid(row=1, column=0, padx=20, pady=10, columnspan=2, sticky='nsew')
 
-        self.sidebar_button_supervised = ctk.CTkButton(self.sidebar_frame, corner_radius=8, text='Supervised')
+        self.sidebar_button_supervised = ctk.CTkButton(self.sidebar_frame, corner_radius=8, text='Supervised', command=self.show_supervised)
         self.sidebar_button_supervised.grid(row=2, column=0, padx=20, pady=10, columnspan=2, sticky='nsew')
 
-        self.sidebar_button_unsupervised = ctk.CTkButton(self.sidebar_frame, corner_radius=8, text='Unsupervised')
+        self.sidebar_button_unsupervised = ctk.CTkButton(self.sidebar_frame, corner_radius=8, text='Unsupervised', command=self.show_unsupervised)
         self.sidebar_button_unsupervised.grid(row=3, column=0, padx=20, pady=10, columnspan=2, sticky='nsew')
 
         self.sidebar_button_unsupervised = ctk.CTkButton(self.sidebar_frame, corner_radius=8, text='get Items',
@@ -56,50 +57,72 @@ class App(ctk.CTk):
         self.sidebar_button_unsupervised.grid(row=4, column=0, padx=20, pady=10, columnspan=2, sticky='nsew')
 
 
-        # Sliders for variables in the sidebar
+        # Dynamic Sidebar Part
         self.dynamic_sidebar_frame = ctk.CTkFrame(self.sidebar_frame, width=140)
         self.dynamic_sidebar_frame.grid(row=5, column=0, padx=20, pady=10, sticky='n')
 
-        self.supervised_label = ctk.CTkLabel(self.dynamic_sidebar_frame, text="Supervised",
+        # ------------------ Unsupervised ------------------------------
+
+        self.unsupervised_frame = ctk.CTkFrame(self.dynamic_sidebar_frame, width=140)
+
+        self.Unsupervised_label = ctk.CTkLabel(self.unsupervised_frame, text="Unsupervised",
+                                             font=ctk.CTkFont(size=20, weight="bold"))
+        self.Unsupervised_label.grid(row=0, column=0, padx=20, pady=(15, 10), columnspan=3, sticky='ew')
+
+        self.algorithm_var = ctk.StringVar(value="unsupervised Algo1")
+        unsupervised_algorithms = enums.unsupervised_models_enum.Models.create_list(self)
+        self.unsupervised_algorithm_combobox = ctk.CTkOptionMenu(master=self.unsupervised_frame,
+                                                               values=unsupervised_algorithms,
+                                                               command=self.optionmenu_callback)
+        self.unsupervised_algorithm_combobox.set(unsupervised_algorithms[0])
+
+        self.unsupervised_algorithm_combobox.grid(row=6, column=0, padx=20, pady=(15, 10), columnspan=3, sticky='ew')
+
+        # ------------------ Supervised ---------------------------------
+
+        self.supervised_frame = ctk.CTkFrame(self.dynamic_sidebar_frame, width=140)
+        self.supervised_frame.grid(row=0, column=0, padx=5, pady=5, sticky='nsew')
+
+        self.supervised_label = ctk.CTkLabel(self.supervised_frame, text="Supervised",
                                              font=ctk.CTkFont(size=20, weight="bold"))
         self.supervised_label.grid(row=0, column=0, padx=20, pady=(15, 10), columnspan=3, sticky='ew')
 
         self.check_var = ctk.StringVar(value="False")
-        self.checkbox = ctk.CTkCheckBox(master=self.dynamic_sidebar_frame, text="Model is existing",
-                                        variable=self.check_var, onvalue="True", offvalue="False", command=self.change_model_status)
-        self.checkbox.grid(row=1, column=0, padx=20, pady=(15, 10), columnspan=3, sticky='ew')
+        self.model_checkbox = ctk.CTkCheckBox(master=self.supervised_frame, text="Model is existing",
+                                              variable=self.check_var, onvalue="True", offvalue="False", command=self.change_model_status)
+        self.model_checkbox.grid(row=1, column=0, padx=20, pady=(15, 10), columnspan=3, sticky='ew')
 
-        self.dynamic_sidebar_button_Model = ctk.CTkButton(self.dynamic_sidebar_frame, corner_radius=8,
-                                                              text='trained Model', state="disabled")
-        self.dynamic_sidebar_button_Model.grid(row=3, column=0, padx=20, pady=(15, 10), columnspan=3, sticky='ew')
+        self.supervised_button_Model = ctk.CTkButton(self.supervised_frame, corner_radius=8,
+                                                     text='trained Model', state="disabled")
+        self.supervised_button_Model.grid(row=3, column=0, padx=20, pady=(15, 10), columnspan=3, sticky='ew')
 
-        self.dynamic_sidebar_button_Dataframe = ctk.CTkButton(self.dynamic_sidebar_frame, corner_radius=8,
-                                                              text="Dataframe",
-                                                              command=upload_file_to_database)
-        self.dynamic_sidebar_button_Dataframe.grid(row=4, column=0, padx=20, pady=(15, 10), columnspan=3, sticky='ew')
+        self.supervised_button_Dataframe = ctk.CTkButton(self.supervised_frame, corner_radius=8,
+                                                         text="Dataframe",
+                                                         command=upload_file_to_database)
+        self.supervised_button_Dataframe.grid(row=4, column=0, padx=20, pady=(15, 10), columnspan=3, sticky='ew')
 
-        self.dynamic_sidebar_button_encoder = ctk.CTkButton(self.dynamic_sidebar_frame, corner_radius=8,
-                                                          text="Labelencoder")
-        self.dynamic_sidebar_button_encoder.grid(row=5, column=0, padx=20, pady=(15, 10), columnspan=3, sticky='ew')
+        self.supervised_button_encoder = ctk.CTkButton(self.supervised_frame, corner_radius=8,
+                                                       text="Labelencoder")
+        self.supervised_button_encoder.grid(row=5, column=0, padx=20, pady=(15, 10), columnspan=3, sticky='ew')
 
         self.algorithm_var = ctk.StringVar(value="xgboost_algorithm")
-        self.combobox = ctk.CTkOptionMenu(master=self.dynamic_sidebar_frame,
-                                          values=["xgboost_algorithm", "deep_learning"],
-                                          command=self.optionmenu_callback)
+        self.supervised_algorithm_combobox = ctk.CTkOptionMenu(master=self.supervised_frame,
+                                                               values=["xgboost_algorithm", "deep_learning"],
+                                                               command=self.optionmenu_callback)
 
-        self.combobox.grid(row=6, column=0, padx=20, pady=(15, 10), columnspan=3, sticky='ew')
+        self.supervised_algorithm_combobox.grid(row=6, column=0, padx=20, pady=(15, 10), columnspan=3, sticky='ew')
 
-        self.dynamic_sidebar_button_save = ctk.CTkButton(self.dynamic_sidebar_frame, corner_radius=8,
-                                                         text='save')
-        self.dynamic_sidebar_button_save.grid(row=7, column=0, padx=20, pady=(15, 10))
+        self.supervised_button_save = ctk.CTkButton(self.supervised_frame, corner_radius=8,
+                                                    text='save')
+        self.supervised_button_save.grid(row=7, column=0, padx=20, pady=(15, 10))
 
-        self.dynamic_sidebar_button_predict = ctk.CTkButton(self.dynamic_sidebar_frame, corner_radius=8,
-                                                         text='predict', command=self.predict_supervised)
-        self.dynamic_sidebar_button_predict.grid(row=7, column=1, padx=20, pady=(15, 10))
+        self.supervised_button_predict = ctk.CTkButton(self.supervised_frame, corner_radius=8,
+                                                       text='predict', command=self.predict_supervised)
+        self.supervised_button_predict.grid(row=7, column=1, padx=20, pady=(15, 10))
 
-        self.dynamic_sidebar_button_test = ctk.CTkButton(self.dynamic_sidebar_frame, corner_radius=8,
-                                                            text='test')
-        self.dynamic_sidebar_button_test.grid(row=7, column=2, padx=20, pady=(15, 10))
+        self.supervised_button_test = ctk.CTkButton(self.supervised_frame, corner_radius=8,
+                                                    text='test')
+        self.supervised_button_test.grid(row=7, column=2, padx=20, pady=(15, 10))
 
 
 
@@ -118,18 +141,31 @@ class App(ctk.CTk):
                                                         variable=self.selected_option, command=change_darkmode)
         self.darkmode_dropdown_menu.grid(row=0, column=1, sticky="ne", padx=10, pady=15)
 
+    def show_supervised(self):
+        if self.unsupervised_frame.winfo_ismapped():
+            self.unsupervised_frame.grid_forget()
+            self.supervised_frame.grid(row=0, column=0, padx=5, pady=5, sticky='nsew')
+
+    def show_unsupervised(self):
+        if self.supervised_frame.winfo_ismapped():
+            self.supervised_frame.grid_forget()
+            self.unsupervised_frame.grid(row=0, column=0, padx=5, pady=5, sticky='nsew')
+
+
+
+
     def optionmenu_callback(self, choice):
         self.algorithm_var.set(choice)
 
     def change_model_status(self):
         if self.check_var.get() == "True":
-            self.dynamic_sidebar_button_Model.configure(state="normal")
-            self.dynamic_sidebar_button_Dataframe.configure(state="disabled")
-            self.dynamic_sidebar_button_encoder.configure(state="disabled")
+            self.supervised_button_Model.configure(state="normal")
+            self.supervised_button_Dataframe.configure(state="disabled")
+            self.supervised_button_encoder.configure(state="disabled")
         else:
-            self.dynamic_sidebar_button_Dataframe.configure(state="normal")
-            self.dynamic_sidebar_button_encoder.configure(state="normal")
-            self.dynamic_sidebar_button_Model.configure(state="disabled")
+            self.supervised_button_Dataframe.configure(state="normal")
+            self.supervised_button_encoder.configure(state="normal")
+            self.supervised_button_Model.configure(state="disabled")
 
     def predict_supervised(self):
         existing_model = self.check_var.get()
