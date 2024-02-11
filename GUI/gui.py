@@ -1,7 +1,6 @@
 import tkinter as tk
 
 import customtkinter as ctk
-import utils.utils
 
 from api_functions.database import get_all_items_of_user_from_db, upload_csv_or_xlsx_to_db_table, \
     delete_db_table_by_name
@@ -54,7 +53,7 @@ class App(ctk.CTk):
         self.sidebar_button_unsupervised.grid(row=3, column=0, padx=20, pady=10, columnspan=2, sticky='nsew')
 
         self.sidebar_button_unsupervised = ctk.CTkButton(self.sidebar_frame, corner_radius=8, text='get Items',
-                                                         command=get_user_items)
+                                                         command=get_all_items_of_user_from_db_gui)
         self.sidebar_button_unsupervised.grid(row=4, column=0, padx=20, pady=10, columnspan=2, sticky='nsew')
 
 
@@ -132,7 +131,6 @@ class App(ctk.CTk):
                                                         variable=self.selected_option, command=change_darkmode)
         self.darkmode_dropdown_menu.grid(row=0, column=1, sticky="ne", padx=10, pady=15)
 
-        self.update_window()
 
     def optionmenu_callback(choice):
         print("optionmenu dropdown clicked:", choice)
