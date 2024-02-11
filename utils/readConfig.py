@@ -1,14 +1,19 @@
 import configparser
+import os
 
 
 def read_config():
-    # Function to read the entire configuration from 'config.ini'
+    """
+    Reads the entire configuration from 'config.ini'.
+
+    Returns:
+    - ConfigParser object containing the configuration.
+    """
     config = configparser.ConfigParser()
+    parent_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     try:
-        try:
-            config.read_file(open('./resources/config.ini'))      # for vscode
-        except FileNotFoundError as e:
-            config.read_file(open('../resources/config.ini'))     # for pycharm
+        path_of_config = os.path.join(parent_dir, 'resources', 'config', 'config.ini')
+        config.read(path_of_config)
     except configparser.Error as e:
         print(f"Error reading 'config.ini': {e}")
         # You can choose to raise an exception or return a default configuration here
@@ -17,7 +22,15 @@ def read_config():
 
 
 def read_config_section(section):
-    # Function to read a specific section from the configuration
+    """
+    Reads a specific section from the configuration.
+
+    Parameters:
+    - section: Name of the section to be read.
+
+    Returns:
+    - Dictionary containing the specified section's data.
+    """
     config = read_config()
     if config:
         try:
@@ -28,7 +41,16 @@ def read_config_section(section):
 
 
 def read_config_value(section, key):
-    # Function to read a specific value from the configuration
+    """
+    Reads a specific value from the configuration.
+
+    Parameters:
+    - section: Name of the section containing the key.
+    - key: Key whose value needs to be retrieved.
+
+    Returns:
+    - Value associated with the specified key in the given section.
+    """
     config = read_config()
     if config:
         try:

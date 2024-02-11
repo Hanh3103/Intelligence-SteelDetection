@@ -1,11 +1,6 @@
 from tkinter import messagebox
 import customtkinter as ctk
-
-import requests
-
-import utils.utils
-
-
+from api_functions.login_register import login_user, register_user
 
 
 class LoginScreen(ctk.CTk):
@@ -17,7 +12,7 @@ class LoginScreen(ctk.CTk):
         self.center_window()
         self.grid_columnconfigure(0, weight=1)
 
-        #Caption
+        # Caption
         label = ctk.CTkLabel(self, text="Anmeldung Stahlklassifizierung", font=("Helvetica", 16, "bold"))
         label.grid(row=0, column=0, sticky="ew", pady=40, padx=80)
 
@@ -49,7 +44,6 @@ class LoginScreen(ctk.CTk):
         self.btn_register = ctk.CTkButton(self, text="Register", command=self.register)
         self.btn_register.grid_forget()
 
-
         # Reference to the main application
         self.main_app = main_app
 
@@ -77,10 +71,11 @@ class LoginScreen(ctk.CTk):
         password = self.entry_password.get()
 
         try:
-            utils.utils.login_user(username, password)
+            login_user(username, password)
             self.destroy()  # Close the login screen
             self.main_app.login_successful = True
-        except requests.exceptions.HTTPError as err:
+        except Exception as e:
+            print(e)
             messagebox.showerror("Login Failed", "Invalid username or password")
             self.main_app.login_successful = False
 
@@ -91,7 +86,7 @@ class LoginScreen(ctk.CTk):
         email = self.entry_email.get()
         name = self.entry_name.get()
 
-        utils.utils.register_user(username, password, email, name)
+        register_user(username, password, email, name)
         messagebox.showinfo("Registration Successful", "You are now registered as: " + username + "!")
 
         # Close the registration window
@@ -108,6 +103,3 @@ class LoginScreen(ctk.CTk):
 
         # Set the window position
         self.geometry("+{}+{}".format(x, y))
-
-
-

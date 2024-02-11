@@ -3,6 +3,10 @@ import tkinter as tk
 import customtkinter as ctk
 import utils.utils
 
+from api_functions.database import get_all_items_of_user_from_db, upload_csv_or_xlsx_to_db_table, \
+    delete_db_table_by_name
+from api_functions.supervised import predict_with_supervised_algo
+from utils.unsupervised_utils import predict_data_from_file_unsupervised
 
 # Set appearance mode and default color theme
 ctk.set_appearance_mode("System")
@@ -128,6 +132,7 @@ class App(ctk.CTk):
                                                         variable=self.selected_option, command=change_darkmode)
         self.darkmode_dropdown_menu.grid(row=0, column=1, sticky="ne", padx=10, pady=15)
 
+        self.update_window()
 
     def optionmenu_callback(choice):
         print("optionmenu dropdown clicked:", choice)
@@ -150,23 +155,38 @@ def change_darkmode(choice):
 
 
 # Function to upload a file
-def upload_file():
-    utils.utils.only_upload_file()
+def upload_file_to_database():
+    upload_csv_or_xlsx_to_db_table()
 
 
 # Function for supervised prediction
 def supervised():
-    utils.utils.predict_data_from_file_supervised()
+    predict_with_supervised_algo("True",
+                                 "",
+                                 "xgboost_algorithm",  # please choose between "deep_learning" and
+                                 # "xgboost_algorithm"
+                                 "hanh3_test.csv",
+                                 "prediction")
+    # predict_with_supervised_algo("False",
+    #                              "hanh3_labeled_OES_data.csv",
+    #                              "xgboost_algorithm",  # please choose between "deep_learning" and
+    #                              # "xgboost_algorithm"
+    #                              "hanh3_test.csv",
+    #                              "prediction")
 
 
 # Function for unsupervised prediction
 def unsupervised():
-    utils.utils.predict_data_from_file_unsupervised()
+    predict_data_from_file_unsupervised()
 
 
+def get_all_items_of_user_from_db_gui():
+    get_all_items_of_user_from_db()
 
-def get_user_items():
-    utils.utils.get_all_items()
+
+def delete_db_table_by_name_gui():
+    delete_db_table_by_name("luca300_labeled_OES_data.csv")
+
 
 
 if __name__ == '__main__':
