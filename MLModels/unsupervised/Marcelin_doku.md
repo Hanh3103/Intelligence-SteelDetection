@@ -1,5 +1,3 @@
-Hier ist der überarbeitete Text im Markdown-Format für GitHub, mit den korrigierten Rechtschreibfehlern und einer angepassten Formatierung:
-
 ```markdown
 # T-distributed Stochastic Neighbor Embedding (t-SNE)
 
