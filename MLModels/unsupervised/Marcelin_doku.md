@@ -1,4 +1,3 @@
-```markdown
 # T-distributed Stochastic Neighbor Embedding (t-SNE)
 
 Die Idee von t-SNE besteht darin, eine Darstellung hochdimensionaler Daten in einem niedrigdimensionalen Raum zu erzeugen, während die Struktur der Daten erhalten bleibt. Dies geschieht durch die Definition einer Wahrscheinlichkeitsverteilung im hochdimensionalen Raum, die angibt, wie wahrscheinlich es ist, dass zwei zufällig ausgewählte Punkte im Raum direkte Nachbarn sind.
@@ -45,4 +44,3 @@ Dieser Algorithmus wurde zwar auf die Daten angewendet, jedoch stellt der Output
 Der Algorithmus bietet eine Alternative zu k-means und hat den Vorteil, dass das Prinzip des Soft Clustering realisiert wird. Dabei wird jedem Datenpunkt eine Wahrscheinlichkeit für jedes Cluster zugeteilt und keine eindeutige Zuordnung wie beim Hard Clustering.
 
 Für diesen Algorithmus gibt es die `fuzzy_c_mean_fit(data, n_clusters)` sowie die `fuzzy_c_mean_predict(data, cntr)` Methode aus der `skfuzzy`-Bibliothek.
-```
