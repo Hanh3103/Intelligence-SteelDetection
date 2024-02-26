@@ -8,14 +8,14 @@ Der Algorithmus ist in der Datei `MLModels/unsupervised/cluster_Algorithm.py` im
 
 Die Funktion nutzt zu Beginn eine logarithmische Skalierung. Diese könnte optional sein. Danach wird, je nach zuvor getroffener Auswahl, der Algorithmus ein Ergebnis im zweidimensionalen oder dreidimensionalen Raum liefern.
 
-## Parameter:
+### Parameter:
 
 - `DataFrame data`: Der zu verwendende Datensatz muss ein Pandas DataFrame sein. Die Spalten sollten dem Muster des zuvor erwähnten Scalars entsprechen, falls man diesen verwenden möchte.
 - `Float perplexity`: Dieser Parameter gibt an, mit wie vielen Datenpunkten sich ein einzelner vergleicht. Je höher der Wert ist, desto klarer sind meistens die Trennungen der Cluster. Dieser Parameter hat einen sehr hohen Einfluss auf das Ergebnis.
 - `Integer steps`: Die Anzahl an Iterationen, die der Algorithmus durchläuft.
 - `String mode`: Eine Auswahl zwischen '2D' und '3D' ist möglich, da man diese Ergebnisse plotten kann.
 
-## Output:
+### Output:
 
 Eine Liste mit den Ergebnissen des Algorithmus, je nach Modusauswahl mit zwei oder drei Werten pro Datenpunkt.
 
@@ -27,13 +27,13 @@ Die richtige Auswahl einer Distanzfunktion beeinflusst das Ergebnis stark. Die i
 
 Der Algorithmus ist in der Datei `MLModels/unsupervised/cluster_Algorithm.py` implementiert. Es wird die Implementierung von `sklearn.cluster` genutzt. Durch den Befehl `affinity_propagation(data)` wird die Funktion aufgerufen.
 
-## Parameter:
+### Parameter:
 
 - `DataFrame data`: Der zu verwendende Datensatz muss ein Pandas DataFrame sein. Die Spalten sollten dem Muster des zuvor erwähnten Scalars entsprechen, falls man diesen verwenden möchte.
 
 Die restlichen Parameter sind festgelegt. Dabei spielt der `preference`-Parameter die größte Rolle. Nach einigen Analysen hat sich ergeben, dass die besten Ergebnisse mit `0.6*np.min(-pairwise_distances(df_scaled, metric='l1'))` erzielt wurden. Hier besteht natürlich die Gefahr für Overfitting. Bei neuen Daten müsste die Konstante eventuell angepasst werden.
 
-## Output:
+### Output:
 
 Das übergebene DataFrame mit einer zusätzlichen Spalte, die die Clusterzugehörigkeit der Daten als int Werte 0 bis k-1 enthält.
 
