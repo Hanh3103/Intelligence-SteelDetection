@@ -72,8 +72,8 @@ class App(ctk.CTk):
         self.algorithm_var = ctk.StringVar(value="unsupervised Algo1")
         unsupervised_algorithms = enums.unsupervised_models_enum.Models.create_list(self)
         self.unsupervised_algorithm_combobox = ctk.CTkOptionMenu(master=self.unsupervised_frame,
-                                                               values=unsupervised_algorithms,
-                                                               command=self.optionmenu_callback)
+                                                                 values=unsupervised_algorithms,
+                                                                 command=self.optionmenu_callback_algorithm)
         self.unsupervised_algorithm_combobox.set(unsupervised_algorithms[0])
 
         self.unsupervised_algorithm_combobox.grid(row=6, column=0, padx=20, pady=(15, 10), columnspan=3, sticky='ew')
@@ -108,21 +108,29 @@ class App(ctk.CTk):
         self.algorithm_var = ctk.StringVar(value="xgboost_algorithm")
         self.supervised_algorithm_combobox = ctk.CTkOptionMenu(master=self.supervised_frame,
                                                                values=["xgboost_algorithm", "deep_learning"],
-                                                               command=self.optionmenu_callback)
+                                                               command=self.optionmenu_callback_algorithm)
 
         self.supervised_algorithm_combobox.grid(row=6, column=0, padx=20, pady=(15, 10), columnspan=3, sticky='ew')
 
+        dataframes = list(get_all_items_of_user_from_db_gui())
+        self.dataframe_var = ctk.StringVar(value=dataframes[0])
+        self.dataframe_combobox = ctk.CTkOptionMenu(master=self.supervised_frame,
+                                                    values=dataframes,
+                                                    command=self.optionmenu_callback_dataframe)
+
+        self.dataframe_combobox.grid(row=7, column=0, padx=20, pady=(15, 10), columnspan=3, sticky='ew')
+
         self.supervised_button_save = ctk.CTkButton(self.supervised_frame, corner_radius=8,
                                                     text='save')
-        self.supervised_button_save.grid(row=7, column=0, padx=20, pady=(15, 10))
+        self.supervised_button_save.grid(row=8, column=0, padx=20, pady=(15, 10))
 
         self.supervised_button_predict = ctk.CTkButton(self.supervised_frame, corner_radius=8,
                                                        text='predict', command=self.predict_supervised)
-        self.supervised_button_predict.grid(row=7, column=1, padx=20, pady=(15, 10))
+        self.supervised_button_predict.grid(row=8, column=1, padx=20, pady=(15, 10))
 
         self.supervised_button_test = ctk.CTkButton(self.supervised_frame, corner_radius=8,
                                                     text='test')
-        self.supervised_button_test.grid(row=7, column=2, padx=20, pady=(15, 10))
+        self.supervised_button_test.grid(row=8, column=2, padx=20, pady=(15, 10))
 
 
 
@@ -151,10 +159,10 @@ class App(ctk.CTk):
             self.supervised_frame.grid_forget()
             self.unsupervised_frame.grid(row=0, column=0, padx=5, pady=5, sticky='nsew')
 
+    def optionmenu_callback_algorithm(self, choice):
+        self.algorithm_var.set(choice)
 
-
-
-    def optionmenu_callback(self, choice):
+    def optionmenu_callback_dataframe(self, choice):
         self.algorithm_var.set(choice)
 
     def change_model_status(self):
@@ -170,11 +178,16 @@ class App(ctk.CTk):
     def predict_supervised(self):
         existing_model = self.check_var.get()
         algorithm = self.algorithm_var.get()
-        table_name = ""
-        if existing_model == "False":
-            table_name = "test_labeled_OES_data.csv"
-            supervised(existing_model, algorithm, table_name)
-        supervised(existing_model, algorithm, table_name)
+        dataframe_name = ""
+        if existing_model == "True":
+            dataframe_name = self.dataframe_var.get()
+            supervised(existing_model, algorithm, dataframe_name)
+        else:
+            predict_with_supervised_algo(existing_model,
+                                          "hanh3_labeled_OES_data.csv",
+                                          algorithm,
+                                          "test_test.csv",
+                                          "prediction")
 
 
 # Function to change the appearance mode (dark mode, light mode, etc.)
@@ -193,7 +206,8 @@ def supervised(existing_model, algorithm, table_name):
                                  "",
                                  algorithm,  # please choose between "deep_learning" and
                                  # "xgboost_algorithm"
-                                 "test_test.csv",
+                                 #"test_test.csv",
+                                 'test_test_supervised_to_prediction.csv',
                                  "prediction")
     # predict_with_supervised_algo("False",
     #                              "hanh3_labeled_OES_data.csv",
@@ -208,7 +222,7 @@ def unsupervised():
 
 
 def get_all_items_of_user_from_db_gui():
-    get_all_items_of_user_from_db()
+    return get_all_items_of_user_from_db()
 
 
 def delete_db_table_by_name_gui():
