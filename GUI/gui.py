@@ -69,14 +69,29 @@ class App(ctk.CTk):
                                              font=ctk.CTkFont(size=20, weight="bold"))
         self.Unsupervised_label.grid(row=0, column=0, padx=20, pady=(15, 10), columnspan=3, sticky='ew')
 
-        self.algorithm_var = ctk.StringVar(value="unsupervised Algo1")
         unsupervised_algorithms = enums.unsupervised_models_enum.Models.create_list(self)
+        self.algorithm_var = ctk.StringVar(value=unsupervised_algorithms[0])
         self.unsupervised_algorithm_combobox = ctk.CTkOptionMenu(master=self.unsupervised_frame,
                                                                  values=unsupervised_algorithms,
                                                                  command=self.optionmenu_callback_algorithm)
         self.unsupervised_algorithm_combobox.set(unsupervised_algorithms[0])
 
-        self.unsupervised_algorithm_combobox.grid(row=6, column=0, padx=20, pady=(15, 10), columnspan=3, sticky='ew')
+        self.unsupervised_algorithm_combobox.grid(row=1, column=0, padx=20, pady=(15, 10), columnspan=3, sticky='ew')
+
+        self.slider_var = ctk.IntVar(value=5)
+        self.unsupervised_komponents = ctk.CTkSlider(master=self.unsupervised_frame, from_=0, to=15,  variable=self.slider_var, command=self.sliding)
+        self.unsupervised_komponents.grid(row=2, column=1, padx=20, pady=(15, 10))
+
+        self.unsupervised_slider_label = ctk.CTkLabel(master=self.unsupervised_frame, text=str(self.slider_var.get()))
+        self.unsupervised_slider_label.grid(row=3, column=1, padx=20)
+
+        self.unsupervised_button_upload = ctk.CTkButton(self.unsupervised_frame, corner_radius=8,
+                                                         text='upload File')
+        self.unsupervised_button_upload.grid(row=7, column=1, padx=20, pady=(15, 10))
+
+        self.unsupervised_button_predict = ctk.CTkButton(self.unsupervised_frame, corner_radius=8,
+                                                       text='predict', command=unsupervised)
+        self.unsupervised_button_predict.grid(row=8, column=1, padx=20, pady=(15, 10))
 
         # ------------------ Supervised ---------------------------------
 
@@ -89,7 +104,8 @@ class App(ctk.CTk):
 
         self.check_var = ctk.StringVar(value="False")
         self.model_checkbox = ctk.CTkCheckBox(master=self.supervised_frame, text="Model is existing",
-                                              variable=self.check_var, onvalue="True", offvalue="False", command=self.change_model_status)
+                                              variable=self.check_var, onvalue="True", offvalue="False",
+                                              command=self.change_model_status)
         self.model_checkbox.grid(row=1, column=0, padx=20, pady=(15, 10), columnspan=3, sticky='ew')
 
         self.supervised_button_Model = ctk.CTkButton(self.supervised_frame, corner_radius=8,
@@ -149,6 +165,10 @@ class App(ctk.CTk):
                                                         variable=self.selected_option, command=change_darkmode)
         self.darkmode_dropdown_menu.grid(row=0, column=1, sticky="ne", padx=10, pady=15)
 
+    def sliding(self, event=None):
+        # Aktualisieren des Labels mit dem aktuellen Wert des Sliders
+        self.unsupervised_slider_label.configure(text=str(self.slider_var.get()))
+
     def show_supervised(self):
         if self.unsupervised_frame.winfo_ismapped():
             self.unsupervised_frame.grid_forget()
@@ -188,6 +208,7 @@ class App(ctk.CTk):
                                           algorithm,
                                           "test_test.csv",
                                           "prediction")
+
 
 
 # Function to change the appearance mode (dark mode, light mode, etc.)
