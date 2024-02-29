@@ -1,4 +1,11 @@
 import tkinter as tk
+from api_functions.unsupervised import predict_data_from_file_unsupervised_kmeans
+from api_functions.unsupervised import predict_data_from_file_unsupervised_affinity
+from api_functions.unsupervised import predict_data_from_file_unsupervised_gmm
+from api_functions.unsupervised import predict_data_from_file_unsupervised_hierarchical
+from api_functions.unsupervised import predict_data_from_file_unsupervised_tsne
+from api_functions.unsupervised import predict_data_from_file_unsupervised_pca
+from api_functions.unsupervised import predict_data_from_file_unsupervised_umap
 
 import customtkinter as ctk
 
@@ -7,6 +14,7 @@ from api_functions.database import get_all_items_of_user_from_db, upload_csv_or_
     delete_db_table_by_name
 from api_functions.supervised import predict_with_supervised_algo
 from utils.unsupervised_utils import predict_data_from_file_unsupervised
+from utils.upload_csv_or_xlsx import return_dataframe_filesize_filename_from_csv_or_xlsx
 
 # Set appearance mode and default color theme
 ctk.set_appearance_mode("System")
@@ -86,12 +94,14 @@ class App(ctk.CTk):
         self.unsupervised_slider_label.grid(row=3, column=1, padx=20)
 
         self.unsupervised_button_upload = ctk.CTkButton(self.unsupervised_frame, corner_radius=8,
-                                                         text='upload File')
+                                                         text='upload File', command=self.upload_file)
         self.unsupervised_button_upload.grid(row=7, column=1, padx=20, pady=(15, 10))
 
         self.unsupervised_button_predict = ctk.CTkButton(self.unsupervised_frame, corner_radius=8,
-                                                       text='predict', command=unsupervised)
+                                                       text='predict', command=self.predict_unsupervised)
         self.unsupervised_button_predict.grid(row=8, column=1, padx=20, pady=(15, 10))
+
+        self.unsupervised_data = ctk.StringVar(value="")
 
         # ------------------ Supervised ---------------------------------
 
@@ -165,6 +175,10 @@ class App(ctk.CTk):
                                                         variable=self.selected_option, command=change_darkmode)
         self.darkmode_dropdown_menu.grid(row=0, column=1, sticky="ne", padx=10, pady=15)
 
+    def upload_file(self):
+        self.unsupervised_data.set(return_dataframe_filesize_filename_from_csv_or_xlsx())
+
+
     def sliding(self, event=None):
         # Aktualisieren des Labels mit dem aktuellen Wert des Sliders
         self.unsupervised_slider_label.configure(text=str(self.slider_var.get()))
@@ -209,6 +223,12 @@ class App(ctk.CTk):
                                           "test_test.csv",
                                           "prediction")
 
+    def predict_unsupervised(self):
+        #algorithm = self.unsupervised_algorithm_combobox.get()
+        algorithm = enums.unsupervised_models_enum.Models.KMEANS
+        file = self.unsupervised_data.get()
+        komponents = self.slider_var.get()
+        unsupervised(algorithm, file,komponents)
 
 
 # Function to change the appearance mode (dark mode, light mode, etc.)
@@ -237,9 +257,28 @@ def supervised(existing_model, algorithm, table_name):
     #                              "prediction")
 
 
+
 # Function for unsupervised prediction
-def unsupervised():
-    predict_data_from_file_unsupervised()
+
+
+
+
+def unsupervised(model, file, komponents):
+    if model == enums.unsupervised_models_enum.Models.KMEANS:
+        predict_data_from_file_unsupervised_kmeans(file, ...)
+    elif model == enums.unsupervised_models_enum.Models.GMM:
+        predict_data_from_file_unsupervised_gmm(file, ...)
+    elif model == enums.unsupervised_models_enum.Models.hierarchical:
+        predict_data_from_file_unsupervised_hierarchical(file, ...)
+    elif model == enums.unsupervised_models_enum.Models.tsne:
+        predict_data_from_file_unsupervised_tsne(file, ...)
+    elif model == enums.unsupervised_models_enum.Models.pca:
+        predict_data_from_file_unsupervised_pca(file, ...)
+    elif model == enums.unsupervised_models_enum.Models.umap:
+        predict_data_from_file_unsupervised_umap(file, ...)
+    elif model == enums.unsupervised_models_enum.Models.affinity:
+        predict_data_from_file_unsupervised_affinity(file)
+
 
 
 def get_all_items_of_user_from_db_gui():
