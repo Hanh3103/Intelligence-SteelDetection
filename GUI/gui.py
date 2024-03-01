@@ -197,7 +197,7 @@ class App(ctk.CTk):
         self.algorithm_var.set(choice)
 
     def optionmenu_callback_dataframe(self, choice):
-        self.algorithm_var.set(choice)
+        self.dataframe_var.set(choice)
 
     def change_model_status(self):
         if self.check_var.get() == "True":
@@ -212,16 +212,11 @@ class App(ctk.CTk):
     def predict_supervised(self):
         existing_model = self.check_var.get()
         algorithm = self.algorithm_var.get()
-        dataframe_name = ""
+        dataframe_name = self.dataframe_var.get()
         if existing_model == "True":
-            dataframe_name = self.dataframe_var.get()
-            supervised(existing_model, algorithm, dataframe_name)
+            predict_with_supervised_algo(existing_model,"", algorithm, dataframe_name, "prediction")
         else:
-            predict_with_supervised_algo(existing_model,
-                                          "hanh3_labeled_OES_data.csv",
-                                          algorithm,
-                                          "test_test.csv",
-                                          "prediction")
+            predict_with_supervised_algo(existing_model,"test_labeled_OES_data.csv",  algorithm, dataframe_name, "prediction")
 
     def predict_unsupervised(self):
         #algorithm = self.unsupervised_algorithm_combobox.get()
@@ -242,19 +237,21 @@ def upload_file_to_database():
 
 
 # Function for supervised prediction
-def supervised(existing_model, algorithm, table_name):
-    predict_with_supervised_algo(existing_model,
-                                 "",
-                                 algorithm,  # please choose between "deep_learning" and
-                                 # "xgboost_algorithm"
-                                 #"test_test.csv",
-                                 'test_test_supervised_to_prediction.csv',
-                                 "prediction")
-    # predict_with_supervised_algo("False",
-    #                              "hanh3_labeled_OES_data.csv",
-    #                              algorithm,
-    #                              "hanh3_test.csv",
-    #                              "prediction")
+def supervised(existing_model,train_data, algorithm, table_name):
+    print('table name: '+ table_name)
+    print('algo name: ' + algorithm)
+    predict_with_supervised_algo(existing_model
+                                ,train_data,
+                                algorithm,  # please choose between "deep_learning" and
+                                # "xgboost_algorithm"
+                                #"test_test.csv",
+                                table_name,
+                                "prediction")
+   #predict_with_supervised_algo(existing_model,
+   #                             train_data,
+   #                             algorithm,
+   #                             "test_test_supervised_to_prediction.csv",
+   #                             "prediction")
 
 
 
