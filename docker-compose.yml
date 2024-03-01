@@ -1,0 +1,32 @@
+# Docker Compose file for orchestrating PostgreSQL and Python App containers
+
+version: '3.8'
+
+services:
+  # PostgreSQL service definition
+  postgres:
+    image: postgres:latest  # Use the latest official PostgreSQL image
+    environment:
+      POSTGRES_DB: db  # Set the name of the PostgreSQL database
+      POSTGRES_USER: admin  # Set the PostgreSQL user
+      POSTGRES_PASSWORD: pw  # Set the password for the PostgreSQL user
+    volumes:
+      - postgres_data:/var/lib/postgresql/data  # Mount a volume for persistent data storage
+    ports:
+      - "5432:5432"  # Expose PostgreSQL port
+
+  # Python App service definition
+  python-app:
+    build:
+      context: .  # Build context is the current directory
+      dockerfile: Dockerfile  # Use the specified Dockerfile for building the image
+    depends_on:
+      - postgres  # Ensure the PostgreSQL service is ready before starting the Python App
+    environment:
+      DATABASE_URL: postgres://admin:pw@postgres:5432/db  # Set the database URL for the Python App
+    ports:
+      - "8000:8000"  # Expose port 8000 for the Python App
+
+# Volumes definition
+volumes:
+  postgres_data:  # Named volume for PostgreSQL data persistence
