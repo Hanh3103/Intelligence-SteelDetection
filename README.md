@@ -1,6 +1,4 @@
-# Project README
-
-## Description
+## Description of the Project
 This project is a containerized application that combines a FastAPI Python backend with a PostgreSQL database. It focuses on the detection of various steel types through both supervised and unsupervised learning algorithms. The application includes functionalities such as unsupervised and supervised learning predictions, database interactions, and file uploads.
 
 ## Project Structure
@@ -65,12 +63,52 @@ Configurations are stored in the `resources/config/config.ini` file. Update conf
 
 - Ensure Docker and Docker Compose are installed on your machine before running the application.
 
-## API Endpoints
+# Technical Details
+
+## Backend
+
+### API Endpoints
 
 - [Register](dokumentation/backend_api/Register.pdf)
 - [Login](dokumentation/backend_api/Login.pdf)
 - [Upload CSV](dokumentation/backend_api/CSV_Upload.pdf)
 - [Predict Supervised](dokumentation/backend_api/Predict_supervised.pdf)
+
+
+## Frontend
+-
+
+## Supervised Learning Algorithms
+
+### Neural Network
+-
+
+### XGBoost
+-
+
+## Unsupervised Learning Algorithms
+
+### KMEANS 
+-
+
+### GMM
+-
+
+### Tsne 
+-
+
+### Pca 
+-
+
+### Umap
+-
+
+### Hierarchical 
+-
+
+### Fuzzy 
+-
+
 
 ## Contributors
 
