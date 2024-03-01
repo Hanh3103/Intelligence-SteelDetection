@@ -74,18 +74,18 @@ Configurations are stored in the `resources/config/config.ini` file. Update conf
 
 ## Contributors
 
-# Backend
+### Backend
 - Luca
 - Allan
 - Hanh
 
-# Frontend
+### Frontend
 - Lukas
 
-# Supervised Learning Algorithms
+### Supervised Learning Algorithms
 - Julius
 - Jona
 
-# Unsupervised Learning Algorithms
+### Unsupervised Learning Algorithms
 - Joshua
 
