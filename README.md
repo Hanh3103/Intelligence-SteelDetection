@@ -65,6 +65,10 @@ Configurations are stored in the `resources/config/config.ini` file. Update conf
 
 - Ensure Docker and Docker Compose are installed on your machine before running the application.
 
+## API Endpoints
+
+[Register](Register.pdf)
+
 ## Contributors
 
 - Luca
