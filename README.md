@@ -67,7 +67,7 @@ Configurations are stored in the `resources/config/config.ini` file. Update conf
 
 ## API Endpoints
 
-[Register](Register.pdf)
+[Register](dokumentation/backend_api/Register.pdf)
 
 ## Contributors
 
