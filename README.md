@@ -67,10 +67,10 @@ Configurations are stored in the `resources/config/config.ini` file. Update conf
 
 ## API Endpoints
 
-[Register](dokumentation/backend_api/Register.pdf)
-[Login](dokumentation/backend_api/Login.pdf)
-[Upload CSV](dokumentation/backend_api/CSV_Upload.pdf)
-[Predict Supervised](dokumentation/backend_api/Predict_supervised.pdf)
+- [Register](dokumentation/backend_api/Register.pdf)
+- [Login](dokumentation/backend_api/Login.pdf)
+- [Upload CSV](dokumentation/backend_api/CSV_Upload.pdf)
+- [Predict Supervised](dokumentation/backend_api/Predict_supervised.pdf)
 
 ## Contributors
 
