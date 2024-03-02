@@ -72,6 +72,7 @@ Configurations are stored in the `resources/config/config.ini` file. Update conf
 - [Register](dokumentation/backend_api/Register.pdf)
 - [Login](dokumentation/backend_api/Login.pdf)
 - [Upload CSV](dokumentation/backend_api/CSV_Upload.pdf)
+- [Train Supervised](dokumentation/backend_api/Train_supervised.pdf)
 - [Predict Supervised](dokumentation/backend_api/Predict_supervised.pdf)
 
 
