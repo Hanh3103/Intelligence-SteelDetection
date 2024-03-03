@@ -27,3 +27,9 @@ class Models(Enum):
 
     def create_list(self):
         return [model.value for model in Models]
+
+    def get_enum_by_value(value):
+        for model in Models:
+            if model.value == value:
+                return model
+        return None
