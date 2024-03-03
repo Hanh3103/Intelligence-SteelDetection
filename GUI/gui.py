@@ -101,7 +101,7 @@ class App(ctk.CTk):
                                                        text='predict', command=self.predict_unsupervised)
         self.unsupervised_button_predict.grid(row=8, column=1, padx=20, pady=(15, 10))
 
-        self.unsupervised_data = ctk.StringVar(value="")
+        self.unsupervised_data = ''
 
         # ------------------ Supervised ---------------------------------
 
@@ -176,7 +176,7 @@ class App(ctk.CTk):
         self.darkmode_dropdown_menu.grid(row=0, column=1, sticky="ne", padx=10, pady=15)
 
     def upload_file(self):
-        self.unsupervised_data.set(return_dataframe_filesize_filename_from_csv_or_xlsx())
+        self.unsupervised_data = (return_dataframe_filesize_filename_from_csv_or_xlsx())
 
 
     def sliding(self, event=None):
@@ -221,7 +221,7 @@ class App(ctk.CTk):
     def predict_unsupervised(self):
         #algorithm = self.unsupervised_algorithm_combobox.get()
         algorithm = enums.unsupervised_models_enum.Models.KMEANS
-        file = self.unsupervised_data.get()
+        file = self.unsupervised_data
         komponents = self.slider_var.get()
         unsupervised(algorithm, file,komponents)
 
@@ -262,7 +262,7 @@ def supervised(existing_model,train_data, algorithm, table_name):
 
 def unsupervised(model, file, komponents):
     if model == enums.unsupervised_models_enum.Models.KMEANS:
-        predict_data_from_file_unsupervised_kmeans(file, ...)
+        predict_data_from_file_unsupervised_kmeans(file, komponents)
     elif model == enums.unsupervised_models_enum.Models.GMM:
         predict_data_from_file_unsupervised_gmm(file, ...)
     elif model == enums.unsupervised_models_enum.Models.hierarchical:
