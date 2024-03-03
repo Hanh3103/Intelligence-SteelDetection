@@ -42,7 +42,7 @@ class App(ctk.CTk):
         self.grid_rowconfigure((0, 1, 2, 3), weight=1)
 
         # Sidebar
-        self.sidebar_frame = ctk.CTkFrame(self, width=140, corner_radius=0, border_width=4)
+        self.sidebar_frame = ctk.CTkFrame(self, width=300, corner_radius=0, border_width=4)
         self.sidebar_frame.grid(row=0, column=0, rowspan=6, sticky="nsew")
 
         # Sidebar Widgets
@@ -67,14 +67,14 @@ class App(ctk.CTk):
 
         # Dynamic Sidebar Part
         self.dynamic_sidebar_frame = ctk.CTkFrame(self.sidebar_frame, width=140)
-        self.dynamic_sidebar_frame.grid(row=5, column=0, padx=20, pady=10, sticky='n')
+        self.dynamic_sidebar_frame.grid(row=5, column=0, padx=20, pady=10, sticky='nsew')
 
         # ------------------ Unsupervised ------------------------------
 
         self.unsupervised_frame = ctk.CTkFrame(self.dynamic_sidebar_frame, width=140)
 
         self.Unsupervised_label = ctk.CTkLabel(self.unsupervised_frame, text="Unsupervised",
-                                             font=ctk.CTkFont(size=20, weight="bold"))
+                                             font=ctk.CTkFont(size=20, weight="bold"), width=120)
         self.Unsupervised_label.grid(row=0, column=0, padx=20, pady=(15, 10), columnspan=3, sticky='ew')
 
         unsupervised_algorithms = enums.unsupervised_models_enum.Models.create_list(self)
@@ -109,7 +109,7 @@ class App(ctk.CTk):
         self.supervised_frame.grid(row=0, column=0, padx=5, pady=5, sticky='nsew')
 
         self.supervised_label = ctk.CTkLabel(self.supervised_frame, text="Supervised",
-                                             font=ctk.CTkFont(size=20, weight="bold"))
+                                             font=ctk.CTkFont(size=20, weight="bold"), width=120)
         self.supervised_label.grid(row=0, column=0, padx=20, pady=(15, 10), columnspan=3, sticky='ew')
 
         self.check_var = ctk.StringVar(value="False")
@@ -146,18 +146,9 @@ class App(ctk.CTk):
 
         self.dataframe_combobox.grid(row=7, column=0, padx=20, pady=(15, 10), columnspan=3, sticky='ew')
 
-        self.supervised_button_save = ctk.CTkButton(self.supervised_frame, corner_radius=8,
-                                                    text='save')
-        self.supervised_button_save.grid(row=8, column=0, padx=20, pady=(15, 10))
-
         self.supervised_button_predict = ctk.CTkButton(self.supervised_frame, corner_radius=8,
                                                        text='predict', command=self.predict_supervised)
-        self.supervised_button_predict.grid(row=8, column=1, padx=20, pady=(15, 10))
-
-        self.supervised_button_test = ctk.CTkButton(self.supervised_frame, corner_radius=8,
-                                                    text='test')
-        self.supervised_button_test.grid(row=8, column=2, padx=20, pady=(15, 10))
-
+        self.supervised_button_predict.grid(row=8, column=0, padx=20, pady=(15, 10))
 
 
         # Mainframe creation
@@ -179,8 +170,8 @@ class App(ctk.CTk):
         self.unsupervised_data = (return_dataframe_filesize_filename_from_csv_or_xlsx())
 
 
+    # Aktualisieren des Labels mit dem aktuellen Wert des Sliders (unsupervised)
     def sliding(self, event=None):
-        # Aktualisieren des Labels mit dem aktuellen Wert des Sliders
         self.unsupervised_slider_label.configure(text=str(self.slider_var.get()))
 
     def show_supervised(self):
@@ -218,7 +209,14 @@ class App(ctk.CTk):
         else:
             predict_with_supervised_algo(existing_model,"test_labeled_OES_data.csv",  algorithm, dataframe_name, "prediction")
 
+
     def predict_unsupervised(self):
+
+        """
+        When the Button 'Predict' in the category unsupervised is pressed it collects the algorithm which the user
+        choose, the datafile and the different arguments which differ with each algorithm, to call the respected
+        algorithm.
+        """
         #algorithm = self.unsupervised_algorithm_combobox.get()
         algorithm = enums.unsupervised_models_enum.Models.KMEANS
         file = self.unsupervised_data
@@ -236,30 +234,9 @@ def upload_file_to_database():
     upload_csv_or_xlsx_to_db_table()
 
 
-# Function for supervised prediction
-def supervised(existing_model,train_data, algorithm, table_name):
-    print('table name: '+ table_name)
-    print('algo name: ' + algorithm)
-    predict_with_supervised_algo(existing_model
-                                ,train_data,
-                                algorithm,  # please choose between "deep_learning" and
-                                # "xgboost_algorithm"
-                                #"test_test.csv",
-                                table_name,
-                                "prediction")
-   #predict_with_supervised_algo(existing_model,
-   #                             train_data,
-   #                             algorithm,
-   #                             "test_test_supervised_to_prediction.csv",
-   #                             "prediction")
-
 
 
 # Function for unsupervised prediction
-
-
-
-
 def unsupervised(model, file, komponents):
     if model == enums.unsupervised_models_enum.Models.KMEANS:
         predict_data_from_file_unsupervised_kmeans(file, komponents)
