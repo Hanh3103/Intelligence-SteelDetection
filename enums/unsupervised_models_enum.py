@@ -23,7 +23,7 @@ class Models(Enum):
     pca = "PCA"
     umap = "Umap"
     hierarchical = "Hierarchical"
-    fuzzy = "Fuzzy"
+    affinity = "affinity "
 
     def create_list(self):
         return [model.value for model in Models]
