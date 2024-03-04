@@ -63,54 +63,6 @@ Configurations are stored in the `resources/config/config.ini` file. Update conf
 
 - Ensure Docker and Docker Compose are installed on your machine before running the application.
 
-# Technical Documentation
-
-## Backend
-
-### API Endpoints
-
-- [Register](dokumentation/backend_api/Register.pdf)
-- [Login](dokumentation/backend_api/Login.pdf)
-- [Upload CSV](dokumentation/backend_api/CSV_Upload.pdf)
-- [Train Supervised](dokumentation/backend_api/Train_supervised.pdf)
-- [Predict Supervised](dokumentation/backend_api/Predict_supervised.pdf)
-
-
-## Frontend
--
-
-## Supervised Learning Algorithms
-
-### Neural Network
--
-
-### XGBoost
--
-
-## Unsupervised Learning Algorithms
-
-### KMEANS 
--
-
-### GMM
--
-
-### Tsne 
--
-
-### Pca 
--
-
-### Umap
--
-
-### Hierarchical 
--
-
-### Fuzzy 
--
-
-
 ## Contributors
 
 ### Backend
