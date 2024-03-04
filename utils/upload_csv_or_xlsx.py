@@ -12,7 +12,9 @@ def return_dataframe_filesize_filename_from_csv_or_xlsx():
     - Tuple containing a DataFrame, file size, and filename.
     """
     try:
-        file_path = filedialog.askopenfilename()
+        filetypes = [
+            ('CSV and Excel files', '*.csv;*.xlsx')]
+        file_path = filedialog.askopenfilename( title='Choose Dataframe',filetypes=filetypes)
 
         if not file_path:
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="No file selected.")

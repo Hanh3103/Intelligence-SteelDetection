@@ -23,4 +23,13 @@ class Models(Enum):
     pca = "PCA"
     umap = "Umap"
     hierarchical = "Hierarchical"
-    fuzzy = "Fuzzy"
+    affinity = "affinity "
+
+    def create_list(self):
+        return [model.value for model in Models]
+
+    def get_enum_by_value(value):
+        for model in Models:
+            if model.value == value:
+                return model
+        return None

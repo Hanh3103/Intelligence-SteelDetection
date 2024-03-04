@@ -122,10 +122,12 @@ def get_all_items_of_user_from_db():
             dict_dataframes[name] = df
 
         # Print the names of items retrieved
+
         print(dict_dataframes.keys())
+        return dict_dataframes.keys()
 
         # Display dataframes associated with each item
-        show_dataframes(dict_dataframes)
+        # show_dataframes(dict_dataframes)
 
     except requests.exceptions.HTTPError as err:
         # Exit the system if an HTTP error occurs
