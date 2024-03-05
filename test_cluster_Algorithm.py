@@ -1,0 +1,82 @@
+import pandas as pd
+import numpy as np
+import unittest
+from cluster_Algorithm import tsne_algorithm, affinity_propagation
+from sklearn.preprocessing import FunctionTransformer
+from sklearn.manifold import TSNE
+
+class TestTSNEAlgorithm(unittest.TestCase):
+    def setUp(self):
+        # Create sample data for testing
+        self.data = pd.DataFrame({
+            'A': [1, 2, 3],
+            'B': [4, 5, 6],
+            'C': [7, 8, 9]
+        })
+
+    def test_2D_mode(self):
+        # Test t-SNE algorithm with 2D mode
+        transformed_data = tsne_algorithm(self.data, perplexity=2, mode='2D')
+        self.assertEqual(len(transformed_data), len(self.data))
+        self.assertEqual(len(transformed_data[0]), 2)
+
+    def test_3D_mode(self):
+        # Test t-SNE algorithm with 3D mode
+        transformed_data = tsne_algorithm(self.data, perplexity=2, mode='3D')
+        self.assertEqual(len(transformed_data), len(self.data))
+        self.assertEqual(len(transformed_data[0]), 3)
+
+    def test_empty_input(self):
+        # Test t-SNE algorithm with empty input
+        empty_data = pd.DataFrame()
+        with self.assertRaises(ValueError):
+            tsne_algorithm(empty_data, perplexity=2, mode='2D')
+
+    def test_invalid_mode(self):
+        # Test t-SNE algorithm with invalid mode
+        with self.assertRaises(ValueError):
+            tsne_algorithm(self.data, perplexity=2, mode='4D')
+
+    def test_no_numeric_columns(self):
+        # Test t-SNE algorithm with no numeric columns
+        data = pd.DataFrame({'A': ['a', 'b', 'c'], 'B': ['d', 'e', 'f']})
+        with self.assertRaises(ValueError):
+            tsne_algorithm(data, perplexity=2, mode='2D')
+
+    def test_perplexity_greater_than_samples(self):
+        # Test t-SNE algorithm with perplexity greater than samples
+        with self.assertRaises(ValueError):
+            tsne_algorithm(self.data, perplexity=10, mode='2D')
+
+class TestAffinityPropagation(unittest.TestCase):
+        def setUp(self):
+            # Create sample data for testing
+            self.data = pd.DataFrame({
+                'A': [1, 2, 3],
+                'B': [4, 5, 6]
+            })
+
+        def test_valid_input(self):
+            # Test valid input data
+            result = affinity_propagation(self.data)
+            self.assertTrue('Cluster' in result.columns)
+
+        def test_invalid_input(self):
+            # Test invalid input data (not a DataFrame)
+            with self.assertRaises(ValueError):
+                affinity_propagation("invalid_data")
+
+        def test_empty_input(self):
+            # Test empty input DataFrame
+            empty_data = pd.DataFrame()
+            with self.assertRaises(ValueError):
+                affinity_propagation(empty_data)
+
+        def test_no_numeric_columns(self):
+            # Test DataFrame with no numeric columns
+            data_no_numeric = pd.DataFrame({'A': ['a', 'b', 'c'], 'B': ['x', 'y', 'z']})
+            with self.assertRaises(ValueError):
+                affinity_propagation(data_no_numeric)
+
+if __name__ == '__main__':
+    unittest.main()
