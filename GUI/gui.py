@@ -1,4 +1,8 @@
 import tkinter as tk
+
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+
+from GUI.bar_plot import BarPlot
 from api_functions.unsupervised import predict_data_from_file_unsupervised_kmeans
 from api_functions.unsupervised import predict_data_from_file_unsupervised_affinity
 from api_functions.unsupervised import predict_data_from_file_unsupervised_gmm
@@ -13,7 +17,7 @@ import enums.unsupervised_models_enum
 from api_functions.database import get_all_items_of_user_from_db, upload_csv_or_xlsx_to_db_table, \
     delete_db_table_by_name
 from api_functions.supervised import predict_with_supervised_algo
-from utils.unsupervised_utils import predict_data_from_file_unsupervised
+from utils.database_utils import get_dataframe_from_database
 from utils.upload_csv_or_xlsx import return_dataframe_filesize_filename_from_csv_or_xlsx
 
 # Set appearance mode and default color theme
@@ -30,22 +34,22 @@ class App(ctk.CTk):
 
         # root
         self.title("Steel Identifier.py")
-        self.geometry(f"{1500}x{800}")
+        self.geometry(f"{self.winfo_screenwidth()}x{self.winfo_screenheight()}+0+0")
 
         # root Layout
         self.columnconfigure(1, weight=8)
         self.columnconfigure(0, weight=0)
-        self.grid_rowconfigure((0, 1, 2, 3), weight=1)
+        self.grid_rowconfigure(0, weight=1)
 
         # Mainframe creation
-        self.main_frame = ctk.CTkFrame(self, )
-        self.main_frame.grid(row=0, column=1, rowspan=4, sticky="nsew")
-        self.main_frame.rowconfigure(1, weight=1)
-        self.main_frame.columnconfigure(0, weight=1)
+        self.main_frame = ctk.CTkFrame(self)
+        self.main_frame.grid(row=0, column=1, sticky="nsew")
+        self.canvas = None
 
         # Sidebar
         self.sidebar_frame = ctk.CTkFrame(self, width=300, corner_radius=0, border_width=4)
-        self.sidebar_frame.grid(row=0, column=0, sticky="nsew")
+        self.sidebar_frame.grid(row=0, column=0, sticky="ns")
+
         '''Creation: Sidebar elements'''
         self.logo_label = ctk.CTkLabel(self.sidebar_frame, text="Side Bar",
                                        font=ctk.CTkFont(size=20, weight="bold"))
@@ -66,12 +70,12 @@ class App(ctk.CTk):
         self.dark_mode_dropdown_menu.grid(row=4, column=0, padx=20, pady=6, columnspan=2, sticky='nsew')
 
         """Dynamic Sidebar"""
-        self.dynamic_sidebar_frame = ctk.CTkFrame(self.sidebar_frame, width=140)
-        self.dynamic_sidebar_frame.grid(row=5, column=0, padx=20, pady=10, sticky='nsew')
+        self.dynamic_sidebar_frame = ctk.CTkFrame(self.sidebar_frame, width=300)
+        self.dynamic_sidebar_frame.grid(row=5, column=0, padx=20, pady=10, sticky='ns')
 
         # ------------------ Unsupervised ------------------------------
         '''Creation: unsupervised elements'''
-        self.unsupervised_frame = ctk.CTkFrame(self.dynamic_sidebar_frame, width=140)
+        self.unsupervised_frame = ctk.CTkFrame(self.dynamic_sidebar_frame, width=300)
 
         self.Unsupervised_label = ctk.CTkLabel(self.unsupervised_frame, text="Unsupervised",
                                              font=ctk.CTkFont(size=20, weight="bold"), width=120)
@@ -105,8 +109,8 @@ class App(ctk.CTk):
 
         # ------------------ Supervised ---------------------------------
         '''Creation: supervised elements'''
-        self.supervised_frame = ctk.CTkFrame(self.dynamic_sidebar_frame, width=140)
-        self.supervised_frame.grid(row=0, column=0, padx=5, pady=5, sticky='nsew')
+        self.supervised_frame = ctk.CTkFrame(self.dynamic_sidebar_frame, width=300)
+        self.supervised_frame.grid(row=0, column=0, padx=5, pady=5, sticky='ns')
 
         self.supervised_label = ctk.CTkLabel(self.supervised_frame, text="Supervised",
                                              font=ctk.CTkFont(size=20, weight="bold"), width=120)
@@ -154,6 +158,17 @@ class App(ctk.CTk):
     def upload_file(self):
         self.unsupervised_data = (return_dataframe_filesize_filename_from_csv_or_xlsx())
 
+    '''This method creates a canvas to display a bar plot of element percentages in various steel types using the 
+    provided predicted steel types and prediction data'''
+    def create_canvas(self, predicted_stell_types, prediction_data):
+        bar_plot = BarPlot()
+        elemente = ['C', 'Si', 'Mn', 'P', 'S', 'Cr', 'Ni', 'Al', 'Cu']
+        fig = bar_plot.create_supervised_Plot(predicted_stell_types, elemente, prediction_data)
+        self.canvas = FigureCanvasTkAgg(fig, master=self.main_frame)
+        self.canvas.draw()
+        self.canvas.get_tk_widget().place(relx=0.0, rely=0.0, width=self.main_frame.winfo_width(),
+                                          height=self.main_frame.winfo_height())
+
     '''updates the unsupervised_slider_label with the current value of the slider'''
     def sliding(self):
         self.unsupervised_slider_label.configure(text=str(self.unsupervised_slider_var.get()))
@@ -162,13 +177,13 @@ class App(ctk.CTk):
     def show_supervised(self):
         if self.unsupervised_frame.winfo_ismapped():
             self.unsupervised_frame.grid_forget()
-            self.supervised_frame.grid(row=0, column=0, padx=5, pady=5, sticky='nsew')
+            self.supervised_frame.grid(row=0, column=0, padx=5, pady=5, sticky='ns')
 
     '''displays the unsupervised frame in the dynamic part of the Sidebar and hides the supervised part'''
     def show_unsupervised(self):
         if self.supervised_frame.winfo_ismapped():
             self.supervised_frame.grid_forget()
-            self.unsupervised_frame.grid(row=0, column=0, padx=5, pady=5, sticky='nsew')
+            self.unsupervised_frame.grid(row=0, column=0, padx=5, pady=5, sticky='ns')
 
     def option_menu_callback_algorithm(self, choice):
         self.unsupervised_algorithm_var.set(choice)
@@ -191,10 +206,11 @@ class App(ctk.CTk):
         algorithm = self.unsupervised_algorithm_var.get()
         dataframe_name = self.dataframe_var.get()
         if existing_model == "True":
-            predict_with_supervised_algo(existing_model, "", algorithm, dataframe_name, "prediction")
+            prediction = predict_with_supervised_algo(existing_model, "", algorithm, dataframe_name, "prediction")
         else:
-            predict_with_supervised_algo(existing_model, "test_labeled_OES_data.csv",  algorithm, dataframe_name, "prediction")
-
+            prediction = predict_with_supervised_algo(existing_model, "test_labeled_OES_data.csv",  algorithm, dataframe_name, "prediction")
+        prediction_data = get_dataframe_from_database(dataframe_name)
+        self.create_canvas(prediction, prediction_data)
     def predict_unsupervised(self):
 
         """
@@ -242,8 +258,3 @@ def get_all_items_of_user_from_db_gui():
 
 def delete_db_table_by_name_gui():
     delete_db_table_by_name("luca300_labeled_OES_data.csv")
-
-
-if __name__ == '__main__':
-    main_app = App()
-    main_app.mainloop()
