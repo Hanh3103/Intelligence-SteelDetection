@@ -42,43 +42,49 @@ class App(ctk.CTk):
         self.grid_rowconfigure(0, weight=1)
 
         # Mainframe creation
-        self.main_frame = ctk.CTkFrame(self)
+        self.main_frame = ctk.CTkFrame(self,fg_color='blue')
         self.main_frame.grid(row=0, column=1, sticky="nsew")
         self.canvas = None
 
         # Sidebar
-        self.sidebar_frame = ctk.CTkFrame(self, width=300, corner_radius=0, border_width=4)
+        self.sidebar_frame = ctk.CTkFrame(self, corner_radius=0, border_width=4, width=350 ,fg_color='red')
         self.sidebar_frame.grid(row=0, column=0, sticky="ns")
+        self.sidebar_frame.grid_propagate(False)
 
         '''Creation: Sidebar elements'''
-        self.logo_label = ctk.CTkLabel(self.sidebar_frame, text="Side Bar",
+        self.dynamic_sidebar_frame = ctk.CTkFrame(self.sidebar_frame, width=350)
+        self.static_sidebar_frame = ctk.CTkFrame(self.sidebar_frame, width=350)
+
+        '''Grid Config: Sidebar elements'''
+        self.dynamic_sidebar_frame.grid(row=5, column=0, padx=20, pady=10, sticky='nsew')
+        self.static_sidebar_frame.grid(row=0, column=0, padx=20, pady=10, sticky='nsew')
+
+        #Static  Sidebar
+        '''Creation: static elements'''
+        self.logo_label = ctk.CTkLabel(self.static_sidebar_frame, text="Side Bar",
                                        font=ctk.CTkFont(size=20, weight="bold"))
-        self.sidebar_button_supervised = ctk.CTkButton(self.sidebar_frame, corner_radius=8, text='Supervised',
+        self.sidebar_button_supervised = ctk.CTkButton(self.static_sidebar_frame, corner_radius=8, text='Supervised',
                                                        command=self.show_supervised)
-        self.sidebar_button_unsupervised = ctk.CTkButton(self.sidebar_frame, corner_radius=8, text='Unsupervised',
+        self.sidebar_button_unsupervised = ctk.CTkButton(self.static_sidebar_frame, corner_radius=8, text='Unsupervised',
                                                          command=self.show_unsupervised)
         dark_mode_options = ['System', 'Dark', 'Light']
         self.selected_option = tk.StringVar()
         self.selected_option.set(dark_mode_options[0])
-        self.dark_mode_dropdown_menu = ctk.CTkOptionMenu(self.sidebar_frame, values=dark_mode_options,
+        self.dark_mode_dropdown_menu = ctk.CTkOptionMenu(self.static_sidebar_frame, values=dark_mode_options,
                                                          variable=self.selected_option, command=change_dark_mode)
-
-        '''Grid Config: Sidebar elements'''
+        '''Grid Config: static elements'''
         self.logo_label.grid(row=0, column=0, padx=20, pady=(15, 10))
-        self.sidebar_button_supervised.grid(row=1, column=0, padx=20, pady=6, columnspan=2, sticky='nsew')
-        self.sidebar_button_unsupervised.grid(row=2, column=0, padx=20, pady=6, columnspan=2, sticky='nsew')
-        self.dark_mode_dropdown_menu.grid(row=4, column=0, padx=20, pady=6, columnspan=2, sticky='nsew')
+        self.sidebar_button_supervised.grid(row=0, column=0, padx=20, pady=6, columnspan=2, sticky='nsew')
+        self.sidebar_button_unsupervised.grid(row=1, column=0, padx=20, pady=6, columnspan=2, sticky='nsew')
+        self.dark_mode_dropdown_menu.grid(row=2, column=0, padx=20, pady=6, columnspan=2, sticky='nsew')
 
-        """Dynamic Sidebar"""
-        self.dynamic_sidebar_frame = ctk.CTkFrame(self.sidebar_frame, width=300)
-        self.dynamic_sidebar_frame.grid(row=5, column=0, padx=20, pady=10, sticky='ns')
-
+        # Dynamic Sidebar
         # ------------------ Unsupervised ------------------------------
         '''Creation: unsupervised elements'''
-        self.unsupervised_frame = ctk.CTkFrame(self.dynamic_sidebar_frame, width=300)
+        self.unsupervised_frame = ctk.CTkFrame(self.dynamic_sidebar_frame)
 
         self.Unsupervised_label = ctk.CTkLabel(self.unsupervised_frame, text="Unsupervised",
-                                             font=ctk.CTkFont(size=20, weight="bold"), width=120)
+                                             font=ctk.CTkFont(size=20, weight="bold"))
 
         unsupervised_algorithms = enums.unsupervised_models_enum.Models.create_list(self)
         self.unsupervised_algorithm_var = ctk.StringVar(value=unsupervised_algorithms[0])
@@ -102,18 +108,18 @@ class App(ctk.CTk):
         '''Grid Config: unsupervised elements'''
         self.Unsupervised_label.grid(row=0, column=0, padx=20, pady=(15, 10), columnspan=3, sticky='ew')
         self.unsupervised_algorithm_combobox.grid(row=1, column=1, padx=20, pady=6, columnspan=3, sticky='ew')
-        self.unsupervised_slider.grid(row=2, column=1, padx=20, pady=(6, 0))
-        self.unsupervised_slider_label.grid(row=3, column=1, padx=20)
-        self.unsupervised_button_upload.grid(row=7, column=1, padx=20, pady=6)
-        self.unsupervised_button_predict.grid(row=8, column=1, padx=20, pady=6)
+        self.unsupervised_slider.grid(row=2, column=1, padx=20, pady=(6, 0), sticky='ew')
+        self.unsupervised_slider_label.grid(row=3, column=1, padx=20, sticky='ew')
+        self.unsupervised_button_upload.grid(row=7, column=1, padx=20, pady=6, sticky='ew')
+        self.unsupervised_button_predict.grid(row=8, column=1, padx=20, pady=6, sticky='ew')
 
         # ------------------ Supervised ---------------------------------
         '''Creation: supervised elements'''
-        self.supervised_frame = ctk.CTkFrame(self.dynamic_sidebar_frame, width=300)
-        self.supervised_frame.grid(row=0, column=0, padx=5, pady=5, sticky='ns')
+        self.supervised_frame = ctk.CTkFrame(self.dynamic_sidebar_frame)
+        self.supervised_frame.grid(row=0, column=0, padx=5, pady=5, sticky='nsew')
 
         self.supervised_label = ctk.CTkLabel(self.supervised_frame, text="Supervised",
-                                             font=ctk.CTkFont(size=20, weight="bold"), width=120)
+                                             font=ctk.CTkFont(size=20, weight="bold"))
 
         self.supervised_model_var = ctk.StringVar(value="False")
         self.supervised_model_checkbox = ctk.CTkCheckBox(master=self.supervised_frame, text="Model is existing",
@@ -176,14 +182,15 @@ class App(ctk.CTk):
     '''displays the supervised frame in the dynamic part of the Sidebar and hides the unsupervised part'''
     def show_supervised(self):
         if self.unsupervised_frame.winfo_ismapped():
+            self.supervised_frame.grid(row=0, column=0, padx=5, pady=5, sticky='nsew')
             self.unsupervised_frame.grid_forget()
-            self.supervised_frame.grid(row=0, column=0, padx=5, pady=5, sticky='ns')
 
     '''displays the unsupervised frame in the dynamic part of the Sidebar and hides the supervised part'''
     def show_unsupervised(self):
         if self.supervised_frame.winfo_ismapped():
+            self.unsupervised_frame.grid(row=0, column=0, padx=5, pady=5, sticky='nsew')
             self.supervised_frame.grid_forget()
-            self.unsupervised_frame.grid(row=0, column=0, padx=5, pady=5, sticky='ns')
+
 
     def option_menu_callback_algorithm(self, choice):
         self.unsupervised_algorithm_var.set(choice)
