@@ -1,5 +1,8 @@
+import os
+import sys
 import tkinter as tk
 
+from PIL import Image
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
 from GUI.bar_plot import BarPlot
@@ -13,6 +16,7 @@ from api_functions.unsupervised import predict_data_from_file_unsupervised_umap
 
 import customtkinter as ctk
 
+
 import enums.unsupervised_models_enum
 from api_functions.database import get_all_items_of_user_from_db, upload_csv_or_xlsx_to_db_table, \
     delete_db_table_by_name
@@ -21,7 +25,7 @@ from utils.database_utils import get_dataframe_from_database
 from utils.upload_csv_or_xlsx import return_dataframe_filesize_filename_from_csv_or_xlsx
 
 # Set appearance mode and default color theme
-ctk.set_appearance_mode("System")
+ctk.set_appearance_mode("Dark")
 ctk.set_default_color_theme("blue")
 
 # Main Application class
@@ -35,29 +39,40 @@ class App(ctk.CTk):
         # root
         self.title("Steel Identifier.py")
         self.geometry(f"{self.winfo_screenwidth()}x{self.winfo_screenheight()}+0+0")
+        self.protocol("WM_DELETE_WINDOW", self.on_close)
 
         # root Layout
-        self.columnconfigure(1, weight=8)
-        self.columnconfigure(0, weight=0)
-        self.grid_rowconfigure(0, weight=1)
+        self.columnconfigure(1, weight=1)
+        self.rowconfigure(0, weight=1)
 
         # Mainframe creation
-        self.main_frame = ctk.CTkFrame(self,fg_color='blue')
+        self.main_frame = ctk.CTkFrame(self, corner_radius=0)
+        self.main_frame.columnconfigure(0, weight=1)
+        self.main_frame.rowconfigure(0, weight=1)
         self.main_frame.grid(row=0, column=1, sticky="nsew")
+        image_path = os.path.join(os.path.dirname(os.path.dirname(__file__)),
+                                  'resources', 'gui', 'placeholder_diagram.png')
+        placeholder_bar_chart_image = ctk.CTkImage(light_image=Image.open(image_path),
+                                                   dark_image=Image.open(image_path), size=(500, 500))
+        placeholder_label = ctk.CTkLabel(self.main_frame, text='', image=placeholder_bar_chart_image)
+        placeholder_label.grid(row=0, column=0, sticky="nsew")
         self.canvas = None
 
         # Sidebar
-        self.sidebar_frame = ctk.CTkFrame(self, corner_radius=0, border_width=4, width=350 ,fg_color='red')
+        self.sidebar_frame = ctk.CTkFrame(self, corner_radius=0, width=400)
         self.sidebar_frame.grid(row=0, column=0, sticky="ns")
         self.sidebar_frame.grid_propagate(False)
+        self.sidebar_frame.columnconfigure(0, weight=1)
 
         '''Creation: Sidebar elements'''
-        self.dynamic_sidebar_frame = ctk.CTkFrame(self.sidebar_frame, width=350)
-        self.static_sidebar_frame = ctk.CTkFrame(self.sidebar_frame, width=350)
+        self.static_sidebar_frame = ctk.CTkFrame(self.sidebar_frame)
+        self.dynamic_sidebar_frame = ctk.CTkFrame(self.sidebar_frame)
 
         '''Grid Config: Sidebar elements'''
-        self.dynamic_sidebar_frame.grid(row=5, column=0, padx=20, pady=10, sticky='nsew')
-        self.static_sidebar_frame.grid(row=0, column=0, padx=20, pady=10, sticky='nsew')
+        self.static_sidebar_frame.columnconfigure(0, weight=1)
+        self.static_sidebar_frame.grid(row=0, column=0, padx=(0, 6), pady=(0, 12), sticky='nsew')
+        self.dynamic_sidebar_frame.grid(row=1, column=0, padx=(0, 6), sticky='nsew')
+        self.dynamic_sidebar_frame.columnconfigure(0, weight=1)
 
         #Static  Sidebar
         '''Creation: static elements'''
@@ -67,24 +82,20 @@ class App(ctk.CTk):
                                                        command=self.show_supervised)
         self.sidebar_button_unsupervised = ctk.CTkButton(self.static_sidebar_frame, corner_radius=8, text='Unsupervised',
                                                          command=self.show_unsupervised)
-        dark_mode_options = ['System', 'Dark', 'Light']
-        self.selected_option = tk.StringVar()
-        self.selected_option.set(dark_mode_options[0])
-        self.dark_mode_dropdown_menu = ctk.CTkOptionMenu(self.static_sidebar_frame, values=dark_mode_options,
-                                                         variable=self.selected_option, command=change_dark_mode)
+
         '''Grid Config: static elements'''
-        self.logo_label.grid(row=0, column=0, padx=20, pady=(15, 10))
-        self.sidebar_button_supervised.grid(row=0, column=0, padx=20, pady=6, columnspan=2, sticky='nsew')
-        self.sidebar_button_unsupervised.grid(row=1, column=0, padx=20, pady=6, columnspan=2, sticky='nsew')
-        self.dark_mode_dropdown_menu.grid(row=2, column=0, padx=20, pady=6, columnspan=2, sticky='nsew')
+        self.logo_label.grid(row=0, column=0, padx=6, pady=(12, 6))
+        self.sidebar_button_supervised.grid(row=1, column=0, padx=20, pady=6, sticky='nsew')
+        self.sidebar_button_unsupervised.grid(row=2, column=0, padx=20, pady=6, sticky='nsew')
 
         # Dynamic Sidebar
         # ------------------ Unsupervised ------------------------------
         '''Creation: unsupervised elements'''
-        self.unsupervised_frame = ctk.CTkFrame(self.dynamic_sidebar_frame)
+        self.unsupervised_frame = ctk.CTkFrame(self.dynamic_sidebar_frame, fg_color='#333333')
+        self.unsupervised_frame.columnconfigure(0, weight=1)
 
         self.Unsupervised_label = ctk.CTkLabel(self.unsupervised_frame, text="Unsupervised",
-                                             font=ctk.CTkFont(size=20, weight="bold"))
+                                               font=ctk.CTkFont(size=20, weight="bold"))
 
         unsupervised_algorithms = enums.unsupervised_models_enum.Models.create_list(self)
         self.unsupervised_algorithm_var = ctk.StringVar(value=unsupervised_algorithms[0])
@@ -94,8 +105,10 @@ class App(ctk.CTk):
         self.unsupervised_algorithm_combobox.set(unsupervised_algorithms[0])
 
         self.unsupervised_slider_var = ctk.IntVar(value=5)
-        self.unsupervised_slider = ctk.CTkSlider(master=self.unsupervised_frame, from_=0, to=15, variable=self.unsupervised_slider_var, command=self.sliding)
-        self.unsupervised_slider_label = ctk.CTkLabel(master=self.unsupervised_frame, text=str(self.unsupervised_slider_var.get()))
+        self.unsupervised_slider = ctk.CTkSlider(master=self.unsupervised_frame, from_=0, to=15,
+                                                 variable=self.unsupervised_slider_var, command=self.sliding)
+        self.unsupervised_slider_label = ctk.CTkLabel(master=self.unsupervised_frame,
+                                                      text=str(self.unsupervised_slider_var.get()))
 
         self.unsupervised_button_upload = ctk.CTkButton(self.unsupervised_frame, corner_radius=8,
                                                          text='upload File', command=self.upload_file)
@@ -115,8 +128,9 @@ class App(ctk.CTk):
 
         # ------------------ Supervised ---------------------------------
         '''Creation: supervised elements'''
-        self.supervised_frame = ctk.CTkFrame(self.dynamic_sidebar_frame)
-        self.supervised_frame.grid(row=0, column=0, padx=5, pady=5, sticky='nsew')
+        self.supervised_frame = ctk.CTkFrame(self.dynamic_sidebar_frame, fg_color='#333333')
+        self.supervised_frame.grid(row=0, column=0, sticky='nsew')
+        self.supervised_frame.columnconfigure(0, weight=1)
 
         self.supervised_label = ctk.CTkLabel(self.supervised_frame, text="Supervised",
                                              font=ctk.CTkFont(size=20, weight="bold"))
@@ -182,13 +196,13 @@ class App(ctk.CTk):
     '''displays the supervised frame in the dynamic part of the Sidebar and hides the unsupervised part'''
     def show_supervised(self):
         if self.unsupervised_frame.winfo_ismapped():
-            self.supervised_frame.grid(row=0, column=0, padx=5, pady=5, sticky='nsew')
+            self.supervised_frame.grid(row=0, column=0, sticky='nsew')
             self.unsupervised_frame.grid_forget()
 
     '''displays the unsupervised frame in the dynamic part of the Sidebar and hides the supervised part'''
     def show_unsupervised(self):
         if self.supervised_frame.winfo_ismapped():
-            self.unsupervised_frame.grid(row=0, column=0, padx=5, pady=5, sticky='nsew')
+            self.unsupervised_frame.grid(row=0, column=0, sticky='nsew')
             self.supervised_frame.grid_forget()
 
 
@@ -230,8 +244,11 @@ class App(ctk.CTk):
         komponents = self.unsupervised_slider_var.get()
         unsupervised(algorithm, file, komponents)
 
+    def on_close(self):
+        self.destroy()
 
-# Function to change the appearance mode (dark mode, light mode, etc.)
+
+    # Function to change the appearance mode (dark mode, light mode, etc.)
 def change_dark_mode(choice):
     ctk.set_appearance_mode(choice)
 
@@ -265,3 +282,5 @@ def get_all_items_of_user_from_db_gui():
 
 def delete_db_table_by_name_gui():
     delete_db_table_by_name("luca300_labeled_OES_data.csv")
+
+
