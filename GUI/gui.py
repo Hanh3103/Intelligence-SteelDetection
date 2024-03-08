@@ -1,6 +1,4 @@
 import os
-import sys
-import tkinter as tk
 
 from PIL import Image
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
@@ -24,12 +22,13 @@ from api_functions.supervised import predict_with_supervised_algo
 from utils.database_utils import get_dataframe_from_database
 from utils.upload_csv_or_xlsx import return_dataframe_filesize_filename_from_csv_or_xlsx
 
-# Set appearance mode and default color theme
-ctk.set_appearance_mode("Dark")
-ctk.set_default_color_theme("blue")
 
-# Main Application class
 class App(ctk.CTk):
+
+    # Set appearance mode and default color theme
+    ctk.set_appearance_mode("Dark")
+    ctk.set_default_color_theme("blue")
+
     def __init__(self):
         super().__init__()
 
@@ -59,7 +58,7 @@ class App(ctk.CTk):
         self.canvas = None
 
         # Sidebar
-        self.sidebar_frame = ctk.CTkFrame(self, corner_radius=0, width=400)
+        self.sidebar_frame = ctk.CTkFrame(self, corner_radius=0, width=300)
         self.sidebar_frame.grid(row=0, column=0, sticky="ns")
         self.sidebar_frame.grid_propagate(False)
         self.sidebar_frame.columnconfigure(0, weight=1)
@@ -80,13 +79,17 @@ class App(ctk.CTk):
                                        font=ctk.CTkFont(size=20, weight="bold"))
         self.sidebar_button_supervised = ctk.CTkButton(self.static_sidebar_frame, corner_radius=8, text='Supervised',
                                                        command=self.show_supervised)
-        self.sidebar_button_unsupervised = ctk.CTkButton(self.static_sidebar_frame, corner_radius=8, text='Unsupervised',
-                                                         command=self.show_unsupervised)
+        self.sidebar_button_unsupervised = ctk.CTkButton(self.static_sidebar_frame, corner_radius=8,
+                                                         text='Unsupervised', command=self.show_unsupervised)
+        self.sidebar_button_upload = ctk.CTkButton(self.static_sidebar_frame, corner_radius=8,
+                                                   text='upload Dataframe to Database',
+                                                   command=upload_file_to_database)
 
         '''Grid Config: static elements'''
         self.logo_label.grid(row=0, column=0, padx=6, pady=(12, 6))
         self.sidebar_button_supervised.grid(row=1, column=0, padx=20, pady=6, sticky='nsew')
         self.sidebar_button_unsupervised.grid(row=2, column=0, padx=20, pady=6, sticky='nsew')
+        self.sidebar_button_upload.grid(row=3, column=0, padx=20, pady=6, sticky='nsew')
 
         # Dynamic Sidebar
         # ------------------ Unsupervised ------------------------------
@@ -144,10 +147,10 @@ class App(ctk.CTk):
                                                      text='trained Model', state="disabled")
 
         self.supervised_button_Dataframe = ctk.CTkButton(self.supervised_frame, corner_radius=8,
-                                                         text="Dataframe", command=upload_file_to_database)
+                                                         text="Dataframe", state="disabled")
 
         self.supervised_button_encoder = ctk.CTkButton(self.supervised_frame, corner_radius=8,
-                                                       text="Labelencoder")
+                                                       text="Labelencoder", state="disabled")
 
         self.unsupervised_algorithm_var = ctk.StringVar(value="xgboost_algorithm")
         self.supervised_algorithm_combobox = ctk.CTkOptionMenu(master=self.supervised_frame,
@@ -166,11 +169,11 @@ class App(ctk.CTk):
         '''Grid Config: supervised elements'''
         self.supervised_label.grid(row=0, column=0, padx=20, pady=(15, 10), sticky='ew')
         self.supervised_model_checkbox.grid(row=1, column=0, padx=20, pady=6, sticky='ew')
-        self.supervised_button_Model.grid(row=3, column=0, padx=20, pady=6, sticky='ew')
+        self.supervised_button_Model.grid(row=7, column=0, padx=20, pady=6, sticky='ew')
         self.supervised_button_Dataframe.grid(row=4, column=0, padx=20, pady=6, sticky='ew')
         self.supervised_button_encoder.grid(row=5, column=0, padx=20, pady=6, sticky='ew')
-        self.supervised_algorithm_combobox.grid(row=6, column=0, padx=20, pady=6, sticky='ew')
-        self.dataframe_combobox.grid(row=7, column=0, padx=20, pady=6, sticky='ew')
+        self.supervised_algorithm_combobox.grid(row=2, column=0, padx=20, pady=6, sticky='ew')
+        self.dataframe_combobox.grid(row=3, column=0, padx=20, pady=6, sticky='ew')
         self.supervised_button_predict.grid(row=8, column=0, padx=20, pady=6, sticky='ew')
 
     '''calls the method: return_dataframe_filesize_filename_from_csv_or_xlsx() and saves return file in var: 
@@ -227,9 +230,19 @@ class App(ctk.CTk):
         algorithm = self.unsupervised_algorithm_var.get()
         dataframe_name = self.dataframe_var.get()
         if existing_model == "True":
-            prediction = predict_with_supervised_algo(existing_model, "", algorithm, dataframe_name, "prediction")
+            prediction = predict_with_supervised_algo(
+                existing_model,
+                "",
+                algorithm,
+                dataframe_name,
+                "prediction")
         else:
-            prediction = predict_with_supervised_algo(existing_model, "test_labeled_OES_data.csv",  algorithm, dataframe_name, "prediction")
+            prediction = predict_with_supervised_algo(
+                existing_model,
+                "test_labeled_OES_data.csv",
+                algorithm,
+                dataframe_name,
+                "prediction")
         prediction_data = get_dataframe_from_database(dataframe_name)
         self.create_canvas(prediction, prediction_data)
     def predict_unsupervised(self):
