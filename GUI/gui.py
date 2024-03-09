@@ -1,7 +1,10 @@
 import os
+import signal
 
 from PIL import Image
+from fastapi import HTTPException
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+from starlette.status import HTTP_500_INTERNAL_SERVER_ERROR
 
 from GUI.bar_plot import BarPlot
 from GUI.supervised_frame import SupervisedFrame
@@ -114,6 +117,7 @@ class App(ctk.CTk):
             self.supervised_frame.grid_forget()
 
     def on_close(self):
+        stop_fastapi_server()
         self.destroy()
 
 
@@ -128,3 +132,10 @@ def get_all_items_of_user_from_db_gui():
 
 def delete_db_table_by_name_gui():
     delete_db_table_by_name("luca300_labeled_OES_data.csv")
+
+def stop_fastapi_server():
+    try:
+        os.kill(os.getpid(), signal.SIGTERM)
+    except Exception as e:
+        raise HTTPException(status_code=HTTP_500_INTERNAL_SERVER_ERROR,
+                            detail=f"Error shutting down FastAPI server: {str(e)}")

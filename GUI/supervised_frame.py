@@ -67,6 +67,7 @@ class SupervisedFrame(ctk.CTkFrame):
     def option_menu_callback_algorithm(self, choice):
         self.unsupervised_algorithm_var.set(choice)
 
+    '''Im Backend wurden keine bool, sondern Strings genutzt. Methodenaufruf muss so ausgeführt werden'''
     def predict_supervised(self):
         existing_model = self.supervised_model_var.get()
         algorithm = self.unsupervised_algorithm_var.get()
