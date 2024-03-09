@@ -74,7 +74,6 @@ class UnsupervisedFrame(ctk.CTkFrame):
 
     '''calls the method: return_dataframe_filesize_filename_from_csv_or_xlsx() and saves return file in var: 
       unsupervised_data'''
-
     def upload_file(self):
         self.unsupervised_data = (return_dataframe_filesize_filename_from_csv_or_xlsx())
 
@@ -94,5 +93,3 @@ def unsupervised(model, file, komponents):
         predict_data_from_file_unsupervised_umap(file, ...)
     elif model == unsupervised_models_enum.Models.affinity:
         predict_data_from_file_unsupervised_affinity(file)
-
-

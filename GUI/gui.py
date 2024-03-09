@@ -6,21 +6,10 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from GUI.bar_plot import BarPlot
 from GUI.supervised_frame import SupervisedFrame
 from GUI.unsupervised_frame import UnsupervisedFrame
-from api_functions.unsupervised import predict_data_from_file_unsupervised_kmeans
-from api_functions.unsupervised import predict_data_from_file_unsupervised_affinity
-from api_functions.unsupervised import predict_data_from_file_unsupervised_gmm
-from api_functions.unsupervised import predict_data_from_file_unsupervised_hierarchical
-from api_functions.unsupervised import predict_data_from_file_unsupervised_tsne
-from api_functions.unsupervised import predict_data_from_file_unsupervised_pca
-from api_functions.unsupervised import predict_data_from_file_unsupervised_umap
 
 import customtkinter as ctk
-
-
-import enums.unsupervised_models_enum
 from api_functions.database import get_all_items_of_user_from_db, upload_csv_or_xlsx_to_db_table, \
     delete_db_table_by_name
-from utils.upload_csv_or_xlsx import return_dataframe_filesize_filename_from_csv_or_xlsx
 
 
 class App(ctk.CTk):
@@ -32,19 +21,19 @@ class App(ctk.CTk):
     def __init__(self):
         super().__init__()
 
-        # Set login status
+# Set login status
         self.login_successful = False
 
-        # root
+# root
         self.title("Steel Identifier.py")
         self.geometry(f"{self.winfo_screenwidth()}x{self.winfo_screenheight()}+0+0")
         self.protocol("WM_DELETE_WINDOW", self.on_close)
 
-        # root Layout
+# root Layout
         self.columnconfigure(1, weight=1)
         self.rowconfigure(0, weight=1)
 
-        # Mainframe creation
+# Mainframe creation
         self.main_frame = ctk.CTkFrame(self, corner_radius=0)
         self.main_frame.columnconfigure(0, weight=1)
         self.main_frame.rowconfigure(0, weight=1)
@@ -57,7 +46,7 @@ class App(ctk.CTk):
         placeholder_label.grid(row=0, column=0, sticky="nsew")
         self.canvas = None
 
-        # Sidebar
+# Sidebar
         self.sidebar_frame = ctk.CTkFrame(self, corner_radius=0, width=300)
         self.sidebar_frame.grid(row=0, column=0, sticky="ns")
         self.sidebar_frame.grid_propagate(False)
@@ -73,7 +62,7 @@ class App(ctk.CTk):
         self.dynamic_sidebar_frame.grid(row=1, column=0, padx=(0, 6), sticky='nsew')
         self.dynamic_sidebar_frame.columnconfigure(0, weight=1)
 
-        #Static  Sidebar
+# Static  Sidebar
         '''Creation: static elements'''
         self.logo_label = ctk.CTkLabel(self.static_sidebar_frame, text="Side Bar",
                                        font=ctk.CTkFont(size=20, weight="bold"))
@@ -91,7 +80,7 @@ class App(ctk.CTk):
         self.sidebar_button_unsupervised.grid(row=2, column=0, padx=20, pady=6, sticky='nsew')
         self.sidebar_button_upload.grid(row=3, column=0, padx=20, pady=6, sticky='nsew')
 
-        # Dynamic Sidebar
+# Dynamic Sidebar
         # ------------------ Unsupervised ------------------------------
 
         self.unsupervised_frame = UnsupervisedFrame(self.dynamic_sidebar_frame, self)
@@ -100,12 +89,6 @@ class App(ctk.CTk):
 
         self.supervised_frame = SupervisedFrame(self.dynamic_sidebar_frame, self)
         self.supervised_frame.grid(row=1, column=0, sticky='nsew')
-
-
-    '''calls the method: return_dataframe_filesize_filename_from_csv_or_xlsx() and saves return file in var: 
-    unsupervised_data'''
-    def upload_file(self):
-        self.unsupervised_data = (return_dataframe_filesize_filename_from_csv_or_xlsx())
 
     '''This method creates a canvas to display a bar plot of element percentages in various steel types using the 
     provided predicted steel types and prediction data'''
@@ -117,10 +100,6 @@ class App(ctk.CTk):
         self.canvas.draw()
         self.canvas.get_tk_widget().place(relx=0.0, rely=0.0, width=self.main_frame.winfo_width(),
                                           height=self.main_frame.winfo_height())
-
-    '''updates the unsupervised_slider_label with the current value of the slider'''
-    def sliding(self):
-        self.unsupervised_slider_label.configure(text=str(self.unsupervised_slider_var.get()))
 
     '''displays the supervised frame in the dynamic part of the Sidebar and hides the unsupervised part'''
     def show_supervised(self):
@@ -134,52 +113,14 @@ class App(ctk.CTk):
             self.unsupervised_frame.grid(row=0, column=0, sticky='nsew')
             self.supervised_frame.grid_forget()
 
-    def option_menu_callback_algorithm(self, choice):
-        self.unsupervised_algorithm_var.set(choice)
-
-    def predict_unsupervised(self):
-
-        """
-        When the Button 'Predict' in the category unsupervised is pressed it collects the algorithm which the user
-        choose, the datafile and the different arguments which differ with each algorithm, to call the respected
-        algorithm.
-        """
-        algorithm = enums.unsupervised_models_enum.Models.get_enum_by_value(self.unsupervised_algorithm_combobox.get())
-        file = self.unsupervised_data
-        komponents = self.unsupervised_slider_var.get()
-        unsupervised(algorithm, file, komponents)
-
     def on_close(self):
         self.destroy()
-
-
-    # Function to change the appearance mode (dark mode, light mode, etc.)
-def change_dark_mode(choice):
-    ctk.set_appearance_mode(choice)
 
 
 # Function to upload a file
 def upload_file_to_database():
     upload_csv_or_xlsx_to_db_table()
 
-
-# Function for unsupervised prediction
-def unsupervised(model, file, komponents):
-    if model == enums.unsupervised_models_enum.Models.KMEANS:
-        predict_data_from_file_unsupervised_kmeans(file, komponents)
-    elif model == enums.unsupervised_models_enum.Models.GMM:
-        predict_data_from_file_unsupervised_gmm(file, komponents)
-    elif model == enums.unsupervised_models_enum.Models.hierarchical:
-        predict_data_from_file_unsupervised_hierarchical(file, komponents)
-    elif model == enums.unsupervised_models_enum.Models.tsne:
-        predict_data_from_file_unsupervised_tsne(file, ...)
-    elif model == enums.unsupervised_models_enum.Models.pca:
-        predict_data_from_file_unsupervised_pca(file)
-    elif model == enums.unsupervised_models_enum.Models.umap:
-        predict_data_from_file_unsupervised_umap(file, ...)
-    elif model == enums.unsupervised_models_enum.Models.affinity:
-        predict_data_from_file_unsupervised_affinity(file)
-        
         
 def get_all_items_of_user_from_db_gui():
     return get_all_items_of_user_from_db()
@@ -187,5 +128,3 @@ def get_all_items_of_user_from_db_gui():
 
 def delete_db_table_by_name_gui():
     delete_db_table_by_name("luca300_labeled_OES_data.csv")
-
-

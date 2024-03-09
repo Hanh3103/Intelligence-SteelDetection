@@ -90,5 +90,3 @@ class SupervisedFrame(ctk.CTkFrame):
 
     def option_menu_callback_dataframe(self, choice):
         self.dataframe_var.set(choice)
-
-
