@@ -421,7 +421,6 @@ def parser_supervised_response(response, existing_model):
     else:
         res = response.json()
         prediction = res.get("prediction")
-        print(prediction)
         if existing_model == "False":
             test_result = res.get("test_results")
             print(test_result)
@@ -433,3 +432,4 @@ def parser_supervised_response(response, existing_model):
 
             # save model and encoder
             save_model_and_encoder(name_new_model, name_new_encoder, model_content, encoder_content)
+        return prediction

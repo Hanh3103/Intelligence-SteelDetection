@@ -25,9 +25,11 @@ class Models(Enum):
     hierarchical = "Hierarchical"
     affinity = "affinity "
 
-    def create_list(self):
+    @staticmethod
+    def create_list():
         return [model.value for model in Models]
 
+    @staticmethod
     def get_enum_by_value(value):
         for model in Models:
             if model.value == value:

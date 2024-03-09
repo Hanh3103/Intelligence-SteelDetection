@@ -1,240 +1,130 @@
-import tkinter as tk
-from api_functions.unsupervised import predict_data_from_file_unsupervised_kmeans
-from api_functions.unsupervised import predict_data_from_file_unsupervised_affinity
-from api_functions.unsupervised import predict_data_from_file_unsupervised_gmm
-from api_functions.unsupervised import predict_data_from_file_unsupervised_hierarchical
-from api_functions.unsupervised import predict_data_from_file_unsupervised_tsne
-from api_functions.unsupervised import predict_data_from_file_unsupervised_pca
-from api_functions.unsupervised import predict_data_from_file_unsupervised_umap
+import os
+import signal
+
+from PIL import Image
+from fastapi import HTTPException
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+from starlette.status import HTTP_500_INTERNAL_SERVER_ERROR
+
+from GUI.bar_plot import BarPlot
+from GUI.supervised_frame import SupervisedFrame
+from GUI.unsupervised_frame import UnsupervisedFrame
 
 import customtkinter as ctk
-
-import enums.unsupervised_models_enum
 from api_functions.database import get_all_items_of_user_from_db, upload_csv_or_xlsx_to_db_table, \
     delete_db_table_by_name
-from api_functions.supervised import predict_with_supervised_algo
-from utils.unsupervised_utils import predict_data_from_file_unsupervised
-from utils.upload_csv_or_xlsx import return_dataframe_filesize_filename_from_csv_or_xlsx
 
-# Set appearance mode and default color theme
-ctk.set_appearance_mode("System")
-ctk.set_default_color_theme("blue")
 
-# Main Application class
 class App(ctk.CTk):
+
+    # Set appearance mode and default color theme
+    ctk.set_appearance_mode("Dark")
+    ctk.set_default_color_theme("blue")
+
     def __init__(self):
         super().__init__()
 
-        # Set login status
+# Set login status
         self.login_successful = False
 
-        # root
+# root
         self.title("Steel Identifier.py")
-        self.geometry(f"{1500}x{800}")
+        self.geometry(f"{self.winfo_screenwidth()}x{self.winfo_screenheight()}+0+0")
+        self.protocol("WM_DELETE_WINDOW", self.on_close)
 
-        # root Layout
-        self.columnconfigure(1, weight=8)
-        self.columnconfigure(0, weight=0)
-        self.grid_rowconfigure((0, 1, 2, 3), weight=1)
+# root Layout
+        self.columnconfigure(1, weight=1)
+        self.rowconfigure(0, weight=1)
 
-        # Mainframe creation
-        self.main_frame = ctk.CTkFrame(self, )
-        self.main_frame.grid(row=0, column=1, rowspan=4, sticky="nsew")
-        self.main_frame.rowconfigure(1, weight=1)
+# Mainframe creation
+        self.main_frame = ctk.CTkFrame(self, corner_radius=0)
         self.main_frame.columnconfigure(0, weight=1)
+        self.main_frame.rowconfigure(0, weight=1)
+        self.main_frame.grid(row=0, column=1, sticky="nsew")
+        image_path = os.path.join(os.path.dirname(os.path.dirname(__file__)),
+                                  'resources', 'gui', 'placeholder_diagram.png')
+        placeholder_bar_chart_image = ctk.CTkImage(light_image=Image.open(image_path),
+                                                   dark_image=Image.open(image_path), size=(500, 500))
+        placeholder_label = ctk.CTkLabel(self.main_frame, text='', image=placeholder_bar_chart_image)
+        placeholder_label.grid(row=0, column=0, sticky="nsew")
+        self.canvas = None
 
-        # Sidebar
-        self.sidebar_frame = ctk.CTkFrame(self, width=300, corner_radius=0, border_width=4)
-        self.sidebar_frame.grid(row=0, column=0, sticky="nsew")
+# Sidebar
+        self.sidebar_frame = ctk.CTkFrame(self, corner_radius=0, width=300)
+        self.sidebar_frame.grid(row=0, column=0, sticky="ns")
+        self.sidebar_frame.grid_propagate(False)
+        self.sidebar_frame.columnconfigure(0, weight=1)
+
         '''Creation: Sidebar elements'''
-        self.logo_label = ctk.CTkLabel(self.sidebar_frame, text="Side Bar",
-                                       font=ctk.CTkFont(size=20, weight="bold"))
-        self.sidebar_button_supervised = ctk.CTkButton(self.sidebar_frame, corner_radius=8, text='Supervised',
-                                                       command=self.show_supervised)
-        self.sidebar_button_unsupervised = ctk.CTkButton(self.sidebar_frame, corner_radius=8, text='Unsupervised',
-                                                         command=self.show_unsupervised)
-        dark_mode_options = ['System', 'Dark', 'Light']
-        self.selected_option = tk.StringVar()
-        self.selected_option.set(dark_mode_options[0])
-        self.dark_mode_dropdown_menu = ctk.CTkOptionMenu(self.sidebar_frame, values=dark_mode_options,
-                                                         variable=self.selected_option, command=change_dark_mode)
+        self.static_sidebar_frame = ctk.CTkFrame(self.sidebar_frame)
+        self.dynamic_sidebar_frame = ctk.CTkFrame(self.sidebar_frame)
 
         '''Grid Config: Sidebar elements'''
-        self.logo_label.grid(row=0, column=0, padx=20, pady=(15, 10))
-        self.sidebar_button_supervised.grid(row=1, column=0, padx=20, pady=6, columnspan=2, sticky='nsew')
-        self.sidebar_button_unsupervised.grid(row=2, column=0, padx=20, pady=6, columnspan=2, sticky='nsew')
-        self.dark_mode_dropdown_menu.grid(row=4, column=0, padx=20, pady=6, columnspan=2, sticky='nsew')
+        self.static_sidebar_frame.columnconfigure(0, weight=1)
+        self.static_sidebar_frame.grid(row=0, column=0, padx=(0, 6), pady=(0, 12), sticky='nsew')
+        self.dynamic_sidebar_frame.grid(row=1, column=0, padx=(0, 6), sticky='nsew')
+        self.dynamic_sidebar_frame.columnconfigure(0, weight=1)
 
-        """Dynamic Sidebar"""
-        self.dynamic_sidebar_frame = ctk.CTkFrame(self.sidebar_frame, width=140)
-        self.dynamic_sidebar_frame.grid(row=5, column=0, padx=20, pady=10, sticky='nsew')
+# Static  Sidebar
+        '''Creation: static elements'''
+        self.logo_label = ctk.CTkLabel(self.static_sidebar_frame, text="Side Bar",
+                                       font=ctk.CTkFont(size=20, weight="bold"))
+        self.sidebar_button_supervised = ctk.CTkButton(self.static_sidebar_frame, corner_radius=8, text='Supervised',
+                                                       command=self.show_supervised)
+        self.sidebar_button_unsupervised = ctk.CTkButton(self.static_sidebar_frame, corner_radius=8,
+                                                         text='Unsupervised', command=self.show_unsupervised)
+        self.sidebar_button_upload = ctk.CTkButton(self.static_sidebar_frame, corner_radius=8,
+                                                   text='upload Dataframe to Database',
+                                                   command=upload_file_to_database)
 
+        '''Grid Config: static elements'''
+        self.logo_label.grid(row=0, column=0, padx=6, pady=(12, 6))
+        self.sidebar_button_supervised.grid(row=1, column=0, padx=20, pady=6, sticky='nsew')
+        self.sidebar_button_unsupervised.grid(row=2, column=0, padx=20, pady=6, sticky='nsew')
+        self.sidebar_button_upload.grid(row=3, column=0, padx=20, pady=6, sticky='nsew')
+
+# Dynamic Sidebar
         # ------------------ Unsupervised ------------------------------
-        '''Creation: unsupervised elements'''
-        self.unsupervised_frame = ctk.CTkFrame(self.dynamic_sidebar_frame, width=140)
 
-        self.Unsupervised_label = ctk.CTkLabel(self.unsupervised_frame, text="Unsupervised",
-                                             font=ctk.CTkFont(size=20, weight="bold"), width=120)
-
-        unsupervised_algorithms = enums.unsupervised_models_enum.Models.create_list(self)
-        self.unsupervised_algorithm_var = ctk.StringVar(value=unsupervised_algorithms[0])
-        self.unsupervised_algorithm_combobox = ctk.CTkOptionMenu(master=self.unsupervised_frame,
-                                                                 values=unsupervised_algorithms,
-                                                                 command=self.option_menu_callback_algorithm)
-        self.unsupervised_algorithm_combobox.set(unsupervised_algorithms[0])
-
-        self.unsupervised_slider_var = ctk.IntVar(value=5)
-        self.unsupervised_slider = ctk.CTkSlider(master=self.unsupervised_frame, from_=0, to=15, variable=self.unsupervised_slider_var, command=self.sliding)
-        self.unsupervised_slider_label = ctk.CTkLabel(master=self.unsupervised_frame, text=str(self.unsupervised_slider_var.get()))
-
-        self.unsupervised_button_upload = ctk.CTkButton(self.unsupervised_frame, corner_radius=8,
-                                                         text='upload File', command=self.upload_file)
-        self.unsupervised_button_predict = ctk.CTkButton(self.unsupervised_frame, corner_radius=8,
-                                                       text='predict', command=self.predict_unsupervised)
-
-
-        self.unsupervised_data = ''
-
-        '''Grid Config: unsupervised elements'''
-        self.Unsupervised_label.grid(row=0, column=0, padx=20, pady=(15, 10), columnspan=3, sticky='ew')
-        self.unsupervised_algorithm_combobox.grid(row=1, column=1, padx=20, pady=6, columnspan=3, sticky='ew')
-        self.unsupervised_slider.grid(row=2, column=1, padx=20, pady=(6, 0))
-        self.unsupervised_slider_label.grid(row=3, column=1, padx=20)
-        self.unsupervised_button_upload.grid(row=7, column=1, padx=20, pady=6)
-        self.unsupervised_button_predict.grid(row=8, column=1, padx=20, pady=6)
+        self.unsupervised_frame = UnsupervisedFrame(self.dynamic_sidebar_frame, self)
 
         # ------------------ Supervised ---------------------------------
-        '''Creation: supervised elements'''
-        self.supervised_frame = ctk.CTkFrame(self.dynamic_sidebar_frame, width=140)
-        self.supervised_frame.grid(row=0, column=0, padx=5, pady=5, sticky='nsew')
 
-        self.supervised_label = ctk.CTkLabel(self.supervised_frame, text="Supervised",
-                                             font=ctk.CTkFont(size=20, weight="bold"), width=120)
+        self.supervised_frame = SupervisedFrame(self.dynamic_sidebar_frame, self)
+        self.supervised_frame.grid(row=1, column=0, sticky='nsew')
 
-        self.supervised_model_var = ctk.StringVar(value="False")
-        self.supervised_model_checkbox = ctk.CTkCheckBox(master=self.supervised_frame, text="Model is existing",
-                                                         variable=self.supervised_model_var, onvalue="True",
-                                                         offvalue="False", command=self.change_model_status)
-
-        self.supervised_button_Model = ctk.CTkButton(self.supervised_frame, corner_radius=8,
-                                                     text='trained Model', state="disabled")
-
-        self.supervised_button_Dataframe = ctk.CTkButton(self.supervised_frame, corner_radius=8,
-                                                         text="Dataframe", command=upload_file_to_database)
-
-        self.supervised_button_encoder = ctk.CTkButton(self.supervised_frame, corner_radius=8,
-                                                       text="Labelencoder")
-
-        self.unsupervised_algorithm_var = ctk.StringVar(value="xgboost_algorithm")
-        self.supervised_algorithm_combobox = ctk.CTkOptionMenu(master=self.supervised_frame,
-                                                               values=["xgboost_algorithm", "deep_learning"],
-                                                               command=self.option_menu_callback_algorithm)
-
-        dataframes = list(get_all_items_of_user_from_db_gui())
-        self.dataframe_var = ctk.StringVar(value=dataframes[0])
-        self.dataframe_combobox = ctk.CTkOptionMenu(master=self.supervised_frame,
-                                                    values=dataframes,
-                                                    command=self.option_menu_callback_dataframe)
-
-        self.supervised_button_predict = ctk.CTkButton(self.supervised_frame, corner_radius=8,
-                                                       text='predict', command=self.predict_supervised)
-
-        '''Grid Config: supervised elements'''
-        self.supervised_label.grid(row=0, column=0, padx=20, pady=(15, 10), sticky='ew')
-        self.supervised_model_checkbox.grid(row=1, column=0, padx=20, pady=6, sticky='ew')
-        self.supervised_button_Model.grid(row=3, column=0, padx=20, pady=6, sticky='ew')
-        self.supervised_button_Dataframe.grid(row=4, column=0, padx=20, pady=6, sticky='ew')
-        self.supervised_button_encoder.grid(row=5, column=0, padx=20, pady=6, sticky='ew')
-        self.supervised_algorithm_combobox.grid(row=6, column=0, padx=20, pady=6, sticky='ew')
-        self.dataframe_combobox.grid(row=7, column=0, padx=20, pady=6, sticky='ew')
-        self.supervised_button_predict.grid(row=8, column=0, padx=20, pady=6, sticky='ew')
-
-    '''calls the method: return_dataframe_filesize_filename_from_csv_or_xlsx() and saves return file in var: 
-    unsupervised_data'''
-    def upload_file(self):
-        self.unsupervised_data = (return_dataframe_filesize_filename_from_csv_or_xlsx())
-
-    '''updates the unsupervised_slider_label with the current value of the slider'''
-    def sliding(self):
-        self.unsupervised_slider_label.configure(text=str(self.unsupervised_slider_var.get()))
+    '''This method creates a canvas to display a bar plot of element percentages in various steel types using the 
+    provided predicted steel types and prediction data'''
+    def create_canvas(self, predicted_stell_types, prediction_data):
+        bar_plot = BarPlot()
+        elemente = ['C', 'Si', 'Mn', 'P', 'S', 'Cr', 'Ni', 'Al', 'Cu']
+        fig = bar_plot.create_supervised_Plot(predicted_stell_types, elemente, prediction_data)
+        self.canvas = FigureCanvasTkAgg(fig, master=self.main_frame)
+        self.canvas.draw()
+        self.canvas.get_tk_widget().place(relx=0.0, rely=0.0, width=self.main_frame.winfo_width(),
+                                          height=self.main_frame.winfo_height())
 
     '''displays the supervised frame in the dynamic part of the Sidebar and hides the unsupervised part'''
     def show_supervised(self):
         if self.unsupervised_frame.winfo_ismapped():
+            self.supervised_frame.grid(row=0, column=0, sticky='nsew')
             self.unsupervised_frame.grid_forget()
-            self.supervised_frame.grid(row=0, column=0, padx=5, pady=5, sticky='nsew')
 
     '''displays the unsupervised frame in the dynamic part of the Sidebar and hides the supervised part'''
     def show_unsupervised(self):
         if self.supervised_frame.winfo_ismapped():
+            self.unsupervised_frame.grid(row=0, column=0, sticky='nsew')
             self.supervised_frame.grid_forget()
-            self.unsupervised_frame.grid(row=0, column=0, padx=5, pady=5, sticky='nsew')
 
-    def option_menu_callback_algorithm(self, choice):
-        self.unsupervised_algorithm_var.set(choice)
-
-    def option_menu_callback_dataframe(self, choice):
-        self.dataframe_var.set(choice)
-
-    def change_model_status(self):
-        if self.supervised_model_var.get() == "True":
-            self.supervised_button_Model.configure(state="normal")
-            self.supervised_button_Dataframe.configure(state="disabled")
-            self.supervised_button_encoder.configure(state="disabled")
-        else:
-            self.supervised_button_Dataframe.configure(state="normal")
-            self.supervised_button_encoder.configure(state="normal")
-            self.supervised_button_Model.configure(state="disabled")
-
-    def predict_supervised(self):
-        existing_model = self.supervised_model_var.get()
-        algorithm = self.unsupervised_algorithm_var.get()
-        dataframe_name = self.dataframe_var.get()
-        if existing_model == "True":
-            predict_with_supervised_algo(existing_model, "", algorithm, dataframe_name, "prediction")
-        else:
-            predict_with_supervised_algo(existing_model, "test_labeled_OES_data.csv",  algorithm, dataframe_name, "prediction")
-
-    def predict_unsupervised(self):
-
-        """
-        When the Button 'Predict' in the category unsupervised is pressed it collects the algorithm which the user
-        choose, the datafile and the different arguments which differ with each algorithm, to call the respected
-        algorithm.
-        """
-        algorithm = enums.unsupervised_models_enum.Models.get_enum_by_value(self.unsupervised_algorithm_combobox.get())
-        file = self.unsupervised_data
-        komponents = self.unsupervised_slider_var.get()
-        unsupervised(algorithm, file, komponents)
-
-
-# Function to change the appearance mode (dark mode, light mode, etc.)
-def change_dark_mode(choice):
-    ctk.set_appearance_mode(choice)
+    def on_close(self):
+        stop_fastapi_server()
+        self.destroy()
 
 
 # Function to upload a file
 def upload_file_to_database():
     upload_csv_or_xlsx_to_db_table()
 
-
-# Function for unsupervised prediction
-def unsupervised(model, file, komponents):
-    if model == enums.unsupervised_models_enum.Models.KMEANS:
-        predict_data_from_file_unsupervised_kmeans(file, komponents)
-    elif model == enums.unsupervised_models_enum.Models.GMM:
-        predict_data_from_file_unsupervised_gmm(file, komponents)
-    elif model == enums.unsupervised_models_enum.Models.hierarchical:
-        predict_data_from_file_unsupervised_hierarchical(file, komponents)
-    elif model == enums.unsupervised_models_enum.Models.tsne:
-        predict_data_from_file_unsupervised_tsne(file, ...)
-    elif model == enums.unsupervised_models_enum.Models.pca:
-        predict_data_from_file_unsupervised_pca(file)
-    elif model == enums.unsupervised_models_enum.Models.umap:
-        predict_data_from_file_unsupervised_umap(file, ...)
-    elif model == enums.unsupervised_models_enum.Models.affinity:
-        predict_data_from_file_unsupervised_affinity(file)
-        
         
 def get_all_items_of_user_from_db_gui():
     return get_all_items_of_user_from_db()
@@ -243,7 +133,9 @@ def get_all_items_of_user_from_db_gui():
 def delete_db_table_by_name_gui():
     delete_db_table_by_name("luca300_labeled_OES_data.csv")
 
-
-if __name__ == '__main__':
-    main_app = App()
-    main_app.mainloop()
+def stop_fastapi_server():
+    try:
+        os.kill(os.getpid(), signal.SIGTERM)
+    except Exception as e:
+        raise HTTPException(status_code=HTTP_500_INTERNAL_SERVER_ERROR,
+                            detail=f"Error shutting down FastAPI server: {str(e)}")
