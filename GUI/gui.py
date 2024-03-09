@@ -5,6 +5,7 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
 from GUI.bar_plot import BarPlot
 from GUI.supervised_frame import SupervisedFrame
+from GUI.unsupervised_frame import UnsupervisedFrame
 from api_functions.unsupervised import predict_data_from_file_unsupervised_kmeans
 from api_functions.unsupervised import predict_data_from_file_unsupervised_affinity
 from api_functions.unsupervised import predict_data_from_file_unsupervised_gmm
@@ -92,45 +93,13 @@ class App(ctk.CTk):
 
         # Dynamic Sidebar
         # ------------------ Unsupervised ------------------------------
-        '''Creation: unsupervised elements'''
-        self.unsupervised_frame = ctk.CTkFrame(self.dynamic_sidebar_frame, fg_color='#333333')
-        self.unsupervised_frame.columnconfigure(0, weight=1)
 
-        self.Unsupervised_label = ctk.CTkLabel(self.unsupervised_frame, text="Unsupervised",
-                                               font=ctk.CTkFont(size=20, weight="bold"))
-
-        unsupervised_algorithms = enums.unsupervised_models_enum.Models.create_list(self)
-        self.unsupervised_algorithm_var = ctk.StringVar(value=unsupervised_algorithms[0])
-        self.unsupervised_algorithm_combobox = ctk.CTkOptionMenu(master=self.unsupervised_frame,
-                                                                 values=unsupervised_algorithms,
-                                                                 command=self.option_menu_callback_algorithm)
-        self.unsupervised_algorithm_combobox.set(unsupervised_algorithms[0])
-
-        self.unsupervised_slider_var = ctk.IntVar(value=5)
-        self.unsupervised_slider = ctk.CTkSlider(master=self.unsupervised_frame, from_=0, to=15,
-                                                 variable=self.unsupervised_slider_var, command=self.sliding)
-        self.unsupervised_slider_label = ctk.CTkLabel(master=self.unsupervised_frame,
-                                                      text=str(self.unsupervised_slider_var.get()))
-
-        self.unsupervised_button_upload = ctk.CTkButton(self.unsupervised_frame, corner_radius=8,
-                                                         text='upload File', command=self.upload_file)
-        self.unsupervised_button_predict = ctk.CTkButton(self.unsupervised_frame, corner_radius=8,
-                                                       text='predict', command=self.predict_unsupervised)
-
-        self.unsupervised_data = ''
-
-        '''Grid Config: unsupervised elements'''
-        self.Unsupervised_label.grid(row=0, column=0, padx=20, pady=(15, 10), columnspan=3, sticky='ew')
-        self.unsupervised_algorithm_combobox.grid(row=1, column=1, padx=20, pady=6, columnspan=3, sticky='ew')
-        self.unsupervised_slider.grid(row=2, column=1, padx=20, pady=(6, 0), sticky='ew')
-        self.unsupervised_slider_label.grid(row=3, column=1, padx=20, sticky='ew')
-        self.unsupervised_button_upload.grid(row=7, column=1, padx=20, pady=6, sticky='ew')
-        self.unsupervised_button_predict.grid(row=8, column=1, padx=20, pady=6, sticky='ew')
+        self.unsupervised_frame = UnsupervisedFrame(self.dynamic_sidebar_frame, self)
 
         # ------------------ Supervised ---------------------------------
 
-        self.supervised_frame = SupervisedFrame(self, self)
-        self.supervised_frame.grid(row=0, column=0, sticky='nsew')
+        self.supervised_frame = SupervisedFrame(self.dynamic_sidebar_frame, self)
+        self.supervised_frame.grid(row=1, column=0, sticky='nsew')
 
 
     '''calls the method: return_dataframe_filesize_filename_from_csv_or_xlsx() and saves return file in var: 
