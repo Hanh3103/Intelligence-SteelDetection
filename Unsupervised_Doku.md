@@ -7,6 +7,8 @@ Im folgendem werden die unsupervised learning Methoden vorgestellt, die im Rahme
 ## Unsuperivised Learning
 Unsupervised Learning ist eine Methode des maschinellen Lernens, bei der ein Modell Muster in einem Datensatz erkennt, ohne dass die Daten gelabelt sind. Das bedeutet, dass das Modell selbstständig Muster in den Daten erkennen muss, ohne dass ihm gesagt wird, was es suchen soll. Unsupervised Learning wird häufig für die Datenanalyse verwendet, um Muster in großen Datenmengen zu erkennen. Es gibt verschiedene Methoden des unsupervised Learning, die im Rahmen des FoPra angewendet wurden.
 ### K-Means Clustering
+Implementiert von Joshua Kuhwald
+
 K-Means Clustering ist ein Verfahren des unsupervised Learning, bei dem die Daten in k Gruppen (Cluster) eingeteilt werden. Dabei wird die Anzahl der Cluster k vorgegeben. Das Ziel des K-Means Clustering ist es, die Daten so auf die Cluster aufzuteilen, dass die Daten innerhalb eines Clusters möglichst ähnlich und die Daten zwischen den Clustern möglichst verschieden sind. Das Verfahren des K-Means Clustering wurde im Rahmen des FoPra angewendet, um die Stahlproben in verschiedene Klassen einzuteilen.
 
 Die Methode kmeans ist in der Datei MLModels/unsupervised/cluster_Algorithm.py implementiert.
@@ -41,6 +43,8 @@ Bei einem der Datensätze handelt es sich um einen Datensatz der die tatsächlic
 Verschiedene weitere Methoden und implementierte Funktionen, die im Rahmen des FoPra ausprobiert wurden, es aber aus verschiedenen Gründen nicht in die finale Version geschafft haben, sind in dem Jupyter Notebook <apan style="color:red">TODO: add reference</apan> zu finden.
  
 ### PCA
+Implementiert von Joshua Kuhwald
+
 Principal Component Analysis (PCA) ist ein Verfahren des unsupervised Learning, bei dem die Dimensionalität der Daten reduziert wird. Das Ziel der PCA ist es, die Daten so zu transformieren, dass die Daten in den neuen Dimensionen möglichst viel Varianz aufweisen. Die PCA wird im Rahmen des FoPra angewendet, um die Daten zu visualisieren und die Dimensionalität der Daten zu reduzieren.
 
 Die Methode pca ist in der Datei MLModels/unsupervised/clustering_Algorithm.py implementiert. 
