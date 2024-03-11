@@ -39,10 +39,7 @@ class UnsupervisedFrame(ctk.CTkFrame):
                                                       text=str(self.unsupervised_slider_var.get()))
 
         self.unsupervised_button_predict = ctk.CTkButton(self, corner_radius=8,
-                                                         text='predict', command=self.predict_unsupervised)
-
-        self.unsupervised_button_upload = ctk.CTkButton(self, corner_radius=8,
-                                                        text='upload File', command=self.upload_file)
+                                                         text='predict unsupervised', command=self.predict_unsupervised)
 
         self.unsupervised_data = ''
 
@@ -51,8 +48,7 @@ class UnsupervisedFrame(ctk.CTkFrame):
         self.unsupervised_algorithm_combobox.grid(row=1, column=1, padx=20, pady=6, columnspan=3, sticky='ew')
         self.unsupervised_slider.grid(row=2, column=1, padx=20, pady=(6, 0), sticky='ew')
         self.unsupervised_slider_label.grid(row=3, column=1, padx=20, sticky='ew')
-        self.unsupervised_button_upload.grid(row=4, column=1, padx=20, sticky='ew')
-        self.unsupervised_button_predict.grid(row=5, column=1, padx=20, pady=6, sticky='ew')
+        self.unsupervised_button_predict.grid(row=4, column=1, padx=20, pady=6, sticky='ew')
 
     def option_menu_callback_algorithm(self, choice):
         self.unsupervised_algorithm_var.set(choice)

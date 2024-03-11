@@ -42,7 +42,7 @@ class SupervisedFrame(ctk.CTkFrame):
                                                     command=self.option_menu_callback_dataframe)
 
         self.supervised_button_predict = ctk.CTkButton(self, corner_radius=8,
-                                                       text='predict', command=self.predict_supervised)
+                                                       text='predict supervised', command=self.predict_supervised)
 
         '''Grid Config: supervised elements'''
         self.supervised_label.grid(row=0, column=0, padx=20, pady=(15, 10), sticky='ew')

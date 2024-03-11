@@ -69,19 +69,19 @@ class App(ctk.CTk):
         '''Creation: static elements'''
         self.logo_label = ctk.CTkLabel(self.static_sidebar_frame, text="Side Bar",
                                        font=ctk.CTkFont(size=20, weight="bold"))
-        self.sidebar_button_supervised = ctk.CTkButton(self.static_sidebar_frame, corner_radius=8, text='Supervised',
-                                                       command=self.show_supervised)
+        self.sidebar_button_supervised = ctk.CTkButton(self.static_sidebar_frame, corner_radius=8,
+                                                       text='Supervised prediction', command=self.show_supervised)
         self.sidebar_button_unsupervised = ctk.CTkButton(self.static_sidebar_frame, corner_radius=8,
-                                                         text='Unsupervised', command=self.show_unsupervised)
+                                                         text='Unsupervised prediction', command=self.show_unsupervised)
         self.sidebar_button_upload = ctk.CTkButton(self.static_sidebar_frame, corner_radius=8,
-                                                   text='upload Dataframe to Database',
+                                                   text='upload file',
                                                    command=upload_file_to_database)
 
         '''Grid Config: static elements'''
         self.logo_label.grid(row=0, column=0, padx=6, pady=(12, 6))
-        self.sidebar_button_supervised.grid(row=1, column=0, padx=20, pady=6, sticky='nsew')
-        self.sidebar_button_unsupervised.grid(row=2, column=0, padx=20, pady=6, sticky='nsew')
-        self.sidebar_button_upload.grid(row=3, column=0, padx=20, pady=6, sticky='nsew')
+        self.sidebar_button_supervised.grid(row=2, column=0, padx=20, pady=6, sticky='nsew')
+        self.sidebar_button_unsupervised.grid(row=3, column=0, padx=20, pady=6, sticky='nsew')
+        self.sidebar_button_upload.grid(row=1, column=0, padx=20, pady=6, sticky='nsew')
 
 # Dynamic Sidebar
         # ------------------ Unsupervised ------------------------------
