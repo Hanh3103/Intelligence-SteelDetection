@@ -13,7 +13,7 @@ class SupervisedFrame(ctk.CTkFrame):
         self.columnconfigure(0, weight=3)
         self.columnconfigure(1, weight=0)
 
-        self.supervised_label = ctk.CTkLabel(self, text="Supervised",
+        self.supervised_label = ctk.CTkLabel(self, text="Supervised prediction",
                                              font=ctk.CTkFont(size=20, weight="bold"))
 
         self.supervised_model_var = ctk.StringVar(value="False")
