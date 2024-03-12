@@ -3,6 +3,7 @@ from api_functions.supervised import predict_with_supervised_algo
 from utils.database_utils import get_dataframe_from_database
 
 
+
 class SupervisedFrame(ctk.CTkFrame):
     def __init__(self, master, main_app_reference, **kwargs):
         super().__init__(master, **kwargs)
@@ -10,84 +11,94 @@ class SupervisedFrame(ctk.CTkFrame):
 
         '''Creation: supervised elements'''
         self.configure(fg_color='#333333')
-        self.columnconfigure(0, weight=1)
+        self.columnconfigure(0, weight=3)
+        self.columnconfigure(1, weight=0)
 
         self.supervised_label = ctk.CTkLabel(self, text="Supervised",
                                              font=ctk.CTkFont(size=20, weight="bold"))
 
         self.supervised_model_var = ctk.StringVar(value="False")
-        self.supervised_model_checkbox = ctk.CTkCheckBox(master=self, text="Model is existing",
-                                                         variable=self.supervised_model_var, onvalue="True",
-                                                         offvalue="False", command=self.change_model_status)
+        self.model_checkbox = ctk.CTkCheckBox(master=self, text="Model is existing",
+                                              variable=self.supervised_model_var, onvalue="True",
+                                              offvalue="False", command=self.change_model_status)
 
-        self.supervised_button_Model = ctk.CTkButton(self, corner_radius=8,
-                                                     text='trained Model', state="disabled")
+        self.algorithm_label = ctk.CTkLabel(self, text="Algorithm")
 
-        self.supervised_button_Dataframe = ctk.CTkButton(self, corner_radius=8,
-                                                         text="Dataframe", state="disabled")
+        self.algorithm_var = ctk.StringVar(value="xgboost_algorithm")
+        self.algorithm_combobox = ctk.CTkOptionMenu(master=self,
+                                                    values=["xgboost_algorithm", "deep_learning"],
+                                                    command=self.option_menu_callback_algorithm,
+                                                    dynamic_resizing=False,
+                                                    width=170)
 
-        self.supervised_button_encoder = ctk.CTkButton(self, corner_radius=8,
-                                                       text="Labelencoder", state="disabled")
-
-        self.unsupervised_algorithm_var = ctk.StringVar(value="xgboost_algorithm")
-        self.supervised_algorithm_combobox = ctk.CTkOptionMenu(master=self,
-                                                               values=["xgboost_algorithm", "deep_learning"],
-                                                               command=self.option_menu_callback_algorithm)
+        self.dataframe_to_prediction_label = ctk.CTkLabel(self, text="Data for prediction")
 
         from GUI.gui import get_all_items_of_user_from_db_gui
         dataframes = list(get_all_items_of_user_from_db_gui())
-        self.dataframe_var = ctk.StringVar(value=dataframes[0])
-        self.dataframe_combobox = ctk.CTkOptionMenu(master=self,
-                                                    values=dataframes,
-                                                    command=self.option_menu_callback_dataframe)
+        self.dataframe_to_prediction_var = ctk.StringVar(value=dataframes[0])
+        self.dataframe_to_prediction_combobox = ctk.CTkOptionMenu(master=self,
+                                                                  dynamic_resizing=False,
+                                                                  width=170,
+                                                                  values=dataframes,
+                                                                  command=self.option_menu_callback_dataframe_to_prediction)
+
+        self.dataframe_to_train_label = ctk.CTkLabel(self, text="Data for training")
+
+        self.dataframe_to_train_var = ctk.StringVar(value=dataframes[0])
+        self.dataframe_to_train_combobox = ctk.CTkOptionMenu(master=self,
+                                                             dynamic_resizing=False,
+                                                             width=170,
+                                                             values=dataframes,
+                                                             command=self.option_menu_callback_dataframe_to_train)
 
         self.supervised_button_predict = ctk.CTkButton(self, corner_radius=8,
                                                        text='predict supervised', command=self.predict_supervised)
 
         '''Grid Config: supervised elements'''
-        self.supervised_label.grid(row=0, column=0, padx=20, pady=(15, 10), sticky='ew')
-        self.supervised_model_checkbox.grid(row=1, column=0, padx=20, pady=6, sticky='ew')
-        self.supervised_button_Model.grid(row=7, column=0, padx=20, pady=6, sticky='ew')
-        self.supervised_button_Dataframe.grid(row=4, column=0, padx=20, pady=6, sticky='ew')
-        self.supervised_button_encoder.grid(row=5, column=0, padx=20, pady=6, sticky='ew')
-        self.supervised_algorithm_combobox.grid(row=2, column=0, padx=20, pady=6, sticky='ew')
-        self.dataframe_combobox.grid(row=3, column=0, padx=20, pady=6, sticky='ew')
-        self.supervised_button_predict.grid(row=8, column=0, padx=20, pady=6, sticky='ew')
+        self.supervised_label.grid(row=0, column=0, padx=20, pady=(15, 10), sticky='ew', columnspan=2)
+        self.model_checkbox.grid(row=1, column=0, padx=20, pady=6, sticky='ew', columnspan=2)
+        self.algorithm_label.grid(row=2, column=0, padx=(20, 0), pady=6, sticky='w')
+        self.algorithm_combobox.grid(row=2, column=1, padx=(0, 20), pady=6, sticky='e')
+        self.dataframe_to_prediction_label.grid(row=3, column=0, padx=(20, 0), pady=6, sticky='w')
+        self.dataframe_to_prediction_combobox.grid(row=3, column=1, padx=(0, 20), pady=6, sticky='e')
+        self.dataframe_to_train_label.grid(row=4, column=0, padx=(20, 0), pady=6, sticky='w')
+        self.dataframe_to_train_combobox.grid(row=4, column=1, padx=(0, 20), pady=6, sticky='e')
+        self.supervised_button_predict.grid(row=8, column=0, padx=20, pady=(6, 15), sticky='ew', columnspan=2)
 
     def change_model_status(self):
         if self.supervised_model_var.get() == "True":
-            self.supervised_button_Model.configure(state="normal")
-            self.supervised_button_Dataframe.configure(state="disabled")
-            self.supervised_button_encoder.configure(state="disabled")
+            self.dataframe_to_train_combobox.configure(state='disabled')
         else:
-            self.supervised_button_Dataframe.configure(state="normal")
-            self.supervised_button_encoder.configure(state="normal")
-            self.supervised_button_Model.configure(state="disabled")
+            self.dataframe_to_train_combobox.configure(state='normal')
 
     def option_menu_callback_algorithm(self, choice):
-        self.unsupervised_algorithm_var.set(choice)
+        self.algorithm_var.set(choice)
 
     '''Im Backend wurden keine bool, sondern Strings genutzt. Methodenaufruf muss so ausgeführt werden'''
     def predict_supervised(self):
         existing_model = self.supervised_model_var.get()
-        algorithm = self.unsupervised_algorithm_var.get()
-        dataframe_name = self.dataframe_var.get()
+        algorithm = self.algorithm_var.get()
+        dataframe_to_predict = self.dataframe_to_prediction_var.get()
+        dataframe_to_train = self.dataframe_to_train_var.get()
         if existing_model == "True":
             prediction = predict_with_supervised_algo(
                 existing_model,
                 "",
                 algorithm,
-                dataframe_name,
+                dataframe_to_predict,
                 "prediction")
         else:
             prediction = predict_with_supervised_algo(
                 existing_model,
-                "test_labeled_OES_data.csv",
+                dataframe_to_train,
                 algorithm,
-                dataframe_name,
+                dataframe_to_predict,
                 "prediction")
-        prediction_data = get_dataframe_from_database(dataframe_name)
+        prediction_data = get_dataframe_from_database(dataframe_to_predict)
         self.main_app.create_canvas(prediction, prediction_data)
 
-    def option_menu_callback_dataframe(self, choice):
-        self.dataframe_var.set(choice)
+    def option_menu_callback_dataframe_to_prediction(self, choice):
+        self.dataframe_to_prediction_var.set(choice)
+
+    def option_menu_callback_dataframe_to_train(self, choice):
+        self.dataframe_to_train_var.set(choice)

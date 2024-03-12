@@ -50,7 +50,7 @@ class App(ctk.CTk):
         self.canvas = None
 
 # Sidebar
-        self.sidebar_frame = ctk.CTkFrame(self, corner_radius=0, width=300)
+        self.sidebar_frame = ctk.CTkFrame(self, corner_radius=0, width=350)
         self.sidebar_frame.grid(row=0, column=0, sticky="ns")
         self.sidebar_frame.grid_propagate(False)
         self.sidebar_frame.columnconfigure(0, weight=1)
