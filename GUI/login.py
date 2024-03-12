@@ -1,11 +1,15 @@
 from tkinter import messagebox
 import customtkinter as ctk
+
+from GUI.gui import stop_fastapi_server
 from api_functions.login_register import login_user, register_user
 
 
 class LoginScreen(ctk.CTk):
     def __init__(self, main_app):
         super().__init__()
+
+        self.protocol("WM_DELETE_WINDOW", self.on_close)
 
         self.title("Login")
         self.geometry(f"{400}x{350}")
@@ -103,3 +107,7 @@ class LoginScreen(ctk.CTk):
 
         # Set the window position
         self.geometry("+{}+{}".format(x, y))
+
+    def on_close(self):
+        stop_fastapi_server()
+        self.destroy()

@@ -7,7 +7,6 @@ class BarPlot:
 
     def create_supervised_Plot(self, predicted_steel_types, elemente, prediction_data):
         df = pd.DataFrame(prediction_data)
-        print(predicted_steel_types)
         for col in df.columns:
             df[col] = df[col].str.replace(',', '.').astype(float)
 

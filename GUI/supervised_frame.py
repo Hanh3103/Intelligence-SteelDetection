@@ -3,7 +3,6 @@ from api_functions.supervised import predict_with_supervised_algo
 from utils.database_utils import get_dataframe_from_database
 
 
-
 class SupervisedFrame(ctk.CTkFrame):
     def __init__(self, master, main_app_reference, **kwargs):
         super().__init__(master, **kwargs)

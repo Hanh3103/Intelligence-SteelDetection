@@ -1,7 +1,6 @@
 import os
 import signal
 
-from PIL import Image
 from fastapi import HTTPException
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from starlette.status import HTTP_500_INTERNAL_SERVER_ERROR
@@ -41,12 +40,15 @@ class App(ctk.CTk):
         self.main_frame.columnconfigure(0, weight=1)
         self.main_frame.rowconfigure(0, weight=1)
         self.main_frame.grid(row=0, column=1, sticky="nsew")
-        image_path = os.path.join(os.path.dirname(os.path.dirname(__file__)),
-                                  'resources', 'gui', 'placeholder_diagram.png')
-        placeholder_bar_chart_image = ctk.CTkImage(light_image=Image.open(image_path),
-                                                   dark_image=Image.open(image_path), size=(500, 500))
-        placeholder_label = ctk.CTkLabel(self.main_frame, text='', image=placeholder_bar_chart_image)
-        placeholder_label.grid(row=0, column=0, sticky="nsew")
+
+        self.tabview = ctk.CTkTabview(self.main_frame, fg_color='transparent')
+        self.tabview.grid(row=0, column=0, sticky="nsew")
+        self.tabview.add("tabel")
+        self.tabview.tab("tabel").grid(sticky='nsew')
+        self.tabview.add("Barplot")
+        self.this = ctk.CTk
+        self.tabview.tab("Barplot").grid(sticky='nsew')
+
         self.canvas = None
 
 # Sidebar
@@ -78,9 +80,9 @@ class App(ctk.CTk):
                                                    command=upload_file_to_database)
 
         '''Grid Config: static elements'''
-        self.logo_label.grid(row=0, column=0, padx=6, pady=(12, 6))
+        self.logo_label.grid(row=0, column=0, padx=6, pady=(15, 6))
         self.sidebar_button_supervised.grid(row=2, column=0, padx=20, pady=6, sticky='nsew')
-        self.sidebar_button_unsupervised.grid(row=3, column=0, padx=20, pady=6, sticky='nsew')
+        self.sidebar_button_unsupervised.grid(row=3, column=0, padx=20, pady=(6, 15), sticky='nsew')
         self.sidebar_button_upload.grid(row=1, column=0, padx=20, pady=6, sticky='nsew')
 
 # Dynamic Sidebar
@@ -99,10 +101,10 @@ class App(ctk.CTk):
         bar_plot = BarPlot()
         elemente = ['C', 'Si', 'Mn', 'P', 'S', 'Cr', 'Ni', 'Al', 'Cu']
         fig = bar_plot.create_supervised_Plot(predicted_stell_types, elemente, prediction_data)
-        self.canvas = FigureCanvasTkAgg(fig, master=self.main_frame)
+        self.canvas = FigureCanvasTkAgg(fig, master=self.tabview.tab("Barplot"))
         self.canvas.draw()
-        self.canvas.get_tk_widget().place(relx=0.0, rely=0.0, width=self.main_frame.winfo_width(),
-                                          height=self.main_frame.winfo_height())
+        self.canvas.get_tk_widget().place(relx=0.0, rely=0.0, width=self.tabview.tab("tabel").winfo_width(),
+                                          height=self.tabview.tab("tabel").winfo_height())
 
     '''displays the supervised frame in the dynamic part of the Sidebar and hides the unsupervised part'''
     def show_supervised(self):
