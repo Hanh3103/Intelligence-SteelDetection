@@ -1,5 +1,4 @@
 ### K-Means Clustering
-Implemented by Joshua Kuhwald
 
 K-means clustering is a method of unsupervised learning, in which the data is divided into k groups (clusters). The number of clusters k is predetermined. The goal of K-means clustering is to divide the data into the clusters in such a way that the data within a cluster is as similar as possible and the data between the clusters is as different as possible. The K-Means Clustering method was applied in the context of the FoPra to classify the steel samples into different classes.
 
@@ -35,7 +34,6 @@ Various other methods and implemented functions that were tried out in the conte
 
 
 ### PCA
-Implemented by Joshua Kuhwald
 
 Principal Component Analysis (PCA) is a method of unsupervised learning, in which the dimensionality of the data is reduced. The goal of PCA is to transform the data in such a way that the data in the new dimensions have as much variance as possible. PCA is applied in the context of the FoPra to visualize the data and to reduce the dimensionality of the data.
 
