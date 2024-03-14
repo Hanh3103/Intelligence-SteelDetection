@@ -1,4 +1,6 @@
 import customtkinter as ctk
+
+from GUI.bar_plot import save_dataframe_as_csv
 from api_functions.supervised import predict_with_supervised_algo
 from utils.database_utils import get_dataframe_from_database
 
@@ -94,6 +96,7 @@ class SupervisedFrame(ctk.CTkFrame):
                 dataframe_to_predict,
                 "prediction")
         prediction_data = get_dataframe_from_database(dataframe_to_predict)
+        save_dataframe_as_csv(prediction_data)
         self.main_app.create_canvas(prediction, prediction_data)
 
     def option_menu_callback_dataframe_to_prediction(self, choice):

@@ -39,8 +39,7 @@ def predict_data_from_file_unsupervised_kmeans(file, k_components: int, scaler=N
 
     # Read the JSON from the buffer
     df_reconstructed = pd.read_json(json_buffer, orient='split')
-    print(df_reconstructed)
-    # Visualize response
+    return df_reconstructed
 
 
 def predict_data_from_file_unsupervised_gmm(file, k_components: int):
@@ -68,8 +67,7 @@ def predict_data_from_file_unsupervised_gmm(file, k_components: int):
     response = call_unsupervised_algorithm(file, "predict/unsupervised/gmm", model_options)
 
     df_reconstructed = pd.read_json(response.json(), orient='split')
-    print(df_reconstructed)
-    # Visualize response
+    return df_reconstructed
 
 
 def predict_data_from_file_unsupervised_hierarchical(file, k_components: int):
@@ -97,8 +95,7 @@ def predict_data_from_file_unsupervised_hierarchical(file, k_components: int):
     response = call_unsupervised_algorithm(file, "predict/unsupervised/hierarchical", model_options)
 
     df_reconstructed = pd.read_json(response.json(), orient='split')
-    print(df_reconstructed)
-    # Visualize response
+    return df_reconstructed
 
 
 def predict_data_from_file_unsupervised_tsne(file, n_neighbours: int, steps: int, mode: str):
@@ -193,15 +190,13 @@ def predict_data_from_file_unsupervised_umap(file, n_neighbours: int, k_componen
 
     response = call_unsupervised_algorithm(file, "predict/unsupervised/umap", model_options)
     print(response.json())
-    # Visualize response
 
 
 def predict_data_from_file_unsupervised_affinity(file):
 
     response = call_unsupervised_algorithm(file, "predict/unsupervised/affinity")
     df_reconstructed = pd.read_json(response.json(), orient='split')
-    print(df_reconstructed)
-    # Visualize response
+    return df_reconstructed
 
 
 def call_unsupervised_algorithm(file, url: str, model_parameter=None):

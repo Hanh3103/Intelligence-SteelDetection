@@ -43,8 +43,6 @@ class App(ctk.CTk):
 
         self.tabview = ctk.CTkTabview(self.main_frame, fg_color='transparent')
         self.tabview.grid(row=0, column=0, sticky="nsew")
-        self.tabview.add("tabel")
-        self.tabview.tab("tabel").grid(sticky='nsew')
         self.tabview.add("Barplot")
         self.this = ctk.CTk
         self.tabview.tab("Barplot").grid(sticky='nsew')
@@ -100,11 +98,19 @@ class App(ctk.CTk):
     def create_canvas(self, predicted_stell_types, prediction_data):
         bar_plot = BarPlot()
         elemente = ['C', 'Si', 'Mn', 'P', 'S', 'Cr', 'Ni', 'Al', 'Cu']
-        fig = bar_plot.create_supervised_Plot(predicted_stell_types, elemente, prediction_data)
+        fig = bar_plot.create_supervised_plot(predicted_stell_types, elemente, prediction_data)
         self.canvas = FigureCanvasTkAgg(fig, master=self.tabview.tab("Barplot"))
         self.canvas.draw()
-        self.canvas.get_tk_widget().place(relx=0.0, rely=0.0, width=self.tabview.tab("tabel").winfo_width(),
-                                          height=self.tabview.tab("tabel").winfo_height())
+        self.canvas.get_tk_widget().place(relx=0.0, rely=0.0, width=self.tabview.tab("Barplot").winfo_width(),
+                                          height=self.tabview.tab("Barplot").winfo_height())
+
+    def create_unsupervised_canvas(self, prediction_data):
+        bar_plot = BarPlot()
+        fig = bar_plot.create_unsupervised_plot(prediction_data)
+        self.canvas = FigureCanvasTkAgg(fig, master=self.tabview.tab("Barplot"))
+        self.canvas.draw()
+        self.canvas.get_tk_widget().place(relx=0.0, rely=0.0, width=self.tabview.tab("Barplot").winfo_width(),
+                                          height=self.tabview.tab("Barplot").winfo_height())
 
     '''displays the supervised frame in the dynamic part of the Sidebar and hides the unsupervised part'''
     def show_supervised(self):
