@@ -154,9 +154,7 @@ def predict_data_from_file_unsupervised_pca(file, scaler=None):
     }
 
     response = call_unsupervised_algorithm(file, "predict/unsupervised/pca", model_options)
-    print(response.json())
-    # df_reconstructed = pd.read_json(response.json(), orient='split')
-    # print(df_reconstructed)
+    return response.json()
     # Visualize response
 
 
@@ -189,7 +187,7 @@ def predict_data_from_file_unsupervised_umap(file, n_neighbours: int, k_componen
     }
 
     response = call_unsupervised_algorithm(file, "predict/unsupervised/umap", model_options)
-    print(response.json())
+    return response.json()
 
 
 def predict_data_from_file_unsupervised_affinity(file):
