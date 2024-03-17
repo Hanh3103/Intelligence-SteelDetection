@@ -41,7 +41,10 @@ class SupervisedFrame(ctk.CTkFrame):
 
         from GUI.gui import get_all_items_of_user_from_db_gui
         dataframes = list(get_all_items_of_user_from_db_gui())
-        self.dataframe_to_prediction_var = ctk.StringVar(value=dataframes[0])
+        if dataframes:
+            self.dataframe_to_prediction_var = ctk.StringVar(value=dataframes[0])
+        else:
+            self.dataframe_to_prediction_var = ctk.StringVar(value="No data available")
         self.dataframe_to_prediction_combobox = ctk.CTkOptionMenu(master=self,
                                                                   dynamic_resizing=False,
                                                                   width=170,
@@ -50,7 +53,11 @@ class SupervisedFrame(ctk.CTkFrame):
 
         self.dataframe_to_train_label = ctk.CTkLabel(self, text="Data for training")
 
-        self.dataframe_to_train_var = ctk.StringVar(value=dataframes[0])
+        if dataframes:
+            self.dataframe_to_train_var = ctk.StringVar(value=dataframes[0])
+        else:
+            self.dataframe_to_train_var = ctk.StringVar(value="No data available")
+
         self.dataframe_to_train_combobox = ctk.CTkOptionMenu(master=self,
                                                              dynamic_resizing=False,
                                                              width=170,
