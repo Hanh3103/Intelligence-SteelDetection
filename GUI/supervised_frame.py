@@ -21,7 +21,7 @@ class SupervisedFrame(ctk.CTkFrame):
 
         self.upload_button = ctk.CTkButton(self, corner_radius=8,
                                            text='upload file',
-                                           command=upload_csv_or_xlsx_to_db_table)
+                                           command=upload_file_to_database)
 
         self.supervised_model_var = ctk.StringVar(value="False")
         self.model_checkbox = ctk.CTkCheckBox(master=self, text="Model is existing",
@@ -117,3 +117,6 @@ class SupervisedFrame(ctk.CTkFrame):
 
     def option_menu_callback_dataframe_to_train(self, choice):
         self.dataframe_to_train_var.set(choice)
+
+def upload_file_to_database():
+    upload_csv_or_xlsx_to_db_table()
