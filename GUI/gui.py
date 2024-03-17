@@ -73,15 +73,11 @@ class App(ctk.CTk):
                                                        text='Supervised prediction', command=self.show_supervised)
         self.sidebar_button_unsupervised = ctk.CTkButton(self.static_sidebar_frame, corner_radius=8,
                                                          text='Unsupervised prediction', command=self.show_unsupervised)
-        self.sidebar_button_upload = ctk.CTkButton(self.static_sidebar_frame, corner_radius=8,
-                                                   text='upload file',
-                                                   command=upload_file_to_database)
 
         '''Grid Config: static elements'''
         self.logo_label.grid(row=0, column=0, padx=6, pady=(15, 6))
         self.sidebar_button_supervised.grid(row=2, column=0, padx=20, pady=6, sticky='nsew')
         self.sidebar_button_unsupervised.grid(row=3, column=0, padx=20, pady=(6, 15), sticky='nsew')
-        self.sidebar_button_upload.grid(row=1, column=0, padx=20, pady=6, sticky='nsew')
 
 # Dynamic Sidebar
         # ------------------ Unsupervised ------------------------------
@@ -127,11 +123,6 @@ class App(ctk.CTk):
     def on_close(self):
         stop_fastapi_server()
         self.destroy()
-
-
-# Function to upload a file
-def upload_file_to_database():
-    upload_csv_or_xlsx_to_db_table()
 
         
 def get_all_items_of_user_from_db_gui():
