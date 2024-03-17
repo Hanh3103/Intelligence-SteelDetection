@@ -80,8 +80,6 @@ class BarPlot:
         ax.legend(title='Elemente')
 
         plt.tight_layout()
-        plt.show()
-
         return fig
 
 
