@@ -43,8 +43,6 @@ class App(ctk.CTk):
 
         self.tabview = ctk.CTkTabview(self.main_frame, fg_color='transparent')
         self.tabview.grid(row=0, column=0, sticky="nsew")
-        self.tabview.add("tabel")
-        self.tabview.tab("tabel").grid(sticky='nsew')
         self.tabview.add("Barplot")
         self.this = ctk.CTk
         self.tabview.tab("Barplot").grid(sticky='nsew')
@@ -75,15 +73,11 @@ class App(ctk.CTk):
                                                        text='Supervised prediction', command=self.show_supervised)
         self.sidebar_button_unsupervised = ctk.CTkButton(self.static_sidebar_frame, corner_radius=8,
                                                          text='Unsupervised prediction', command=self.show_unsupervised)
-        self.sidebar_button_upload = ctk.CTkButton(self.static_sidebar_frame, corner_radius=8,
-                                                   text='upload file',
-                                                   command=upload_file_to_database)
 
         '''Grid Config: static elements'''
         self.logo_label.grid(row=0, column=0, padx=6, pady=(15, 6))
         self.sidebar_button_supervised.grid(row=2, column=0, padx=20, pady=6, sticky='nsew')
         self.sidebar_button_unsupervised.grid(row=3, column=0, padx=20, pady=(6, 15), sticky='nsew')
-        self.sidebar_button_upload.grid(row=1, column=0, padx=20, pady=6, sticky='nsew')
 
 # Dynamic Sidebar
         # ------------------ Unsupervised ------------------------------
@@ -100,11 +94,19 @@ class App(ctk.CTk):
     def create_canvas(self, predicted_stell_types, prediction_data):
         bar_plot = BarPlot()
         elemente = ['C', 'Si', 'Mn', 'P', 'S', 'Cr', 'Ni', 'Al', 'Cu']
-        fig = bar_plot.create_supervised_Plot(predicted_stell_types, elemente, prediction_data)
+        fig = bar_plot.create_supervised_plot(predicted_stell_types, elemente, prediction_data)
         self.canvas = FigureCanvasTkAgg(fig, master=self.tabview.tab("Barplot"))
         self.canvas.draw()
-        self.canvas.get_tk_widget().place(relx=0.0, rely=0.0, width=self.tabview.tab("tabel").winfo_width(),
-                                          height=self.tabview.tab("tabel").winfo_height())
+        self.canvas.get_tk_widget().place(relx=0.0, rely=0.0, width=self.tabview.tab("Barplot").winfo_width(),
+                                          height=self.tabview.tab("Barplot").winfo_height())
+
+    def create_unsupervised_canvas(self, prediction_data):
+        bar_plot = BarPlot()
+        fig = bar_plot.create_unsupervised_plot(prediction_data)
+        self.canvas = FigureCanvasTkAgg(fig, master=self.tabview.tab("Barplot"))
+        self.canvas.draw()
+        self.canvas.get_tk_widget().place(relx=0.0, rely=0.0, width=self.tabview.tab("Barplot").winfo_width(),
+                                          height=self.tabview.tab("Barplot").winfo_height())
 
     '''displays the supervised frame in the dynamic part of the Sidebar and hides the unsupervised part'''
     def show_supervised(self):
@@ -121,11 +123,6 @@ class App(ctk.CTk):
     def on_close(self):
         stop_fastapi_server()
         self.destroy()
-
-
-# Function to upload a file
-def upload_file_to_database():
-    upload_csv_or_xlsx_to_db_table()
 
         
 def get_all_items_of_user_from_db_gui():

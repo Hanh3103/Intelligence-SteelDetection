@@ -1,4 +1,7 @@
 import customtkinter as ctk
+
+from GUI.bar_plot import save_dataframe_as_csv
+from api_functions.database import upload_csv_or_xlsx_to_db_table
 from api_functions.supervised import predict_with_supervised_algo
 from utils.database_utils import get_dataframe_from_database
 
@@ -15,6 +18,10 @@ class SupervisedFrame(ctk.CTkFrame):
 
         self.supervised_label = ctk.CTkLabel(self, text="Supervised prediction",
                                              font=ctk.CTkFont(size=20, weight="bold"))
+
+        self.upload_button = ctk.CTkButton(self, corner_radius=8,
+                                           text='upload file',
+                                           command=upload_csv_or_xlsx_to_db_table)
 
         self.supervised_model_var = ctk.StringVar(value="False")
         self.model_checkbox = ctk.CTkCheckBox(master=self, text="Model is existing",
@@ -55,13 +62,14 @@ class SupervisedFrame(ctk.CTkFrame):
 
         '''Grid Config: supervised elements'''
         self.supervised_label.grid(row=0, column=0, padx=20, pady=(15, 10), sticky='ew', columnspan=2)
-        self.model_checkbox.grid(row=1, column=0, padx=20, pady=6, sticky='ew', columnspan=2)
-        self.algorithm_label.grid(row=2, column=0, padx=(20, 0), pady=6, sticky='w')
-        self.algorithm_combobox.grid(row=2, column=1, padx=(0, 20), pady=6, sticky='e')
-        self.dataframe_to_prediction_label.grid(row=3, column=0, padx=(20, 0), pady=6, sticky='w')
-        self.dataframe_to_prediction_combobox.grid(row=3, column=1, padx=(0, 20), pady=6, sticky='e')
-        self.dataframe_to_train_label.grid(row=4, column=0, padx=(20, 0), pady=6, sticky='w')
-        self.dataframe_to_train_combobox.grid(row=4, column=1, padx=(0, 20), pady=6, sticky='e')
+        self.upload_button.grid(row=1, column=0, padx=20, pady=6, sticky='ew', columnspan=2)
+        self.model_checkbox.grid(row=2, column=0, padx=20, pady=6, sticky='ew', columnspan=2)
+        self.algorithm_label.grid(row=3, column=0, padx=(20, 0), pady=6, sticky='w')
+        self.algorithm_combobox.grid(row=3, column=1, padx=(0, 20), pady=6, sticky='e')
+        self.dataframe_to_prediction_label.grid(row=4, column=0, padx=(20, 0), pady=6, sticky='w')
+        self.dataframe_to_prediction_combobox.grid(row=4, column=1, padx=(0, 20), pady=6, sticky='e')
+        self.dataframe_to_train_label.grid(row=5, column=0, padx=(20, 0), pady=6, sticky='w')
+        self.dataframe_to_train_combobox.grid(row=5, column=1, padx=(0, 20), pady=6, sticky='e')
         self.supervised_button_predict.grid(row=8, column=0, padx=20, pady=(6, 15), sticky='ew', columnspan=2)
 
     def change_model_status(self):
@@ -94,6 +102,7 @@ class SupervisedFrame(ctk.CTkFrame):
                 dataframe_to_predict,
                 "prediction")
         prediction_data = get_dataframe_from_database(dataframe_to_predict)
+        save_dataframe_as_csv(prediction_data)
         self.main_app.create_canvas(prediction, prediction_data)
 
     def option_menu_callback_dataframe_to_prediction(self, choice):

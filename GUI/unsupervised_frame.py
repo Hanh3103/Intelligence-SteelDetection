@@ -1,5 +1,6 @@
 import customtkinter as ctk
 
+from GUI.bar_plot import save_dataframe_as_csv
 from api_functions.unsupervised import predict_data_from_file_unsupervised_kmeans
 from api_functions.unsupervised import predict_data_from_file_unsupervised_affinity
 from api_functions.unsupervised import predict_data_from_file_unsupervised_gmm
@@ -82,10 +83,12 @@ class UnsupervisedFrame(ctk.CTkFrame):
         algorithm = Models.get_enum_by_value(self.algorithm_combobox.get())
         file = self.unsupervised_data
         komponents = self.komponents_slider_var.get()
-        neighbours = self.neighbours_entry.get()
-        steps = self.steps_entry.get()
-        min_dist = self.min_dist_entry.get()
-        unsupervised(algorithm, file, komponents, neighbours, steps, min_dist)
+        #neighbours = int(self.neighbours_entry.get())
+        #steps = int(self.steps_entry.get())
+        #min_dist = float(self.min_dist_entry.get())
+        prediction_data = unsupervised(algorithm, file, komponents, 2, 1, 0.5)
+        save_dataframe_as_csv(prediction_data)
+        self.main_app.create_unsupervised_canvas(prediction_data)
 
     '''calls the method: return_dataframe_filesize_filename_from_csv_or_xlsx() and saves return file in var: 
       unsupervised_data'''
@@ -125,16 +128,16 @@ class UnsupervisedFrame(ctk.CTkFrame):
 
 def unsupervised(model, file, komponents, neighbours, steps, min_dist):
     if model == unsupervised_models_enum.Models.KMEANS:
-        predict_data_from_file_unsupervised_kmeans(file, komponents)
+        return predict_data_from_file_unsupervised_kmeans(file, komponents)
     elif model == unsupervised_models_enum.Models.GMM:
-        predict_data_from_file_unsupervised_gmm(file, komponents)
+        return predict_data_from_file_unsupervised_gmm(file, komponents)
     elif model == unsupervised_models_enum.Models.hierarchical:
-        predict_data_from_file_unsupervised_hierarchical(file, komponents)
+        return predict_data_from_file_unsupervised_hierarchical(file, komponents)
     elif model == unsupervised_models_enum.Models.tsne:
         predict_data_from_file_unsupervised_tsne(file, neighbours, steps, ...)
     elif model == unsupervised_models_enum.Models.pca:
-        predict_data_from_file_unsupervised_pca(file)
+        return predict_data_from_file_unsupervised_pca(file)
     elif model == unsupervised_models_enum.Models.umap:
-        predict_data_from_file_unsupervised_umap(file, neighbours,komponents, min_dist)
+        return predict_data_from_file_unsupervised_umap(file, neighbours, komponents, min_dist)
     elif model == unsupervised_models_enum.Models.affinity:
-        predict_data_from_file_unsupervised_affinity(file)
+        return predict_data_from_file_unsupervised_affinity(file)
