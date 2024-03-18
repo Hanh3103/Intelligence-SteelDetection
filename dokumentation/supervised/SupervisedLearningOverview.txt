@@ -1,0 +1,9 @@
+Erläuterung Supervised Learning:
+
+SteelModelInterface:
+Diese Klasse stellt ein Interface bereit, welches durch verschiedene Algorithmen zum überwachten Lernen realisiert werden kann. Hierdurch können auch in Zukunft weitere Algorithmen einfach in das Projekt implementiert werden, solange sie die Anforderungen des Interfaces erfüllen.
+Dabei muss jedes Modell eine Methode predict zur Verfügung stellen, welche einen Datensatz übergeben bekommt und ein entsprechendes Array mit Vorhersagen zurück gibt. Mit der Methode create_model soll ein neues Modell basierend auf einem Datensatz trainiert werden, welcher mehrere Instanzen mit features und Zielvariablen besitzt. Bei test_model soll eine dem Algorithmus entsprechende Evaluation zurückgegeben werden. Die Methode load_model ermöglicht mit der Übergabe eines gespeicherten Modells und eines label encoders ein bereits trainiertes Modell zu laden und zu nutzen. Dies reduziert den Zeitaufwand beim Anwenden, da nicht jedes Mal ein neues Modell trainiert werden muss.
+
+
+SteelClassifier:
+Mit dieser Klasse können die implementierten Algorithmen aufgerufen und genutzt werden. Sie stellt die Schnittstelle zum restlichen Projekt dar und abstrahiert durch die Nutzung des SteelModelInterfaces die verschiedenen überwachten Algorithmen. Um ein SteelClassifier Objekt zu initialisieren, muss im Konstruktor festgelegt werden, ob ein Modell neu trainiert werden soll, welcher Algorithmus genutzt wird und auf welcher Datengrundlage der SteelClassifier erstellt werden soll. Nach der Initialisierung kann der Classifier gespeichert, getestet und zur Vorhersage genutzt werden. Die verschiedenen Algorithmen sind nicht hardcoded, wodurch der SteelClassifier nicht angepasst werden muss, solange sich neue Algorithmen an das SteelModelInterface halten.
