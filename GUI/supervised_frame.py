@@ -21,7 +21,7 @@ class SupervisedFrame(ctk.CTkFrame):
 
         self.upload_button = ctk.CTkButton(self, corner_radius=8,
                                            text='upload file',
-                                           command=upload_csv_or_xlsx_to_db_table)
+                                           command=upload_file_to_database)
 
         self.supervised_model_var = ctk.StringVar(value="False")
         self.model_checkbox = ctk.CTkCheckBox(master=self, text="Model is existing",
@@ -41,7 +41,10 @@ class SupervisedFrame(ctk.CTkFrame):
 
         from GUI.gui import get_all_items_of_user_from_db_gui
         dataframes = list(get_all_items_of_user_from_db_gui())
-        self.dataframe_to_prediction_var = ctk.StringVar(value=dataframes[0])
+        if dataframes:
+            self.dataframe_to_prediction_var = ctk.StringVar(value=dataframes[0])
+        else:
+            self.dataframe_to_prediction_var = ctk.StringVar(value="No data available")
         self.dataframe_to_prediction_combobox = ctk.CTkOptionMenu(master=self,
                                                                   dynamic_resizing=False,
                                                                   width=170,
@@ -50,7 +53,11 @@ class SupervisedFrame(ctk.CTkFrame):
 
         self.dataframe_to_train_label = ctk.CTkLabel(self, text="Data for training")
 
-        self.dataframe_to_train_var = ctk.StringVar(value=dataframes[0])
+        if dataframes:
+            self.dataframe_to_train_var = ctk.StringVar(value=dataframes[0])
+        else:
+            self.dataframe_to_train_var = ctk.StringVar(value="No data available")
+
         self.dataframe_to_train_combobox = ctk.CTkOptionMenu(master=self,
                                                              dynamic_resizing=False,
                                                              width=170,
@@ -110,3 +117,6 @@ class SupervisedFrame(ctk.CTkFrame):
 
     def option_menu_callback_dataframe_to_train(self, choice):
         self.dataframe_to_train_var.set(choice)
+
+def upload_file_to_database():
+    upload_csv_or_xlsx_to_db_table()
