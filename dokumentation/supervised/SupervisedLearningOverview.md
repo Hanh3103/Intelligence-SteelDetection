@@ -1,4 +1,5 @@
 # Erläuterung Supervised Learning:
+Implemented by Julius und Jona
 
 ## SteelModelInterface:
 Diese Klasse stellt ein Interface bereit, welches durch verschiedene Algorithmen zum überwachten Lernen realisiert werden kann. Hierdurch können auch in Zukunft weitere Algorithmen einfach in das Projekt implementiert werden, solange sie die Anforderungen des Interfaces erfüllen. Dabei muss jedes Modell eine Methode `predict` zur Verfügung stellen, welche einen Datensatz übergeben bekommt und ein entsprechendes Array mit Vorhersagen zurück gibt. Mit der Methode `create_model` soll ein neues Modell basierend auf einem Datensatz trainiert werden, welcher mehrere Instanzen mit Features und Zielvariablen besitzt. Bei `test_model` soll eine dem Algorithmus entsprechende Evaluation zurückgegeben werden. Die Methode `load_model` ermöglicht mit der Übergabe eines gespeicherten Modells und eines Label Encoders ein bereits trainiertes Modell zu laden und zu nutzen. Dies reduziert den Zeitaufwand beim Anwenden, da nicht jedes Mal ein neues Modell trainiert werden muss.

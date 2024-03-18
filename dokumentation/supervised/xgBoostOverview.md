@@ -1,4 +1,5 @@
 # XGBoost (Extreme Gradient Boosting)
+Implemented by Jona
 
 XGBoost is an ensemble learning algorithm based on decision trees as weak learners. Each decision tree is created to correct the error of its parent. XGBoost uses gradient descent to optimize the loss function and regularization to prevent overfitting. In other multi-classification problems, XGBoost has proven to be a robust and accurate model, which is why we decided to apply it.
 

@@ -1,5 +1,6 @@
 
 # DeepLearning1
+Implemented by Julius
 
 Diese Klasse realisiert das SteelModelInterface mit einem tiefen neuronalen Netz. Hierfür wird tensorflow.keras genutzt, da es ein bewährtes Modul zur Erstellung tiefer neuronaler Netze ist..
 
