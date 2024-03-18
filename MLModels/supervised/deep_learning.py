@@ -5,8 +5,8 @@ from sklearn.preprocessing import LabelEncoder
 from tensorflow.keras import regularizers
 from tensorflow.keras.layers import Dense
 from tensorflow.keras.layers import Dropout
-from tensorflow.keras.models import Sequential
-from tensorflow.keras.models import load_model
+from tensorflow.keras.layers import Sequential
+from tensorflow.keras.layers import load_model
 from sklearn.metrics import f1_score
 
 from MLModels.supervised.steel_model_interface import SteelModelInterface

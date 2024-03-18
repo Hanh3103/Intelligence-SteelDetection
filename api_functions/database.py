@@ -94,13 +94,7 @@ def get_all_items_of_user_from_db():
         SystemExit: If an HTTP error occurs during the request.
 
     Returns:
-        None.
-
-    Input:
-        - The function uses the global function `get_token()` to retrieve the access token.
-
-    Output: None. The function prints error details if the response status code is not 200, prints the names of items
-    retrieved, and displays the dataframes associated with each item using the `show_dataframes` function.
+        A dictionary containing dataframes associated with each item retrieved from the database.
     """
     token_save = get_token()
     try:
@@ -110,10 +104,17 @@ def get_all_items_of_user_from_db():
         if response.status_code != 200:
             # Print error details if the response status code is not 200
             print(response.json().get("detail"))
+            # You might want to handle this error case more gracefully based on your application's requirements
+            return {}
 
         list_json = json.loads(response.content)
 
-        # turn into a list of dataframes
+        # Check if there's any data returned
+        if not list_json:
+            print("No data available in the database.")
+            return {}
+
+        # Turn data into a dictionary of dataframes
         dict_dataframes = {}
         for item in list_json:
             name = item["name"]
@@ -122,12 +123,10 @@ def get_all_items_of_user_from_db():
             dict_dataframes[name] = df
 
         # Print the names of items retrieved
-
         print(dict_dataframes.keys())
-        return dict_dataframes.keys()
 
-        # Display dataframes associated with each item
-        # show_dataframes(dict_dataframes)
+        # Return the dictionary containing dataframes
+        return dict_dataframes
 
     except requests.exceptions.HTTPError as err:
         # Exit the system if an HTTP error occurs
