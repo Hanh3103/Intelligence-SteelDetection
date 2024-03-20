@@ -106,7 +106,7 @@ def predict_data_from_file_unsupervised_tsne(file, n_neighbours: int, steps: int
         file (str): Path to the file containing the data for prediction.
         n_neighbours (int): Number of nearest neighbors for t-SNE algorithm.
         steps (int): Number of optimization steps for t-SNE algorithm.
-        mode (str): Mode of the t-SNE algorithm.
+        mode (str): The mode of t-SNE, either '2D' or '3D'.
 
     Returns:
         None.
@@ -127,8 +127,7 @@ def predict_data_from_file_unsupervised_tsne(file, n_neighbours: int, steps: int
     }
 
     response = call_unsupervised_algorithm(file, "predict/unsupervised/tsne", model_options)
-    print(response.json())
-    # Visualize response
+    return response.json()
 
 
 def predict_data_from_file_unsupervised_pca(file, scaler=None):
