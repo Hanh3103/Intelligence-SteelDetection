@@ -1,6 +1,7 @@
 from tkinter import messagebox
 
 import customtkinter as ctk
+import pandas as pd
 
 from GUI.bar_plot import save_dataframe_as_csv
 from api_functions.unsupervised import predict_data_from_file_unsupervised_kmeans
@@ -90,7 +91,9 @@ class UnsupervisedFrame(ctk.CTkFrame):
         steps = self.steps_entry.get()
         min_dist = self.min_dist_entry.get()
 
-        prediction_data = unsupervised(algorithm, file, komponents, 2, 1, 0.5, '2D')
+        prediction_data = unsupervised(algorithm, file, komponents, neighbours, steps, min_dist, '2D')
+        if prediction_data is None:
+            return
         save_dataframe_as_csv(prediction_data)
         self.main_app.create_unsupervised_canvas(prediction_data)
 
@@ -140,18 +143,24 @@ def unsupervised(model, file, komponents, neighbours, steps, min_dist, mode):
         try:
             neighbours = int(neighbours)
             steps = int(steps)
+            if steps < 250:
+                raise ValueError
+            data = predict_data_from_file_unsupervised_tsne(file, neighbours, steps, mode)
+            return pd.DataFrame(data[1:], columns=data[0])
         except ValueError:
-            messagebox.showerror("Ungültige Eingabe", "Bitte geben Sie eine gültige Zahl ein.")
-        return predict_data_from_file_unsupervised_tsne(file, neighbours, steps, mode)
+            messagebox.showerror("Ungültige Eingabe", "Bitte geben Sie eine gültige Zahl ein. Steps Größer als 250")
     elif model == unsupervised_models_enum.Models.pca:
-        return predict_data_from_file_unsupervised_pca(file)
+        data = predict_data_from_file_unsupervised_pca(file)
+        return pd.DataFrame(data, columns=['Werte'])
     elif model == unsupervised_models_enum.Models.umap:
         try:
             neighbours = int(neighbours)
             min_dist = float(min_dist)
+            data = predict_data_from_file_unsupervised_umap(file, neighbours, komponents, min_dist)
+            return pd.DataFrame(data[1:], columns=data[0])
         except ValueError:
             messagebox.showerror("Ungültige Eingabe", "Bitte geben Sie eine gültige Zahl ein.")
-        predict_data_from_file_unsupervised_umap(file, neighbours, komponents, min_dist)
+
     elif model == unsupervised_models_enum.Models.affinity:
         return predict_data_from_file_unsupervised_affinity(file)
 
