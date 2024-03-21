@@ -33,7 +33,7 @@ class BarPlot:
 
         # Setzen der y-Tick-Positionen und -Labels
         ax.set_yticks(ind)
-        ax.set_yticklabels(predicted_steel_types)
+        ax.set_yticklabels([f"{i+1}-{st}" for i, st in enumerate(predicted_steel_types)])
 
         ax.legend()
         return fig

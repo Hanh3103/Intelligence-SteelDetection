@@ -132,6 +132,7 @@ def get_all_items_of_user_from_db_gui():
 def delete_db_table_by_name_gui():
     delete_db_table_by_name("luca300_labeled_OES_data.csv")
 
+
 def stop_fastapi_server():
     try:
         os.kill(os.getpid(), signal.SIGTERM)
