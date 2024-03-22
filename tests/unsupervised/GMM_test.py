@@ -86,6 +86,10 @@ class TestSteelClassification(unittest.TestCase):
             self.assertSetEqual(set(unique_clusters), set(expected_unique_clusters))
 
 
+if __name__ == '__main__':
+    unittest.main()
+
+
 
 
 
