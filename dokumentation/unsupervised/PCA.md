@@ -28,7 +28,7 @@ Output: An array that contains the explained variance ratio of all elements.
 Tests:
 Unit tests for the method pca have been implemented, which can be found in the file tests/unsupervised/test_pca.py.
 The unit tests check whether the method handles correct and incorrect inputs correctly and whether the method delivers the expected results.
-Furthermore, the method pca was tested on two datasets, and the results were visualized (not included in the file, see Jupyter Notebook <apan style="color:red">TODO: add reference</apan>).
+Furthermore, the method pca was tested on two datasets, and the results were visualized (not included in the file, see Jupyter Notebook advanced_trials.ipynb).
 
-Various other methods and implemented functions that were tried out in the context of the FoPra, but did not make it into the final version for various reasons, can be found in the Jupyter Notebook <apan style="color:red">TODO: add reference</apan>.
+Various other methods and implemented functions that were tried out in the context of the FoPra, but did not make it into the final version for various reasons, can be found in the Jupyter Notebook advanced_trials.ipynb.
 
