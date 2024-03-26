@@ -78,8 +78,10 @@ def tsne_algorithm(data, perplexity, steps, mode):
          str: The transformed data in JSON format.
      """
 
-    columns_to_scale = ['Fe', 'C', 'Si', 'Mn', 'P', 'S', 'Cr', 'Mo', 'Ni', 'Al', 'Co', 'Cu', 'Nb', 'Ti', 'V', 'W', 'Pb',
-                        'Sn', 'B', 'Ca', 'Zr', 'As', 'Bi']
+    columns_to_scale = data.select_dtypes(include=['number']).columns
+
+    if len(columns_to_scale) == 0:
+        raise ValueError("No numeric columns found in the input data.")
 
     scaler = FunctionTransformer(np.log1p, validate=True)
     scaled_data = scaler.fit_transform(data[columns_to_scale])
@@ -97,8 +99,7 @@ def tsne_algorithm(data, perplexity, steps, mode):
         return tsne_results_3D.tolist()
 
     else:
-        print("Invalid mode. Please choose either '2D' or '3D'.")
-        return None
+        raise ValueError("Invalid mode. Please choose either '2D' or '3D'.")
 
 
 # Fuzzy C-Means Algorithmus
@@ -293,8 +294,10 @@ def affinity_propagation(data):
     if not isinstance(data, pd.DataFrame):
         raise ValueError("Input data must be a pandas DataFrame.")
 
-    columns_to_scale = ['Fe', 'C', 'Si', 'Mn', 'P', 'S', 'Cr', 'Mo', 'Ni', 'Al', 'Co', 'Cu', 'Nb', 'Ti', 'V', 'W', 'Pb',
-                        'Sn', 'B', 'Ca', 'Zr', 'As', 'Bi']
+    columns_to_scale = data.select_dtypes(include=['number']).columns
+
+    if len(columns_to_scale) == 0:
+        raise KeyError("No numeric columns found in the input data.")
 
     scaler = FunctionTransformer(np.log1p, validate=True)
     scaled_data = scaler.fit_transform(data[columns_to_scale])
