@@ -45,6 +45,12 @@ The docker-compose.yml file defines services for PostgreSQL and the Python FastA
 - Predicts data using supervised learning algorithms.
 - Supports existing models and training new models.
 
+### Data Augmentation:
+
+- Fixes imbalanced datasets to improve supervised learning classification
+- Data Augmentation Techniques: Wasserstein Generative Adversarial Networks, SMOTE-ENN
+
+
 ### File Upload and Database Interaction:
 
 - Uploads CSV or Excel files for data processing.
@@ -75,7 +81,10 @@ Configurations are stored in the `resources/config/config.ini` file. Update conf
 
 ### Supervised Learning Algorithms
 - Julius
-- Jona
+- Jonathan
+
+### Data Augmentation
+- Jonathan
 
 ### Unsupervised Learning Algorithms
 - Joshua
